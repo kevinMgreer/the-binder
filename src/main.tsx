@@ -1,3 +1,4 @@
+import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { createRoot } from "react-dom/client";
 import { CapacitorCameraPhotoSource } from "./adapters/capacitor-camera";
@@ -5,6 +6,7 @@ import { CapacitorAppInfo } from "./adapters/capacitor-app-info";
 import { ClaudeRecognizer } from "./adapters/claude-recognizer";
 import { BinderDb } from "./adapters/db";
 import { DexieCollectionStore } from "./adapters/dexie";
+import { DriveRemoteStore } from "./adapters/drive-remote-store";
 import { DexiePhotoStore } from "./adapters/dexie-photos";
 import { FakeAuthProvider, createFakePorts } from "./adapters/fakes";
 import { App } from "./app/App";
@@ -27,10 +29,15 @@ const ports = {
   auth: new FakeAuthProvider(import.meta.env.DEV && params.get("auth") !== "signed-out" ? { email: "owner@example.test" } : null),
 };
 if (Capacitor.isNativePlatform()) {
+  const { id } = await CapacitorApp.getInfo();
+  ports.remote = new DriveRemoteStore({
+    root: id.endsWith(".debug") ? "dev" : "release",
+    getAccessToken: () => ports.auth.getAccessToken(),
+  });
   ports.appInfo = new CapacitorAppInfo();
   ports.releaseFeed = new GitHubReleaseFeed("kevinMgreer/the-binder");
 }
-const identifyUrl =import.meta.env.VITE_IDENTIFY_URL as string | undefined;
+const identifyUrl = import.meta.env.VITE_IDENTIFY_URL as string | undefined;
 if (identifyUrl) ports.claude = new ClaudeRecognizer({ url: identifyUrl, getIdToken: () => ports.auth.getIdToken() });
 const sync = new SyncEngine(ports);
 
