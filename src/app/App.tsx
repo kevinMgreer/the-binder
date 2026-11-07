@@ -7,6 +7,7 @@ import { CollectionScreen } from "./CollectionScreen";
 import { ScanFlow } from "./ScanFlow";
 import { SettingsScreen } from "./SettingsScreen";
 import { useCards } from "./useCards";
+import { useUpdates } from "./useUpdates";
 
 type View =
   | { name: "list" }
@@ -17,9 +18,18 @@ type View =
 
 export function App() {
   const { cards, save, remove } = useCards();
+  const updates = useUpdates();
   const [view, setView] = useState<View>({ name: "list" });
 
-  if (view.name === "settings") return <SettingsScreen onBack={() => setView({ name: "list" })} />;
+  if (view.name === "settings") {
+    return (
+      <SettingsScreen
+        onBack={() => setView({ name: "list" })}
+        update={updates.available}
+        onCheckForUpdates={updates.check}
+      />
+    );
+  }
 
   if (view.name === "scan") {
     return (
@@ -67,6 +77,7 @@ export function App() {
   return (
     <CollectionScreen
       cards={cards}
+      update={updates.available}
       onAdd={() => setView({ name: "form" })}
       onScan={(mode) => setView({ name: "scan", mode })}
       onSettings={() => setView({ name: "settings" })}

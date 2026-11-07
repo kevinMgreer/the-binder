@@ -55,7 +55,7 @@
 
 ## 7. App distribution
 
-- [ ] 7.1 Write acceptance tests for every scenario in `specs/app-distribution/spec.md`: Playwright tests for the settings version and the four update-check scenarios against `FakeAppInfo` and `FakeReleaseFeed`; a unit test for tag-to-version-code derivation; and a written on-device checklist for the install, update and signing scenarios; verify the automated tests fail for the right reason
+- [x] 7.1 Write acceptance tests for every scenario in `specs/app-distribution/spec.md`: Playwright tests for the settings version and the four update-check scenarios against `FakeAppInfo` and `FakeReleaseFeed`; a unit test for tag-to-version-code derivation; and a written on-device checklist for the install, update and signing scenarios; verify the automated tests fail for the right reason
 - [ ] 7.2 Derive `versionName` and `versionCode` from the git tag in Gradle (`major*10000 + minor*100 + patch`, design D2); verify the unit test and "Version code increases" pass
 - [ ] 7.3 Show the version name and version code in settings via `CapacitorAppInfo`; verify "Version in settings" passes, and on the phone the values match the installed release
 - [ ] 7.4 Create the release signing workflow in GitHub Actions: on a `v*` tag run tests and build, decode the keystore from Actions secrets into the runner temp directory, run `assembleRelease`, run `apksigner verify`, and attach the APK to the GitHub Release; verify a test tag produces a Release with an APK whose `apksigner verify --print-certs` digest matches the release key and not the debug key ("Release APK is signed with the release key"), and that `git ls-files` lists no `.jks` or `.keystore` file

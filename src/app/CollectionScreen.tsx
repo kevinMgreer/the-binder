@@ -4,9 +4,12 @@ import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type 
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
 import { SyncIndicator } from "./SyncIndicator";
+import { UpdateLink } from "./UpdateLink";
+import type { UpdateInfo } from "./useUpdates";
 
 interface Props {
   cards: Card[];
+  update: UpdateInfo | null;
   onAdd: () => void;
   onScan: (mode: "camera" | "pick") => void;
   onSettings: () => void;
@@ -15,7 +18,7 @@ interface Props {
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, onAdd, onScan, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onOpen }: Props) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
 
@@ -67,6 +70,7 @@ export function CollectionScreen({ cards, onAdd, onScan, onSettings, onOpen }: P
         <button onClick={onSettings}>Settings</button>
         <SyncIndicator />
       </header>
+      {update && <UpdateLink update={update} />}
       <Field label="Search">
         <input
           id={fieldId("Search")}
