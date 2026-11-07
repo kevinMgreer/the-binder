@@ -1,0 +1,13 @@
+name = "the-binder-identify"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+
+# Secrets are set with `wrangler secret put` and never live in this file:
+#   ANTHROPIC_API_KEY, OWNER_EMAIL, GOOGLE_WEB_CLIENT_ID
+[vars]
+MODEL = "claude-haiku-5-5"
+DAILY_LIMIT = "50"
+
+[[kv_namespaces]]
+binding = "COUNTER"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
