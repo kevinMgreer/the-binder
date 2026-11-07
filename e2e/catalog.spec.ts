@@ -168,7 +168,8 @@ test("Totals count quantity and distinct cards", async ({ page }) => {
 });
 
 test("Large collection: first screen within 1 s with 4x CPU throttling", async ({ page, context }) => {
-  await page.goto("/?seed=5000");
+  // Measured on a production bundle: the unbundled dev server adds module-loading time the shipped app does not have.
+  await page.goto("http://localhost:4173/?seed=5000");
   await expect(page.getByTestId("summary")).toHaveText("5000 cards, 5000 distinct");
   const cdp = await context.newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
