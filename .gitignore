@@ -1,0 +1,44 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.env
+.env.*
+!.env.example
+
+# Vite
+dist/
+dist-ssr/
+*.local
+.vite/
+coverage/
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.idsig
+captures/
+.externalNativeBuild/
+.cxx/
+android/app/release/
+android/**/build/
+.idea/
+*.iml
+
+# Signing keys (never commit)
+*.keystore
+*.jks
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+
+# Claude Code local settings
+.claude/settings.local.json

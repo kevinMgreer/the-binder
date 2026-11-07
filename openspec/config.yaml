@@ -1,0 +1,54 @@
+schema: spec-driven
+
+context: |
+  The Binder: a personal baseball card collection app for Android only. Single owner, single Google account, one Android phone (plus an occasional reinstall or second Android device).
+  Delivered as a signed native APK installed by sideloading (ADB or Android's advanced sideload flow). No Play Store, no iOS, no web hosting.
+  Stack: Capacitor wrapping React + Vite + TypeScript, with ports and adapters inside the app.
+  Hard constraint: $0 recurring cost. The only accepted spend is pay-per-use Claude Vision calls the owner triggers explicitly.
+  No app server and no hosted database. The owner's Google Drive is the system of record; the app keeps a local working copy on the device.
+  Must work offline for browsing and adding cards; sync when back online.
+  Google OAuth must stay on non-sensitive scopes (drive.file) so the Google Cloud project needs no verification review.
+  Secrets never ship in the APK: the Anthropic API key lives only in a Cloudflare Worker proxy, and the release signing keystore lives only in GitHub Actions secrets and is never committed.
+  The repository is public: no personal information (including the owner's email) and no secrets may appear in code, git history, specs or the APK. Owner-specific values live only in Worker secrets and GitHub Actions secrets.
+  Nothing is migrated from the previous the-binder app.
+
+rules:
+  proposal:
+    - State what is out of scope
+  specs:
+    - Use WHEN/THEN scenarios that can be written as acceptance tests
+  design:
+    - Every decision lists the alternatives considered and confirms it keeps the $0 constraint
+  tasks:
+    - Write the acceptance test for a scenario before the code that satisfies it
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
