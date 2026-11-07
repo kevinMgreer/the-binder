@@ -2,8 +2,14 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef } from "react";
 import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
+import { useThumbUrl } from "./hooks";
 
 const ROW_HEIGHT = 72;
+
+function Thumb({ card }: { card: Card }) {
+  const url = useThumbUrl(card.id, "front", !!card.photos.front, card.updatedAt);
+  return url ? <img className="thumb" src={url} alt="" /> : <span className="thumb" aria-hidden="true" />;
+}
 
 export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card) => void }) {
   const scroller = useRef<HTMLDivElement>(null);
@@ -32,7 +38,7 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
               style={{ height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}
             >
               <button onClick={() => onOpen(c)}>
-                <span className="thumb" aria-hidden="true" />
+                <Thumb card={c} />
                 <span className="text">
                   <strong>{c.player}</strong>
                   <span>

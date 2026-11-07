@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
+import { PhotoView } from "./PhotoView";
 
 interface Props {
   card: Card;
@@ -17,6 +18,8 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
   return (
     <section>
       <button onClick={onBack}>Back</button>
+      <PhotoView card={card} side="front" />
+      <PhotoView card={card} side="back" />
       <h2>{card.player}</h2>
       <p>
         {card.year} {card.manufacturer} {card.set} #{card.cardNumber}

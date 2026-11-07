@@ -1,6 +1,6 @@
 export interface PhotoRef {
-  fileId: string;
-  thumbId: string;
+  fileId: string | null;
+  thumbId: string | null;
 }
 
 export type Grading =

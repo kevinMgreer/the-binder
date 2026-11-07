@@ -7,12 +7,13 @@ import { Field, fieldId } from "./Field";
 interface Props {
   cards: Card[];
   onAdd: () => void;
+  onScan: (mode: "camera" | "pick") => void;
   onOpen: (card: Card) => void;
 }
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, onAdd, onOpen }: Props) {
+export function CollectionScreen({ cards, onAdd, onScan, onOpen }: Props) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
 
@@ -59,6 +60,8 @@ export function CollectionScreen({ cards, onAdd, onOpen }: Props) {
           {total} cards, {distinct} distinct
         </p>
         <button onClick={onAdd}>Add card</button>
+        <button onClick={() => onScan("camera")}>Scan card</button>
+        <button onClick={() => onScan("pick")}>Pick from photos</button>
       </header>
       <Field label="Search">
         <input

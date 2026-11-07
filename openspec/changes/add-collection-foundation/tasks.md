@@ -21,7 +21,7 @@
 
 ## 3. Card photos
 
-- [ ] 3.1 Write acceptance tests for every scenario in `specs/card-photos/spec.md` (against `FakePhotoSource`); verify they fail for the right reason
+- [x] 3.1 Write acceptance tests for every scenario in `specs/card-photos/spec.md` (against `FakePhotoSource`); verify they fail for the right reason
 - [ ] 3.2 Build capture (front then back, skip back) with `CapacitorCameraPhotoSource` over `@capacitor/camera` and the "Pick from photos" fallback (design D7); verify "Camera capture on Android", "Camera permission denied" and "Choose existing image" pass, and manually verify all three on the phone
 - [ ] 3.3 Implement the worker-based resize/WebP pipeline and thumbnails (design D7); verify a 12 MP fixture compresses to ≤ 500 KB in a Vitest test, and on the phone ML Kit still reads the serial stamp from the compressed fixture
 - [ ] 3.4 Store photos and thumbnails in the local `PhotoStore` (IndexedDB, size-capped full-photo cache), with retake/replace; verify "Replace front photo" passes against the fake remote

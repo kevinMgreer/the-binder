@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Card } from "../domain/card";
+import type { Card, CardSide } from "../domain/card";
+import type { Photos } from "../ports";
 import { usePorts } from "./ports-context";
 
+const SIDES: CardSide[] = ["front", "back"];
+
 export function useCards() {
-  const { collection } = usePorts();
+  const { collection, photos: photoStore } = usePorts();
   const [cards, setCards] = useState<Card[]>([]);
 
   const refresh = useCallback(async () => {
@@ -16,11 +19,20 @@ export function useCards() {
   }, [refresh]);
 
   const save = useCallback(
-    async (card: Card) => {
-      await collection.put(card);
+    async (card: Card, photos: Photos = {}) => {
+      let next = card;
+      for (const side of SIDES) {
+        const photo = photos[side];
+        if (!photo) continue;
+        const old = (await collection.get(card.id))?.photos[side];
+        for (const id of [old?.fileId, old?.thumbId]) if (id) await photoStore.queueDelete(id);
+        await photoStore.saveCaptured(card.id, side, photo);
+        next = { ...next, photos: { ...next.photos, [side]: { fileId: null, thumbId: null } } };
+      }
+      await collection.put(next);
       await refresh();
     },
-    [collection, refresh],
+    [collection, photoStore, refresh],
   );
 
   const remove = useCallback(

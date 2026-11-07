@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { Card } from "../domain/card";
 import { findDuplicate } from "../domain/query";
 import { validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
+import type { Photos } from "../ports";
 import { Field, fieldId } from "./Field";
+import { PhotoSlot } from "./PhotoSlot";
 
 interface Draft {
   player: string;
@@ -88,12 +90,14 @@ function toCard(d: Draft, existing: Card | undefined): Card {
 interface Props {
   card?: Card;
   cards: Card[];
-  onSave: (card: Card) => Promise<void>;
+  initialPhotos?: Photos;
+  onSave: (card: Card, photos?: Photos) => Promise<void>;
   onCancel: () => void;
 }
 
-export function CardForm({ card, cards, onSave, onCancel }: Props) {
+export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => toDraft(card));
+  const [photos, setPhotos] = useState<Photos>(initialPhotos ?? {});
   const [errors, setErrors] = useState<FieldErrors>({});
   const [duplicate, setDuplicate] = useState<{ existing: Card; added: Card }>();
 
@@ -131,12 +135,14 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
     if (Object.keys(found).length > 0) return;
     const existing = card ? undefined : findDuplicate(cards, next);
     if (existing) setDuplicate({ existing, added: next });
-    else await onSave(next);
+    else await onSave(next, photos);
   }
 
   return (
     <form onSubmit={submit} noValidate>
       <h2>{card ? "Edit card" : "Add card"}</h2>
+      <PhotoSlot side="front" card={card} captured={photos.front} onChange={(p) => setPhotos((s) => ({ ...s, front: p }))} />
+      <PhotoSlot side="back" card={card} captured={photos.back} onChange={(p) => setPhotos((s) => ({ ...s, back: p }))} />
       {text("player", "Player", "player")}
       {text("team", "Team")}
       {text("year", "Year", "year", "number")}
@@ -185,7 +191,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
           >
             Increase quantity
           </button>
-          <button type="button" onClick={() => onSave(duplicate.added)}>
+          <button type="button" onClick={() => onSave(duplicate.added, photos)}>
             Add as separate card
           </button>
           <button type="button" onClick={() => setDuplicate(undefined)}>

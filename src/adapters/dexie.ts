@@ -1,23 +1,9 @@
-import Dexie, { type EntityTable } from "dexie";
 import type { Card } from "../domain/card";
-import type { CollectionStore } from "../ports";
-
-class BinderDb extends Dexie {
-  cards!: EntityTable<Card, "id">;
-  outbox!: EntityTable<{ cardId: string }, "cardId">;
-
-  constructor(name: string) {
-    super(name);
-    this.version(1).stores({ cards: "id", outbox: "cardId" });
-  }
-}
+import type { CollectionStore, PendingChange } from "../ports";
+import type { BinderDb } from "./db";
 
 export class DexieCollectionStore implements CollectionStore {
-  private db: BinderDb;
-
-  constructor(name = "the-binder") {
-    this.db = new BinderDb(name);
-  }
+  constructor(private db: BinderDb) {}
 
   list() {
     return this.db.cards.toArray();
@@ -34,12 +20,29 @@ export class DexieCollectionStore implements CollectionStore {
   putMany(cards: Card[]) {
     return this.db.transaction("rw", this.db.cards, this.db.outbox, async () => {
       await this.db.cards.bulkPut(cards);
-      await this.db.outbox.bulkPut(cards.map((c) => ({ cardId: c.id })));
+      await this.db.outbox.bulkPut(cards.map((c) => ({ cardId: c.id, updatedAt: c.updatedAt })));
     });
+  }
+
+  async putSynced(cards: Card[]) {
+    await this.db.cards.bulkPut(cards);
+  }
+
+  pending() {
+    return this.db.outbox.toArray();
   }
 
   pendingChanges() {
     return this.db.outbox.count();
+  }
+
+  clearPending(changes: PendingChange[]) {
+    return this.db.transaction("rw", this.db.outbox, async () => {
+      for (const { cardId, updatedAt } of changes) {
+        const row = await this.db.outbox.get(cardId);
+        if (row?.updatedAt === updatedAt) await this.db.outbox.delete(cardId);
+      }
+    });
   }
 
   async clear() {

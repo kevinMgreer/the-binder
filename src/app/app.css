@@ -15,3 +15,8 @@ form, section { padding: 12px; }
 .error { color: #b00020; font-size: 0.85rem; }
 .check { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .actions { display: flex; gap: 8px; }
+.photo-slot { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.photo-slot img { width: 56px; height: 78px; object-fit: cover; border-radius: 3px; }
+img.thumb { object-fit: cover; }
+.zoom { touch-action: none; overflow: hidden; height: 60vh; background: #111; margin-bottom: 8px; }
+.zoom img { width: 100%; height: 100%; object-fit: contain; user-select: none; }

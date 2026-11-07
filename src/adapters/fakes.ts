@@ -2,7 +2,10 @@ import type { Card, CardSide, CollectionFile, Suggestion } from "../domain/card"
 import type {
   AppInfo,
   AuthProvider,
+  CapturedPhoto,
   CollectionStore,
+  PendingChange,
+  PendingUpload,
   PhotoSource,
   PhotoStore,
   Ports,
@@ -13,6 +16,7 @@ import type {
 
 export class InMemoryCollectionStore implements CollectionStore {
   private cards = new Map<string, Card>();
+  private queued = new Map<string, string>();
   async list() {
     return [...this.cards.values()];
   }
@@ -20,16 +24,31 @@ export class InMemoryCollectionStore implements CollectionStore {
     return this.cards.get(id);
   }
   async put(card: Card) {
-    this.cards.set(card.id, card);
+    await this.putMany([card]);
   }
   async putMany(cards: Card[]) {
+    for (const card of cards) {
+      this.cards.set(card.id, card);
+      this.queued.set(card.id, card.updatedAt);
+    }
+  }
+  async putSynced(cards: Card[]) {
     for (const card of cards) this.cards.set(card.id, card);
   }
+  async pending(): Promise<PendingChange[]> {
+    return [...this.queued].map(([cardId, updatedAt]) => ({ cardId, updatedAt }));
+  }
   async pendingChanges() {
-    return 0;
+    return this.queued.size;
+  }
+  async clearPending(changes: PendingChange[]) {
+    for (const { cardId, updatedAt } of changes) {
+      if (this.queued.get(cardId) === updatedAt) this.queued.delete(cardId);
+    }
   }
   async clear() {
     this.cards.clear();
+    this.queued.clear();
   }
 }
 
@@ -75,22 +94,49 @@ export class InMemoryRemoteStore implements RemoteStore {
 export class InMemoryPhotoStore implements PhotoStore {
   private thumbs = new Map<string, Blob>();
   private full = new Map<string, Blob>();
+  private uploads = new Set<string>();
+  private deletes = new Set<string>();
   private key = (id: string, side: CardSide) => `${id}:${side}`;
-  async putThumb(id: string, side: CardSide, blob: Blob) {
-    this.thumbs.set(this.key(id, side), blob);
+  async saveCaptured(id: string, side: CardSide, photo: CapturedPhoto) {
+    this.thumbs.set(this.key(id, side), photo.thumb);
+    this.full.set(this.key(id, side), photo.full);
+    this.uploads.add(this.key(id, side));
   }
   async getThumb(id: string, side: CardSide) {
     return this.thumbs.get(this.key(id, side));
   }
-  async putFull(id: string, side: CardSide, blob: Blob) {
-    this.full.set(this.key(id, side), blob);
-  }
   async getFull(id: string, side: CardSide) {
     return this.full.get(this.key(id, side));
+  }
+  async cacheThumb(id: string, side: CardSide, blob: Blob) {
+    this.thumbs.set(this.key(id, side), blob);
+  }
+  async cacheFull(id: string, side: CardSide, blob: Blob) {
+    this.full.set(this.key(id, side), blob);
+  }
+  async pendingUploads(): Promise<PendingUpload[]> {
+    return [...this.uploads].map((key) => {
+      const [cardId, side] = key.split(":") as [string, CardSide];
+      return { cardId, side, full: this.full.get(key)!, thumb: this.thumbs.get(key)! };
+    });
+  }
+  async markUploaded(id: string, side: CardSide) {
+    this.uploads.delete(this.key(id, side));
+  }
+  async queueDelete(fileId: string) {
+    this.deletes.add(fileId);
+  }
+  async pendingDeletes() {
+    return [...this.deletes];
+  }
+  async clearDeletes(fileIds: string[]) {
+    for (const id of fileIds) this.deletes.delete(id);
   }
   async clear() {
     this.thumbs.clear();
     this.full.clear();
+    this.uploads.clear();
+    this.deletes.clear();
   }
 }
 
