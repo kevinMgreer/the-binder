@@ -15,5 +15,9 @@ export default defineConfig({
     },
   ],
   use: { baseURL: "http://localhost:5173" },
-  projects: [{ name: "mobile", use: { ...devices["Pixel 7"] } }],
+  projects: [
+    { name: "mobile", testIgnore: /perf\.spec/, use: { ...devices["Pixel 7"] } },
+    // Timing test: runs by itself once everything else has finished.
+    { name: "perf", testMatch: /perf\.spec/, dependencies: ["mobile"], fullyParallel: false, use: { ...devices["Pixel 7"] } },
+  ],
 });
