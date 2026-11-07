@@ -5,17 +5,21 @@ import { CardDetail } from "./CardDetail";
 import { CardForm } from "./CardForm";
 import { CollectionScreen } from "./CollectionScreen";
 import { ScanFlow } from "./ScanFlow";
+import { SettingsScreen } from "./SettingsScreen";
 import { useCards } from "./useCards";
 
 type View =
   | { name: "list" }
   | { name: "scan"; mode: "camera" | "pick" }
   | { name: "form"; card?: Card; photos?: Photos }
-  | { name: "detail"; id: string };
+  | { name: "detail"; id: string }
+  | { name: "settings" };
 
 export function App() {
   const { cards, save, remove } = useCards();
   const [view, setView] = useState<View>({ name: "list" });
+
+  if (view.name === "settings") return <SettingsScreen onBack={() => setView({ name: "list" })} />;
 
   if (view.name === "scan") {
     return (
@@ -65,6 +69,7 @@ export function App() {
       cards={cards}
       onAdd={() => setView({ name: "form" })}
       onScan={(mode) => setView({ name: "scan", mode })}
+      onSettings={() => setView({ name: "settings" })}
       onOpen={(card) => setView({ name: "detail", id: card.id })}
     />
   );

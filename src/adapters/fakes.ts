@@ -199,7 +199,7 @@ export class FakeRecognizer implements Recognizer {
 }
 
 export class FakeAuthProvider implements AuthProvider {
-  user: { email: string } | null = null;
+  constructor(public user: { email: string } | null = null) {}
   consent = true;
   async signIn() {
     if (!this.consent) return null;

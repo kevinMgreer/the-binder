@@ -58,6 +58,17 @@ test("A deleted data file asks what to do and does nothing until the user choose
   await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
 });
 
+test("Sync starts by itself after sign-in and saves a new card without any action", async ({ page }) => {
+  await page.goto("/?sync=auto");
+  await addCard(page, "Ronald Acuña Jr.", "27");
+  await expect(status(page)).toHaveText("Synced", { timeout: 15_000 });
+  await expect
+    .poll(() =>
+      page.evaluate(async () => (await (window as unknown as Win).__ports.remote.readCollection())?.file.cards.length ?? 0),
+    )
+    .toBe(1);
+});
+
 test("Restoring a deleted data file recreates it from this device", async ({ page }) => {
   await page.evaluate(() => (window as unknown as Win).__sync.start());
   await addCard(page, "Ronald Acuña Jr.", "27");

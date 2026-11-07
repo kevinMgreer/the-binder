@@ -98,6 +98,12 @@ export class SyncEngine {
     return this.thumbs;
   }
 
+  /** Resolves when no sync or thumbnail download is running; call after `stop()` before wiping local data. */
+  async whenIdle(): Promise<void> {
+    await this.running;
+    await this.thumbs;
+  }
+
   syncNow(): Promise<void> {
     if (this.running) {
       this.rerun = true;

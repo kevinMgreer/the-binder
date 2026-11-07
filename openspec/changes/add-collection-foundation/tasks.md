@@ -29,7 +29,7 @@
 
 ## 4. Google sign-in
 
-- [ ] 4.1 Write acceptance tests for every scenario in `specs/google-sign-in/spec.md` using `FakeAuthProvider`; verify they fail for the right reason
+- [x] 4.1 Write acceptance tests for every scenario in `specs/google-sign-in/spec.md` using `FakeAuthProvider`; verify they fail for the right reason
 - [ ] 4.2 Implement `NativeGoogleAuthProvider` through a Capacitor plugin: Credential Manager sign-in with the web client ID as `serverClientId`, plus Drive authorization for `drive.file`, with in-memory tokens (design D3); verify the sign-in, decline and consent-scope scenarios pass against the fake, and on the phone confirm sign-in works on both the debug and the release build and the consent screen lists only access to the app's own files
 - [ ] 4.3 Implement silent renewal of the access and ID tokens and the "Sign in again" fallback; verify both renewal scenarios pass, and on the phone that Drive calls still succeed after the app sits idle for over an hour
 - [ ] 4.4 Implement sign out with unsynced-changes warning, token revocation, Credential Manager state clearing and local data wipe; verify both sign-out scenarios pass, and on the phone that IndexedDB is empty after sign out (checked with Chrome remote debugging)

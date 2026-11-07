@@ -4,13 +4,15 @@ import { CapacitorCameraPhotoSource } from "./adapters/capacitor-camera";
 import { BinderDb } from "./adapters/db";
 import { DexieCollectionStore } from "./adapters/dexie";
 import { DexiePhotoStore } from "./adapters/dexie-photos";
-import { createFakePorts } from "./adapters/fakes";
+import { FakeAuthProvider, createFakePorts } from "./adapters/fakes";
 import { App } from "./app/App";
 import { PortsProvider } from "./app/ports-context";
+import { AuthGate } from "./app/session";
 import { SyncProvider } from "./app/sync-context";
 import { SyncEngine } from "./sync/engine";
 import "./app/app.css";
 
+const params = new URLSearchParams(location.search);
 const db = new BinderDb();
 const fakes = createFakePorts();
 const ports = {
@@ -18,12 +20,14 @@ const ports = {
   collection: new DexieCollectionStore(db),
   photos: new DexiePhotoStore(db),
   photoSource: Capacitor.isNativePlatform() ? new CapacitorCameraPhotoSource() : fakes.photoSource,
+  // Replaced by the native Google adapter in task 4.2.
+  auth: new FakeAuthProvider(import.meta.env.DEV && params.get("auth") !== "signed-out" ? { email: "owner@example.test" } : null),
 };
 const sync = new SyncEngine(ports);
 
 if (import.meta.env.DEV) {
   Object.assign(window, { __ports: ports, __sync: sync });
-  const count = Number(new URLSearchParams(location.search).get("seed"));
+  const count = Number(params.get("seed"));
   if (count > 0 && (await ports.collection.list()).length === 0) {
     const { seedCards } = await import("./dev/seed");
     await ports.collection.putMany(seedCards(count));
@@ -33,7 +37,9 @@ if (import.meta.env.DEV) {
 createRoot(document.getElementById("root")!).render(
   <PortsProvider ports={ports}>
     <SyncProvider engine={sync}>
-      <App />
+      <AuthGate autoSync={!import.meta.env.DEV || params.get("sync") === "auto"}>
+        <App />
+      </AuthGate>
     </SyncProvider>
   </PortsProvider>,
 );

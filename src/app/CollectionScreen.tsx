@@ -9,12 +9,13 @@ interface Props {
   cards: Card[];
   onAdd: () => void;
   onScan: (mode: "camera" | "pick") => void;
+  onSettings: () => void;
   onOpen: (card: Card) => void;
 }
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, onAdd, onScan, onOpen }: Props) {
+export function CollectionScreen({ cards, onAdd, onScan, onSettings, onOpen }: Props) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
 
@@ -63,6 +64,7 @@ export function CollectionScreen({ cards, onAdd, onScan, onOpen }: Props) {
         <button onClick={onAdd}>Add card</button>
         <button onClick={() => onScan("camera")}>Scan card</button>
         <button onClick={() => onScan("pick")}>Pick from photos</button>
+        <button onClick={onSettings}>Settings</button>
         <SyncIndicator />
       </header>
       <Field label="Search">

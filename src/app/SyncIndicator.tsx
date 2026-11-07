@@ -1,7 +1,9 @@
+import { useSession } from "./session";
 import { useSync, useSyncStatus } from "./sync-context";
 
 export function SyncIndicator() {
   const sync = useSync();
+  const session = useSession();
   const { state, pending } = useSyncStatus();
 
   const label = {
@@ -15,6 +17,7 @@ export function SyncIndicator() {
   return (
     <>
       <span data-testid="sync-status">{label}</span>
+      {state === "paused" && <button onClick={session.signInAgain}>Sign in again</button>}
       {state === "needs-decision" && (
         <div role="dialog" aria-modal="true" aria-label="Data file missing">
           <p>The collection file was deleted from Google Drive. Restore it from this device, or start an empty collection?</p>
