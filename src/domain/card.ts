@@ -1,0 +1,42 @@
+export interface PhotoRef {
+  fileId: string;
+  thumbId: string;
+}
+
+export type Grading =
+  | { kind: "graded"; company: string; grade: string }
+  | { kind: "raw"; condition: string };
+
+export interface Card {
+  id: string;
+  player: string;
+  team: string;
+  year: number;
+  manufacturer: string;
+  set: string;
+  cardNumber: string;
+  parallel: { name: string; serial: number | null; serialLegible: boolean; printRun: number | null } | null;
+  flags: { rookie: boolean; autograph: boolean; relic: boolean };
+  grading: Grading;
+  quantity: number;
+  notes: string;
+  photos: { front: PhotoRef | null; back: PhotoRef | null };
+  source: "manual" | "ocr" | "claude";
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface CollectionFile {
+  schemaVersion: 1;
+  updatedAt: string;
+  cards: Card[];
+}
+
+export type CardSide = "front" | "back";
+
+export type Suggestion = Partial<
+  Pick<Card, "player" | "team" | "year" | "manufacturer" | "set" | "cardNumber" | "parallel">
+> & {
+  lowConfidence?: string[];
+};

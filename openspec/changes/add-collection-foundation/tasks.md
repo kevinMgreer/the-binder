@@ -2,8 +2,8 @@
 
 ## 1. Project setup
 
-- [ ] 1.1 Scaffold React + Vite + TypeScript app with Dexie, Zod, Vitest and Playwright (mobile viewport project); verify `npm run build`, `npm test` and `npx playwright test` all pass on an empty smoke test
-- [ ] 1.2 Create ports (`CollectionStore`, `RemoteStore`, `PhotoStore`, `PhotoSource`, `Recognizer`, `AuthProvider`, `AppInfo`, `ReleaseFeed`) and in-memory/fake adapters per design D10; verify a smoke test wires the app shell to the fakes
+- [x] 1.1 Scaffold React + Vite + TypeScript app with Dexie, Zod, Vitest and Playwright (mobile viewport project); verify `npm run build`, `npm test` and `npx playwright test` all pass on an empty smoke test
+- [x] 1.2 Create ports (`CollectionStore`, `RemoteStore`, `PhotoStore`, `PhotoSource`, `Recognizer`, `AuthProvider`, `AppInfo`, `ReleaseFeed`) and in-memory/fake adapters per design D10; verify a smoke test wires the app shell to the fakes
 - [ ] 1.3 Add Capacitor with an Android project only: package `io.github.kevinmgreer.thebinder`; a debug build type with `applicationIdSuffix ".debug"`, the label "The Binder (dev)" and the dev Drive root (design D2, D4); pin `server.androidScheme` and `hostname` in `capacitor.config.ts` with a comment that they must never change (design D11); and add `@capacitor/app` and `@capacitor/network`. Verify `npx cap sync android`, `./gradlew assembleDebug` and an unsigned `assembleRelease` succeed, that `aapt dump badging` shows `io.github.kevinmgreer.thebinder.debug` for debug and `io.github.kevinmgreer.thebinder` for release, and that `.gitignore` excludes `android/**/build`, `*.jks` and `*.keystore`
 - [ ] 1.4 Install the debug build on my phone over ADB (`adb install -r`); verify "The Binder (dev)" opens to the app shell, and that reinstalling the same debug build over it with `adb install -r` keeps a test record written to IndexedDB
 - [ ] 1.5 Write `docs/setup.md` covering the repository, signing key, Google Cloud (both Android OAuth clients), Cloudflare, Anthropic and phone setup steps from design "Migration Plan"; verify by following it on a clean Google Cloud project
@@ -11,13 +11,13 @@
 
 ## 2. Card catalog (offline, local only)
 
-- [ ] 2.1 Write acceptance tests for every scenario in `specs/card-catalog/spec.md` (against fakes); verify they fail for the right reason
-- [ ] 2.2 Implement the card Zod schema and validation (required fields, serial ≤ print run, graded vs raw); verify the "Missing required field", "Serial above print run" and "Graded card" tests pass
-- [ ] 2.3 Implement add, edit and delete (tombstone) in `DexieCollectionStore`; verify the edit and delete tests pass
-- [ ] 2.4 Implement duplicate detection and quantity increment; verify "Add a duplicate" passes
+- [x] 2.1 Write acceptance tests for every scenario in `specs/card-catalog/spec.md` (against fakes); verify they fail for the right reason
+- [x] 2.2 Implement the card Zod schema and validation (required fields, serial ≤ print run, graded vs raw); verify the "Missing required field", "Serial above print run" and "Graded card" tests pass
+- [x] 2.3 Implement add, edit and delete (tombstone) in `DexieCollectionStore`; verify the edit and delete tests pass
+- [x] 2.4 Implement duplicate detection and quantity increment; verify "Add a duplicate" passes
 - [ ] 2.5 Build the virtualized collection list with default sort and summary totals; verify "Totals with duplicates" passes and a 5,000-card seeded list renders its first screen under 1 s in a Playwright trace with CPU throttling 4×, and spot-check the same seeded list on the phone
-- [ ] 2.6 Implement search (case- and accent-insensitive) and the filters; verify "Text search" and "Combined filters" pass
-- [ ] 2.7 Implement the "?/99" unreadable-serial display and print-run filter; verify both serial scenarios pass
+- [x] 2.6 Implement search (case- and accent-insensitive) and the filters; verify "Text search" and "Combined filters" pass
+- [x] 2.7 Implement the "?/99" unreadable-serial display and print-run filter; verify both serial scenarios pass
 
 ## 3. Card photos
 
