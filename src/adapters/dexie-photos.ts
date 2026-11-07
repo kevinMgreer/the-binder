@@ -16,7 +16,14 @@ export class DexiePhotoStore implements PhotoStore {
     return this.db.transaction("rw", this.db.thumbs, this.db.fullBlobs, this.db.fullMeta, async () => {
       await this.db.thumbs.put({ cardId, side, blob: thumb });
       await this.db.fullBlobs.put({ cardId, side, blob: full });
-      await this.db.fullMeta.put({ cardId, side, size: full.size, lastAccess: Date.now(), pending: 1 });
+      await this.db.fullMeta.put({
+        cardId,
+        side,
+        size: full.size,
+        lastAccess: Date.now(),
+        pending: 1,
+        revision: crypto.randomUUID(),
+      });
     });
   }
 
@@ -38,7 +45,14 @@ export class DexiePhotoStore implements PhotoStore {
     await this.db.transaction("rw", this.db.fullBlobs, this.db.fullMeta, async () => {
       const existing = await this.db.fullMeta.get(key(cardId, side));
       await this.db.fullBlobs.put({ cardId, side, blob });
-      await this.db.fullMeta.put({ cardId, side, size: blob.size, lastAccess: Date.now(), pending: existing?.pending ?? 0 });
+      await this.db.fullMeta.put({
+        cardId,
+        side,
+        size: blob.size,
+        lastAccess: Date.now(),
+        pending: existing?.pending ?? 0,
+        revision: existing?.revision ?? "",
+      });
     });
     await this.evict();
   }
@@ -46,18 +60,21 @@ export class DexiePhotoStore implements PhotoStore {
   async pendingUploads(): Promise<PendingUpload[]> {
     const metas = await this.db.fullMeta.where("pending").equals(1).toArray();
     const uploads: PendingUpload[] = [];
-    for (const { cardId, side } of metas) {
+    for (const { cardId, side, revision } of metas) {
       const [full, thumb] = await Promise.all([
         this.db.fullBlobs.get(key(cardId, side)),
         this.db.thumbs.get(key(cardId, side)),
       ]);
-      if (full && thumb) uploads.push({ cardId, side, full: full.blob, thumb: thumb.blob });
+      if (full && thumb) uploads.push({ cardId, side, revision, full: full.blob, thumb: thumb.blob });
     }
     return uploads;
   }
 
-  async markUploaded(cardId: string, side: CardSide) {
-    await this.db.fullMeta.update(key(cardId, side), { pending: 0 });
+  markUploaded(cardId: string, side: CardSide, revision: string) {
+    return this.db.transaction("rw", this.db.fullMeta, async () => {
+      const meta = await this.db.fullMeta.get(key(cardId, side));
+      if (meta?.revision === revision) await this.db.fullMeta.update(key(cardId, side), { pending: 0 });
+    });
   }
 
   async queueDelete(fileId: string) {

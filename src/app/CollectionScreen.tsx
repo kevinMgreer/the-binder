@@ -3,6 +3,7 @@ import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type Filters } from "../domain/query";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
+import { SyncIndicator } from "./SyncIndicator";
 
 interface Props {
   cards: Card[];
@@ -62,6 +63,7 @@ export function CollectionScreen({ cards, onAdd, onScan, onOpen }: Props) {
         <button onClick={onAdd}>Add card</button>
         <button onClick={() => onScan("camera")}>Scan card</button>
         <button onClick={() => onScan("pick")}>Pick from photos</button>
+        <SyncIndicator />
       </header>
       <Field label="Search">
         <input

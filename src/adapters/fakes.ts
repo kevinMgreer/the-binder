@@ -46,61 +46,97 @@ export class InMemoryCollectionStore implements CollectionStore {
       if (this.queued.get(cardId) === updatedAt) this.queued.delete(cardId);
     }
   }
+  private meta = new Map<string, string>();
+  async getMeta(key: string) {
+    return this.meta.get(key);
+  }
+  async setMeta(key: string, value: string) {
+    this.meta.set(key, value);
+  }
   async clear() {
     this.cards.clear();
     this.queued.clear();
+    this.meta.clear();
   }
 }
 
 export class InMemoryRemoteStore implements RemoteStore {
   private file: CollectionFile | null = null;
-  private version = 0;
-  private photos = new Map<string, Blob>();
-  failNext: Error | null = null;
+  private counter = 0;
+  private nextId = 0;
+  private photos = new Map<string, { name: string; kind: "full" | "thumb"; blob: Blob }>();
+  /** Errors thrown by the next remote calls, one per call. */
+  failures: Error[] = [];
+  /** Runs once right after the next collection write, to simulate another install writing. */
+  onAfterWrite: (() => void | Promise<void>) | null = null;
 
   private check() {
-    if (this.failNext) {
-      const e = this.failNext;
-      this.failNext = null;
-      throw e;
-    }
+    const error = this.failures.shift();
+    if (error) throw error;
   }
   async readCollection() {
     this.check();
-    return this.file ? { file: this.file, version: String(this.version) } : null;
+    return this.file ? { file: structuredClone(this.file), version: String(this.counter) } : null;
+  }
+  async version() {
+    this.check();
+    return this.file ? String(this.counter) : null;
   }
   async writeCollection(file: CollectionFile) {
     this.check();
-    this.file = file;
-    return String(++this.version);
+    this.file = structuredClone(file);
+    const version = String(++this.counter);
+    const hook = this.onAfterWrite;
+    this.onAfterWrite = null;
+    await hook?.();
+    return version;
   }
-  async uploadPhoto(name: string, blob: Blob) {
+  async uploadPhoto(name: string, blob: Blob, kind: "full" | "thumb") {
     this.check();
-    this.photos.set(name, blob);
-    return name;
+    const id = `file-${++this.nextId}`;
+    this.photos.set(id, { name, kind, blob });
+    return id;
   }
   async downloadPhoto(fileId: string) {
     this.check();
-    const blob = this.photos.get(fileId);
-    if (!blob) throw new Error(`No photo ${fileId}`);
-    return blob;
+    const photo = this.photos.get(fileId);
+    if (!photo) throw new Error(`No photo ${fileId}`);
+    return photo.blob;
   }
   async deletePhoto(fileId: string) {
     this.check();
     this.photos.delete(fileId);
+  }
+
+  /** Test helpers: what another install or the user in Drive would do or see. */
+  writeAsOtherInstall(file: CollectionFile) {
+    this.file = structuredClone(file);
+    this.counter++;
+  }
+  deleteCollection() {
+    this.file = null;
+  }
+  hasPhoto(fileId: string | null) {
+    return fileId !== null && this.photos.has(fileId);
+  }
+  photoNames() {
+    return [...this.photos.values()].filter((p) => p.kind === "full").map((p) => p.name);
+  }
+  photoBytes() {
+    return [...this.photos.values()].reduce((sum, p) => sum + p.blob.size, 0);
   }
 }
 
 export class InMemoryPhotoStore implements PhotoStore {
   private thumbs = new Map<string, Blob>();
   private full = new Map<string, Blob>();
-  private uploads = new Set<string>();
+  private uploads = new Map<string, string>();
   private deletes = new Set<string>();
   private key = (id: string, side: CardSide) => `${id}:${side}`;
   async saveCaptured(id: string, side: CardSide, photo: CapturedPhoto) {
     this.thumbs.set(this.key(id, side), photo.thumb);
     this.full.set(this.key(id, side), photo.full);
-    this.uploads.add(this.key(id, side));
+    this.uploads.set(this.key(id, side), crypto.randomUUID());
   }
   async getThumb(id: string, side: CardSide) {
     return this.thumbs.get(this.key(id, side));
@@ -115,13 +151,13 @@ export class InMemoryPhotoStore implements PhotoStore {
     this.full.set(this.key(id, side), blob);
   }
   async pendingUploads(): Promise<PendingUpload[]> {
-    return [...this.uploads].map((key) => {
+    return [...this.uploads].map(([key, revision]) => {
       const [cardId, side] = key.split(":") as [string, CardSide];
-      return { cardId, side, full: this.full.get(key)!, thumb: this.thumbs.get(key)! };
+      return { cardId, side, revision, full: this.full.get(key)!, thumb: this.thumbs.get(key)! };
     });
   }
-  async markUploaded(id: string, side: CardSide) {
-    this.uploads.delete(this.key(id, side));
+  async markUploaded(id: string, side: CardSide, revision: string) {
+    if (this.uploads.get(this.key(id, side)) === revision) this.uploads.delete(this.key(id, side));
   }
   async queueDelete(fileId: string) {
     this.deletes.add(fileId);

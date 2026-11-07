@@ -17,13 +17,20 @@ export interface CollectionStore {
   pendingChanges(): Promise<number>;
   /** Clears a queued change only if the card has not been edited again since. */
   clearPending(changes: PendingChange[]): Promise<void>;
+  getMeta(key: string): Promise<string | undefined>;
+  setMeta(key: string, value: string): Promise<void>;
+  /** Removes all cards, queued changes and metadata. */
   clear(): Promise<void>;
 }
 
+export class AuthExpiredError extends Error {}
+
 export interface RemoteStore {
   readCollection(): Promise<{ file: CollectionFile; version: string } | null>;
+  /** Cheap check of the data file's version; null when the file does not exist. */
+  version(): Promise<string | null>;
   writeCollection(file: CollectionFile): Promise<string>;
-  uploadPhoto(name: string, blob: Blob): Promise<string>;
+  uploadPhoto(name: string, blob: Blob, kind: "full" | "thumb"): Promise<string>;
   downloadPhoto(fileId: string): Promise<Blob>;
   deletePhoto(fileId: string): Promise<void>;
 }
@@ -38,6 +45,8 @@ export type Photos = Partial<Record<CardSide, CapturedPhoto>>;
 export interface PendingUpload extends CapturedPhoto {
   cardId: string;
   side: CardSide;
+  /** Changes whenever the photo is retaken, so a finished upload cannot clear a newer one. */
+  revision: string;
 }
 
 export interface PhotoStore {
@@ -48,7 +57,7 @@ export interface PhotoStore {
   cacheThumb(cardId: string, side: CardSide, blob: Blob): Promise<void>;
   cacheFull(cardId: string, side: CardSide, blob: Blob): Promise<void>;
   pendingUploads(): Promise<PendingUpload[]>;
-  markUploaded(cardId: string, side: CardSide): Promise<void>;
+  markUploaded(cardId: string, side: CardSide, revision: string): Promise<void>;
   queueDelete(fileId: string): Promise<void>;
   pendingDeletes(): Promise<string[]>;
   clearDeletes(fileIds: string[]): Promise<void>;

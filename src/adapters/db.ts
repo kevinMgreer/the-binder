@@ -10,6 +10,7 @@ export interface FullMeta {
   size: number;
   lastAccess: number;
   pending: 0 | 1;
+  revision: string;
 }
 
 export class BinderDb extends Dexie {
@@ -19,6 +20,7 @@ export class BinderDb extends Dexie {
   fullBlobs!: Table<{ cardId: string; side: CardSide; blob: Blob }, PhotoKey>;
   fullMeta!: Table<FullMeta, PhotoKey>;
   photoTrash!: EntityTable<{ fileId: string }, "fileId">;
+  meta!: EntityTable<{ key: string; value: string }, "key">;
 
   constructor(name = "the-binder") {
     super(name);
@@ -30,5 +32,6 @@ export class BinderDb extends Dexie {
       fullMeta: "[cardId+side], lastAccess, pending",
       photoTrash: "fileId",
     });
+    this.version(2).stores({ meta: "key" });
   }
 }

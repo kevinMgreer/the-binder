@@ -7,6 +7,8 @@ import { DexiePhotoStore } from "./adapters/dexie-photos";
 import { createFakePorts } from "./adapters/fakes";
 import { App } from "./app/App";
 import { PortsProvider } from "./app/ports-context";
+import { SyncProvider } from "./app/sync-context";
+import { SyncEngine } from "./sync/engine";
 import "./app/app.css";
 
 const db = new BinderDb();
@@ -17,9 +19,10 @@ const ports = {
   photos: new DexiePhotoStore(db),
   photoSource: Capacitor.isNativePlatform() ? new CapacitorCameraPhotoSource() : fakes.photoSource,
 };
+const sync = new SyncEngine(ports);
 
 if (import.meta.env.DEV) {
-  (window as unknown as { __ports: unknown }).__ports = ports;
+  Object.assign(window, { __ports: ports, __sync: sync });
   const count = Number(new URLSearchParams(location.search).get("seed"));
   if (count > 0 && (await ports.collection.list()).length === 0) {
     const { seedCards } = await import("./dev/seed");
@@ -29,6 +32,8 @@ if (import.meta.env.DEV) {
 
 createRoot(document.getElementById("root")!).render(
   <PortsProvider ports={ports}>
-    <App />
+    <SyncProvider engine={sync}>
+      <App />
+    </SyncProvider>
   </PortsProvider>,
 );

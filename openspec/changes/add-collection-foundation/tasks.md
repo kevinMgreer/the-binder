@@ -24,7 +24,7 @@
 - [x] 3.1 Write acceptance tests for every scenario in `specs/card-photos/spec.md` (against `FakePhotoSource`); verify they fail for the right reason
 - [ ] 3.2 Build capture (front then back, skip back) with `CapacitorCameraPhotoSource` over `@capacitor/camera` and the "Pick from photos" fallback (design D7); verify "Camera capture on Android", "Camera permission denied" and "Choose existing image" pass, and manually verify all three on the phone
 - [ ] 3.3 Implement the worker-based resize/WebP pipeline and thumbnails (design D7); verify a 12 MP fixture compresses to ≤ 500 KB in a Vitest test, and on the phone ML Kit still reads the serial stamp from the compressed fixture
-- [ ] 3.4 Store photos and thumbnails in the local `PhotoStore` (IndexedDB, size-capped full-photo cache), with retake/replace; verify "Replace front photo" passes against the fake remote
+- [x] 3.4 Store photos and thumbnails in the local `PhotoStore` (IndexedDB, size-capped full-photo cache), with retake/replace; verify "Replace front photo" passes against the fake remote
 - [ ] 3.5 Build the zoomable detail view and offline thumbnail fallback; verify "View full photo offline" and "Zoom to read serial" pass, and pinch-zoom is smooth on the phone
 
 ## 4. Google sign-in
@@ -36,11 +36,11 @@
 
 ## 5. Drive storage and sync
 
-- [ ] 5.1 Write acceptance tests for every scenario in `specs/drive-storage/spec.md` against `InMemoryRemoteStore` (with injectable failures and a second simulated install); verify they fail for the right reason
-- [ ] 5.2 Implement the pure merge function (union by id, latest `updatedAt`, tombstones, 90-day purge) with unit tests; verify all three merge scenarios pass
+- [x] 5.1 Write acceptance tests for every scenario in `specs/drive-storage/spec.md` against `InMemoryRemoteStore` (with injectable failures and a second simulated install); verify they fail for the right reason
+- [x] 5.2 Implement the pure merge function (union by id, latest `updatedAt`, tombstones, 90-day purge) with unit tests; verify all three merge scenarios pass
 - [ ] 5.3 Implement `DriveRemoteStore`: find-or-create the "The Binder" root folder via `appProperties`, read/write `collection.json`, upload/delete photos with readable names (design D4); verify against a real test Google account with a scripted integration test, that "Browse photos in Google Drive" holds, and that a debug build creates and uses only "The Binder (dev)" and never finds the release root folder
-- [ ] 5.4 Implement the sync engine: outbox, debounced push, pull on start/resume/interval, post-write version check, backoff, foreground only (design D6); verify "Change while online", "Changes made offline", "Sync status is visible" and "Drive rate limit or outage" pass
-- [ ] 5.5 Handle a deleted data file with the restore-or-start-empty prompt; verify "Data file deleted in Drive" passes
+- [x] 5.4 Implement the sync engine: outbox, debounced push, pull on start/resume/interval, post-write version check, backoff, foreground only (design D6); verify "Change while online", "Changes made offline", "Sync status is visible" and "Drive rate limit or outage" pass
+- [x] 5.5 Handle a deleted data file with the restore-or-start-empty prompt; verify "Data file deleted in Drive" passes
 - [ ] 5.6 Verify the photo size budget scenario passes on a card with front and back photos, and on the phone that uninstalling, reinstalling and signing in restores the collection ("Reinstall or second Android device")
 
 ## 6. Card identification

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Card, CardSide } from "../domain/card";
+import type { Card } from "../domain/card";
 import type { Photos } from "../ports";
+import { deleteCard, saveCard } from "../usecases/cards";
 import { usePorts } from "./ports-context";
-
-const SIDES: CardSide[] = ["front", "back"];
+import { useSync } from "./sync-context";
 
 export function useCards() {
-  const { collection, photos: photoStore } = usePorts();
+  const { collection, photos } = usePorts();
+  const sync = useSync();
   const [cards, setCards] = useState<Card[]>([]);
 
   const refresh = useCallback(async () => {
@@ -18,29 +19,31 @@ export function useCards() {
     void refresh();
   }, [refresh]);
 
+  // A finished sync may have pulled cards from another install.
+  useEffect(
+    () =>
+      sync.subscribe((status) => {
+        if (status.state === "idle") void refresh();
+      }),
+    [sync, refresh],
+  );
+
   const save = useCallback(
-    async (card: Card, photos: Photos = {}) => {
-      let next = card;
-      for (const side of SIDES) {
-        const photo = photos[side];
-        if (!photo) continue;
-        const old = (await collection.get(card.id))?.photos[side];
-        for (const id of [old?.fileId, old?.thumbId]) if (id) await photoStore.queueDelete(id);
-        await photoStore.saveCaptured(card.id, side, photo);
-        next = { ...next, photos: { ...next.photos, [side]: { fileId: null, thumbId: null } } };
-      }
-      await collection.put(next);
+    async (card: Card, newPhotos?: Photos) => {
+      await saveCard({ collection, photos }, card, newPhotos);
       await refresh();
+      sync.notifyChange();
     },
-    [collection, photoStore, refresh],
+    [collection, photos, refresh, sync],
   );
 
   const remove = useCallback(
-    (card: Card) => {
-      const now = new Date().toISOString();
-      return save({ ...card, deletedAt: now, updatedAt: now });
+    async (card: Card) => {
+      await deleteCard({ collection, photos }, card);
+      await refresh();
+      sync.notifyChange();
     },
-    [save],
+    [collection, photos, refresh, sync],
   );
 
   return { cards, save, remove };

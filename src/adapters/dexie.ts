@@ -45,7 +45,15 @@ export class DexieCollectionStore implements CollectionStore {
     });
   }
 
+  async getMeta(key: string) {
+    return (await this.db.meta.get(key))?.value;
+  }
+
+  async setMeta(key: string, value: string) {
+    await this.db.meta.put({ key, value });
+  }
+
   async clear() {
-    await Promise.all([this.db.cards.clear(), this.db.outbox.clear()]);
+    await Promise.all([this.db.cards.clear(), this.db.outbox.clear(), this.db.meta.clear()]);
   }
 }

@@ -122,6 +122,38 @@ test("12 MP photo is stored at most 500 KB with a 320 px thumbnail", async ({ pa
   expect(result.thumbKB).toBeLessThanOrEqual(40);
 });
 
+test("Photo size budget: a card with front and back photos adds at most 1 MB to Drive", async ({ page }) => {
+  const bytes = await page.evaluate(async () => {
+    const w = window as unknown as Win & { __sync: any };
+    const { processPhoto } = await import("/src/photos/pipeline.ts");
+    const { saveCard } = await import("/src/usecases/cards.ts");
+    const { makeCard } = await import("/src/domain/fixtures.ts");
+    const shot = async () => {
+      const canvas = new OffscreenCanvas(4000, 3000);
+      const ctx = canvas.getContext("2d")!;
+      const gradient = ctx.createLinearGradient(0, 0, 4000, 3000);
+      gradient.addColorStop(0, "#124");
+      gradient.addColorStop(1, "#eda");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 4000, 3000);
+      const pixels = ctx.getImageData(0, 0, 4000, 3000);
+      for (let i = 0; i < pixels.data.length; i += 4) {
+        const n = (Math.random() - 0.5) * 16;
+        pixels.data[i] += n;
+        pixels.data[i + 1] += n;
+        pixels.data[i + 2] += n;
+      }
+      ctx.putImageData(pixels, 0, 0);
+      return processPhoto(await canvas.convertToBlob({ type: "image/jpeg", quality: 0.9 }));
+    };
+    await saveCard(w.__ports, makeCard(), { front: await shot(), back: await shot() });
+    await w.__sync.syncNow();
+    return w.__ports.remote.photoBytes();
+  });
+  expect(bytes).toBeGreaterThan(0);
+  expect(bytes).toBeLessThanOrEqual(1024 * 1024);
+});
+
 test("Offline without a cached full photo shows the thumbnail and a note", async ({ page, context }) => {
   await seedCardWithPhoto(page, "thumb");
   await context.setOffline(true);

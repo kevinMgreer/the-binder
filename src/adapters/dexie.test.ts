@@ -67,8 +67,20 @@ test("captured photos are queued for upload until marked uploaded", async () => 
   await photos.saveCaptured("c1", "front", { full: blob(100), thumb: blob(10) });
   expect(await photos.pendingUploads()).toHaveLength(1);
   expect((await photos.getFull("c1", "front"))?.size).toBe(100);
-  await photos.markUploaded("c1", "front");
+  const [upload] = await photos.pendingUploads();
+  await photos.markUploaded("c1", "front", upload.revision);
   expect(await photos.pendingUploads()).toEqual([]);
+});
+
+test("a finished upload does not clear a photo that was retaken meanwhile", async () => {
+  const photos = new DexiePhotoStore(newDb());
+  await photos.saveCaptured("c1", "front", { full: blob(100), thumb: blob(10) });
+  const [first] = await photos.pendingUploads();
+  await photos.saveCaptured("c1", "front", { full: blob(200), thumb: blob(20) });
+  await photos.markUploaded("c1", "front", first.revision);
+  const pending = await photos.pendingUploads();
+  expect(pending).toHaveLength(1);
+  expect(pending[0].full.size).toBe(200);
 });
 
 test("full photo cache evicts the least recently used photos but never pending ones", async () => {

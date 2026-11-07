@@ -4,7 +4,7 @@ import type { Card } from "./card";
 const required = z.string().trim().min(1, "Required");
 const count = z.number().int().nonnegative();
 
-const photoRef = z.object({ fileId: z.string().nullable(), thumbId: z.string().nullable() }).nullable();
+const photoRef = z.object({ fileId: z.string().nullable(), thumbId: z.string().nullable(), name: z.string().nullable() }).nullable();
 
 export const cardSchema = z
   .object({
