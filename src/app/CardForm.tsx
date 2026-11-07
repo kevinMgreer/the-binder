@@ -1,10 +1,12 @@
-import { useState } from "react";
-import type { Card } from "../domain/card";
+import { useEffect, useRef, useState } from "react";
+import type { Card, CardSide, Suggestion } from "../domain/card";
 import { findDuplicate } from "../domain/query";
 import { validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
-import type { Photos } from "../ports";
+import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
 import { Field, fieldId } from "./Field";
 import { PhotoSlot } from "./PhotoSlot";
+import { usePorts } from "./ports-context";
+import { flaggedKeys, suggestionPatch, type DraftKey } from "./suggestions";
 
 interface Draft {
   player: string;
@@ -54,7 +56,7 @@ function toDraft(c?: Card): Draft {
 
 const num = (s: string) => (s.trim() === "" ? null : Number(s));
 
-function toCard(d: Draft, existing: Card | undefined): Card {
+function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): Card {
   const now = new Date().toISOString();
   const hasParallel = d.parallel.trim() !== "" || d.serial !== "" || d.printRun !== "" || d.serialUnreadable;
   return {
@@ -80,7 +82,7 @@ function toCard(d: Draft, existing: Card | undefined): Card {
     quantity: Number(d.quantity),
     notes: d.notes,
     photos: existing?.photos ?? { front: null, back: null },
-    source: existing?.source ?? "manual",
+    source,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
     deletedAt: null,
@@ -101,17 +103,96 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
   const [errors, setErrors] = useState<FieldErrors>({});
   const [duplicate, setDuplicate] = useState<{ existing: Card; added: Card }>();
 
+  const { ocr, claude, photos: photoStore } = usePorts();
+  const [suggested, setSuggested] = useState<Partial<Record<DraftKey, "ocr" | "claude">>>({});
+  const [flagged, setFlagged] = useState<Set<DraftKey>>(new Set());
+  const [origin, setOrigin] = useState<"ocr" | "claude" | null>(null);
+  const [note, setNote] = useState<string>();
+  const [identifying, setIdentifying] = useState(false);
+  const touched = useRef(new Set<DraftKey>());
+  const latest = useRef({ draft, suggested });
+  latest.current = { draft, suggested };
+  const recognized = useRef(new WeakSet<CapturedPhoto>());
+
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
+
+  // The user's own edit always wins: it clears the suggestion marker and blocks later suggestions for that field.
+  const edit = <K extends keyof Draft>(key: K, value: Draft[K]) => {
+    touched.current.add(key as DraftKey);
+    setSuggested((s) => ({ ...s, [key]: undefined }));
+    setFlagged((f) => new Set([...f].filter((k) => k !== key)));
+    set(key, value);
+  };
+
+  /** Fills fields the user has not touched that are empty or hold an earlier suggestion. Returns whether anything changed. */
+  function applySuggestion(suggestion: Suggestion, source: "ocr" | "claude"): boolean {
+    const { draft: current, suggested: marked } = latest.current;
+    const patch: Partial<Record<DraftKey, string | boolean>> = {};
+    for (const [key, value] of Object.entries(suggestionPatch(suggestion)) as [DraftKey, string | boolean][]) {
+      const empty = current[key] === "" || current[key] === false;
+      if (!touched.current.has(key) && (empty || marked[key])) patch[key] = value;
+    }
+    const keys = Object.keys(patch) as DraftKey[];
+    if (keys.length === 0) return false;
+    setDraft((d) => ({ ...d, ...patch }) as Draft);
+    setSuggested((s) => ({ ...s, ...Object.fromEntries(keys.map((k) => [k, source])) }));
+    const doubtful = new Set(flaggedKeys(suggestion));
+    setFlagged((f) => new Set([...[...f].filter((k) => !keys.includes(k)), ...keys.filter((k) => doubtful.has(k))]));
+    setOrigin((o) => (source === "claude" || o === "claude" ? "claude" : "ocr"));
+    setNote(undefined);
+    return true;
+  }
+
+  useEffect(() => {
+    const fresh = (["front", "back"] as CardSide[]).filter((side) => photos[side] && !recognized.current.has(photos[side]!));
+    if (fresh.length === 0) return;
+    for (const side of fresh) recognized.current.add(photos[side]!);
+    const input = Object.fromEntries(fresh.map((side) => [side, photos[side]!.full]));
+    void ocr
+      .recognize(input)
+      .then((suggestion) => applySuggestion(suggestion, "ocr"))
+      .catch(() => false)
+      .then((any) => {
+        if (!any) setNote("Nothing recognized on this device. Try Identify with Claude, or enter the details yourself.");
+      });
+  }, [photos]);
+
+  async function identify() {
+    if (!navigator.onLine) return setNote("Identify with Claude needs an internet connection.");
+    setIdentifying(true);
+    setNote(undefined);
+    try {
+      const front = photos.front?.full ?? (card?.photos.front ? await photoStore.getFull(card.id, "front") : undefined);
+      const back = photos.back?.full ?? (card?.photos.back ? await photoStore.getFull(card.id, "back") : undefined);
+      if (!front && !back) return setNote("The full photo is not on this device yet. Open the card while online first.");
+      if (!applySuggestion(await claude.recognize({ front, back }), "claude")) {
+        setNote("Claude could not read any details from these photos.");
+      }
+    } catch (error) {
+      setNote(
+        error instanceof DailyLimitError
+          ? "The daily limit for Claude identifications is reached. Use on-device recognition or enter the details yourself."
+          : error instanceof AuthExpiredError
+            ? "Sign in again to use Claude."
+            : "Could not identify the card right now. Try again or enter the details yourself.",
+      );
+    } finally {
+      setIdentifying(false);
+    }
+  }
+
+  const hintFor = (key: string) =>
+    suggested[key as DraftKey] ? (flagged.has(key as DraftKey) ? "Suggested · Check this" : "Suggested") : undefined;
 
   const text = (key: keyof Draft & string, label: string, error?: FieldKey, type = "text") => {
     const message = error && errors[error];
     return (
-      <Field label={label} error={message}>
+      <Field label={label} error={message} hint={hintFor(key)}>
         <input
           id={fieldId(label)}
           type={type}
           value={draft[key] as string}
-          onChange={(e) => set(key, e.target.value)}
+          onChange={(e) => edit(key, e.target.value)}
           aria-invalid={message ? true : undefined}
           aria-describedby={message ? `${fieldId(label)}-error` : undefined}
           disabled={key === "serial" && draft.serialUnreadable}
@@ -122,14 +203,14 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
 
   const check = (key: keyof Draft & string, label: string) => (
     <label className="check">
-      <input type="checkbox" checked={draft[key] as boolean} onChange={(e) => set(key, e.target.checked)} />
+      <input type="checkbox" checked={draft[key] as boolean} onChange={(e) => edit(key, e.target.checked)} />
       {label}
     </label>
   );
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const next = toCard(draft, card);
+    const next = toCard(draft, card, origin ?? card?.source ?? "manual");
     const found = validateCard(next);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
@@ -143,6 +224,12 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <PhotoSlot side="front" card={card} captured={photos.front} onChange={(p) => setPhotos((s) => ({ ...s, front: p }))} />
       <PhotoSlot side="back" card={card} captured={photos.back} onChange={(p) => setPhotos((s) => ({ ...s, back: p }))} />
+      {(photos.front || photos.back || card?.photos.front || card?.photos.back) && (
+        <button type="button" disabled={identifying} onClick={identify}>
+          Identify with Claude
+        </button>
+      )}
+      {note && <p role="status">{note}</p>}
       {text("player", "Player", "player")}
       {text("team", "Team")}
       {text("year", "Year", "year", "number")}

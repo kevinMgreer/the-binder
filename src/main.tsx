@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { createRoot } from "react-dom/client";
 import { CapacitorCameraPhotoSource } from "./adapters/capacitor-camera";
+import { ClaudeRecognizer } from "./adapters/claude-recognizer";
 import { BinderDb } from "./adapters/db";
 import { DexieCollectionStore } from "./adapters/dexie";
 import { DexiePhotoStore } from "./adapters/dexie-photos";
@@ -23,6 +24,8 @@ const ports = {
   // Replaced by the native Google adapter in task 4.2.
   auth: new FakeAuthProvider(import.meta.env.DEV && params.get("auth") !== "signed-out" ? { email: "owner@example.test" } : null),
 };
+const identifyUrl = import.meta.env.VITE_IDENTIFY_URL as string | undefined;
+if (identifyUrl) ports.claude = new ClaudeRecognizer({ url: identifyUrl, getIdToken: () => ports.auth.getIdToken() });
 const sync = new SyncEngine(ports);
 
 if (import.meta.env.DEV) {

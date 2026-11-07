@@ -193,7 +193,11 @@ export class FakePhotoSource implements PhotoSource {
 
 export class FakeRecognizer implements Recognizer {
   result: Suggestion = {};
+  error: Error | null = null;
+  calls = 0;
   async recognize() {
+    this.calls++;
+    if (this.error) throw this.error;
     return this.result;
   }
 }
@@ -244,7 +248,8 @@ export function createFakePorts(): Ports {
     remote: new InMemoryRemoteStore(),
     photos: new InMemoryPhotoStore(),
     photoSource: new FakePhotoSource(),
-    recognizer: new FakeRecognizer(),
+    ocr: new FakeRecognizer(),
+    claude: new FakeRecognizer(),
     auth: new FakeAuthProvider(),
     appInfo: new FakeAppInfo(),
     releaseFeed: new FakeReleaseFeed(),

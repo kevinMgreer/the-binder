@@ -66,6 +66,8 @@ export interface PhotoStore {
 
 export class PermissionDeniedError extends Error {}
 
+export class DailyLimitError extends Error {}
+
 export interface PhotoSource {
   capture(side: CardSide): Promise<Blob | null>;
   pick(): Promise<Blob | null>;
@@ -96,7 +98,8 @@ export interface Ports {
   remote: RemoteStore;
   photos: PhotoStore;
   photoSource: PhotoSource;
-  recognizer: Recognizer;
+  ocr: Recognizer;
+  claude: Recognizer;
   auth: AuthProvider;
   appInfo: AppInfo;
   releaseFeed: ReleaseFeed;

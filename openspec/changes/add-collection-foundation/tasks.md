@@ -45,12 +45,12 @@
 
 ## 6. Card identification
 
-- [ ] 6.1 Write acceptance tests for every scenario in `specs/card-identification/spec.md` (app side against `FakeRecognizer` and a mock `/identify`, proxy side in Miniflare); verify they fail for the right reason
+- [x] 6.1 Write acceptance tests for every scenario in `specs/card-identification/spec.md` (app side against `FakeRecognizer` and a mock `/identify`, proxy side in Miniflare); verify they fail for the right reason
 - [ ] 6.2 Capture ML Kit text output from at least 20 real card-back photos on the phone as JSON fixtures, then implement the OCR text parser (year, card number, serial/print run, known set names); verify parser unit tests pass against the fixtures and "Scan a base card" passes
 - [ ] 6.3 Integrate ML Kit text recognition with the bundled model through a Capacitor plugin as `MlKitRecognizer` (design D8); verify "Works offline" and "Nothing recognized" pass against the fake, and on the phone that recognition runs in airplane mode on a fresh install
-- [ ] 6.4 Build the suggestion review UI (suggestion and low-confidence flags, `source` recorded on save); verify "Low-confidence field" and "User overrides a suggestion" pass
-- [ ] 6.5 Implement the Cloudflare Worker `/identify` (Google ID token verification of signature, issuer, `aud` = web client ID and expiry, owner email check, no Origin gate, size limit, KV daily counter, Anthropic call with forced JSON tool output) per design D9; verify all proxy scenarios pass in Miniflare, including that a request with the app's Origin header but another account's token is rejected without calling Claude
-- [ ] 6.6 Wire `ClaudeRecognizer` to the Worker with the offline guard and silent ID token refresh; verify "Identify a parallel", "Never automatic" and "Offline" pass
+- [x] 6.4 Build the suggestion review UI (suggestion and low-confidence flags, `source` recorded on save); verify "Low-confidence field" and "User overrides a suggestion" pass
+- [x] 6.5 Implement the Cloudflare Worker `/identify` (Google ID token verification of signature, issuer, `aud` = web client ID and expiry, owner email check, no Origin gate, size limit, KV daily counter, Anthropic call with forced JSON tool output) per design D9; verify all proxy scenarios pass in Miniflare, including that a request with the app's Origin header but another account's token is rejected without calling Claude
+- [x] 6.6 Wire `ClaudeRecognizer` to the Worker with the offline guard and silent ID token refresh; verify "Identify a parallel", "Never automatic" and "Offline" pass
 - [ ] 6.7 Deploy the Worker with secrets and KV, set the Anthropic Console spend limit, and document both in `docs/setup.md`; verify a real identification from the phone, and that "Inspect the APK" holds: unzip the release APK and search it for the key prefix (`sk-ant-`), finding nothing
 
 ## 7. App distribution

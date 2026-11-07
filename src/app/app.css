@@ -20,3 +20,4 @@ form, section { padding: 12px; }
 img.thumb { object-fit: cover; }
 .zoom { touch-action: none; overflow: hidden; height: 60vh; background: #111; margin-bottom: 8px; }
 .zoom img { width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.hint { color: #555; font-size: 0.8rem; }
