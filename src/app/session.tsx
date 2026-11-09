@@ -24,6 +24,7 @@ export function AuthGate({ autoSync, children }: { autoSync: boolean; children: 
   const sync = useSync();
   const [state, setState] = useState<State>("checking");
   const [declined, setDeclined] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   useEffect(() => {
     auth
@@ -48,9 +49,14 @@ export function AuthGate({ autoSync, children }: { autoSync: boolean; children: 
   }, [signedIn, autoSync, sync]);
 
   async function signIn() {
-    const user = await auth.signIn();
-    setDeclined(!user);
-    if (user) setState(user);
+    setFailure(null);
+    try {
+      const user = await auth.signIn();
+      setDeclined(!user);
+      if (user) setState(user);
+    } catch (e) {
+      setFailure(e instanceof Error ? e.message : "Sign-in failed");
+    }
   }
 
   async function signOut() {
@@ -74,6 +80,7 @@ export function AuthGate({ autoSync, children }: { autoSync: boolean; children: 
         <h1>The Binder</h1>
         <button onClick={signIn}>Sign in with Google</button>
         {declined && <p role="alert">Drive access is required to store your collection.</p>}
+        {failure && <p role="alert">{failure}</p>}
       </main>
     );
   }
