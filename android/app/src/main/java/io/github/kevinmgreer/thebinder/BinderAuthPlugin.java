@@ -54,9 +54,20 @@ public class BinderAuthPlugin extends Plugin {
         consentLauncher = getBridge().registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), this::onConsentResult);
     }
 
+    // A build without VITE_GOOGLE_WEB_CLIENT_ID sends no ID; reject instead of crashing the app.
+    private String requireClientId(PluginCall call) {
+        String id = call.getString("serverClientId");
+        if (id == null || id.isEmpty()) {
+            call.reject("Google web client ID is not configured");
+            return null;
+        }
+        return id;
+    }
+
     @PluginMethod
     public void signIn(PluginCall call) {
-        String serverClientId = call.getString("serverClientId");
+        String serverClientId = requireClientId(call);
+        if (serverClientId == null) return;
         GetCredentialRequest request = new GetCredentialRequest.Builder()
             .addCredentialOption(new GetSignInWithGoogleOption.Builder(serverClientId).build())
             .build();
@@ -65,8 +76,10 @@ public class BinderAuthPlugin extends Plugin {
 
     @PluginMethod
     public void silentSignIn(PluginCall call) {
+        String serverClientId = requireClientId(call);
+        if (serverClientId == null) return;
         GetGoogleIdOption option = new GetGoogleIdOption.Builder()
-            .setServerClientId(call.getString("serverClientId"))
+            .setServerClientId(serverClientId)
             .setFilterByAuthorizedAccounts(true)
             .setAutoSelectEnabled(true)
             .build();
