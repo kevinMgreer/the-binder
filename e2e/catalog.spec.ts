@@ -1,10 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 interface Draft {
   player?: string;
   team?: string;
   year?: string;
   set?: string;
+  subset?: string;
+  insert?: string;
   cardNumber?: string;
   parallel?: string;
   serial?: string;
@@ -27,6 +30,8 @@ async function fillCard(page: Page, draft: Draft) {
   await fill(page, "Team", draft.team);
   await fill(page, "Year", draft.year);
   await fill(page, "Set", draft.set);
+  await fill(page, "Subset", draft.subset);
+  await fill(page, "Insert", draft.insert);
   await fill(page, "Card number", draft.cardNumber);
   await fill(page, "Parallel", draft.parallel);
   await fill(page, "Serial", draft.serial);
@@ -62,6 +67,7 @@ const rows = (page: Page) => page.getByTestId("card-row");
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
+  await openCollection(page);
 });
 
 test("Minimum card: player, year, set and card number are enough", async ({ page }) => {
@@ -161,6 +167,66 @@ test("Combined filters list only cards matching all of them, with a count", asyn
   await page.getByLabel("Year to", { exact: true }).fill("2026");
   await expect(rows(page)).toHaveCount(2);
   await expect(page.getByTestId("shown")).toHaveText("Showing 2");
+});
+
+test("Subset and insert", async ({ page }) => {
+  await addCard(page, { ...base, set: "Topps", subset: "Future Stars", insert: "Stars of MLB" });
+  await rows(page).first().click();
+  const facts = page.getByTestId("facts");
+  await expect(facts).toContainText("Subset");
+  await expect(facts).toContainText("Future Stars");
+  await expect(facts).toContainText("Insert");
+  await expect(facts).toContainText("Stars of MLB");
+});
+
+test("Subset and insert are optional", async ({ page }) => {
+  await addCard(page, base);
+  await rows(page).first().click();
+  await expect(page.getByTestId("facts")).not.toContainText("Subset");
+  await expect(page.getByTestId("facts")).not.toContainText("Insert");
+});
+
+test("Old local card edited after the update", async ({ page }) => {
+  await page.evaluate(async () => {
+    const { makeCard } = await import("/src/domain/fixtures.ts");
+    const old: Record<string, unknown> = makeCard({ player: "Old Timer" });
+    delete old.subset;
+    delete old.insert;
+    await (window as unknown as { __ports: any }).__ports.collection.putMany([old]);
+  });
+  await page.reload();
+  await openCollection(page);
+  await rows(page).first().click();
+  await page.getByRole("button", { name: "Edit" }).click();
+  await fill(page, "Insert", "Stars of MLB");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByTestId("facts")).toContainText("Stars of MLB");
+});
+
+test("Filter by insert", async ({ page }) => {
+  await addCard(page, { ...base, insert: "Stars of MLB" });
+  await addCard(page, { ...base, cardNumber: "28", insert: "Other" });
+  await addCard(page, { ...base, cardNumber: "29" });
+  await openFilters(page);
+  await page.getByLabel("Insert", { exact: true }).selectOption({ label: "Stars of MLB" });
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Insert filter/ })).toBeVisible();
+});
+
+test("Filter by manufacturer", async ({ page }) => {
+  await page.evaluate(async () => {
+    const { makeCard } = await import("/src/domain/fixtures.ts");
+    const cards = [makeCard({ manufacturer: "Topps" }), makeCard({ manufacturer: "Bowman", cardNumber: "2" })];
+    await (window as unknown as { __ports: any }).__ports.collection.putMany(cards);
+  });
+  await page.reload();
+  await openCollection(page);
+  await openFilters(page);
+  await page.getByLabel("Manufacturer", { exact: true }).selectOption({ label: "Topps" });
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Manufacturer filter/ })).toBeVisible();
 });
 
 test("Totals count quantity and distinct cards", async ({ page }) => {

@@ -25,6 +25,13 @@ test("a later tombstone beats an earlier edit, and a later edit beats an earlier
   expect(merge([deleted], [edited])[0].deletedAt).toBeNull();
 });
 
+test("a remote card from an older install without subset and insert does not drop a later local subset", () => {
+  const remote = makeCard({ updatedAt: at(1) });
+  const local = { ...remote, subset: "Future Stars", updatedAt: at(2) };
+  expect(merge([local], [remote])[0].subset).toBe("Future Stars");
+  expect(merge([remote], [local])[0].subset).toBe("Future Stars");
+});
+
 test("a tie is resolved the same way on both installs", () => {
   const base = makeCard({ updatedAt: at(1) });
   const x = { ...base, notes: "x" };

@@ -10,7 +10,10 @@ export interface Filters {
   yearFrom: number | null;
   yearTo: number | null;
   team: string;
+  manufacturer: string;
   set: string;
+  subset: string;
+  insert: string;
   parallel: string;
   printRun: number | null;
   serialNumbered: boolean;
@@ -25,7 +28,10 @@ export const emptyFilters: Filters = {
   yearFrom: null,
   yearTo: null,
   team: "",
+  manufacturer: "",
   set: "",
+  subset: "",
+  insert: "",
   parallel: "",
   printRun: null,
   serialNumbered: false,
@@ -35,15 +41,22 @@ export const emptyFilters: Filters = {
   graded: false,
 };
 
-export function applyFilters(cards: Card[], f: Filters): Card[] {
-  const search = normalize(f.search.trim());
-  return cards.filter((c) => {
-    if (search && !normalize(`${c.player} ${c.team} ${c.set} ${c.notes}`).includes(search)) return false;
+const key = (s: string | undefined) => normalize((s ?? "").trim());
+
+/** The one predicate behind the list, its chips and the dashboard tiles; filter values are normalized once. */
+export function matcher(f: Filters): (c: Card) => boolean {
+  const search = key(f.search);
+  const [team, manufacturer, set, subset, insert, parallel] = [f.team, f.manufacturer, f.set, f.subset, f.insert, f.parallel].map(key);
+  return (c) => {
+    if (search && !normalize(`${c.player} ${c.team} ${c.set} ${c.subset ?? ""} ${c.insert ?? ""} ${c.notes}`).includes(search)) return false;
     if (f.yearFrom !== null && c.year < f.yearFrom) return false;
     if (f.yearTo !== null && c.year > f.yearTo) return false;
-    if (f.team && c.team !== f.team) return false;
-    if (f.set && c.set !== f.set) return false;
-    if (f.parallel && c.parallel?.name !== f.parallel) return false;
+    if (team && key(c.team) !== team) return false;
+    if (manufacturer && key(c.manufacturer) !== manufacturer) return false;
+    if (set && key(c.set) !== set) return false;
+    if (subset && key(c.subset) !== subset) return false;
+    if (insert && key(c.insert) !== insert) return false;
+    if (parallel && key(c.parallel?.name) !== parallel) return false;
     if (f.printRun !== null && c.parallel?.printRun !== f.printRun) return false;
     if (f.serialNumbered && !isSerialNumbered(c)) return false;
     if (f.rookie && !c.flags.rookie) return false;
@@ -51,8 +64,10 @@ export function applyFilters(cards: Card[], f: Filters): Card[] {
     if (f.relic && !c.flags.relic) return false;
     if (f.graded && c.grading.kind !== "graded") return false;
     return true;
-  });
+  };
 }
+
+export const applyFilters = (cards: Card[], f: Filters): Card[] => cards.filter(matcher(f));
 
 export function sortCards(cards: Card[]): Card[] {
   return [...cards].sort(

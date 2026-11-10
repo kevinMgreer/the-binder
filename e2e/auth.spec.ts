@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any; __sync: any };
 
@@ -51,6 +52,7 @@ test("First launch shows the sign-in screen and no collection", async ({ page })
 test("Successful sign-in shows the collection", async ({ page }) => {
   await page.goto("/?auth=signed-out");
   await signInButton(page).click();
+  await openCollection(page);
   await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
 });
 
@@ -82,6 +84,7 @@ test("When silent renewal is refused sync pauses, local changes stay, and Sign i
   await page.evaluate(() => (window as unknown as Win).__sync.syncNow());
 
   await expect(page.getByTestId("sync-status")).toHaveText("Sync paused");
+  await openCollection(page);
   await expect(page.getByTestId("card-row")).toHaveCount(1);
   await page.getByRole("button", { name: "Sign in again" }).click();
   await expect(page.getByTestId("sync-status")).toHaveText("Synced");

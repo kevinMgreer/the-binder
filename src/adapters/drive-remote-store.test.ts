@@ -21,7 +21,7 @@ function store(root: "release" | "dev" = "release") {
 }
 
 const collection = (...cards: ReturnType<typeof makeCard>[]): CollectionFile => ({
-  schemaVersion: 1,
+  schemaVersion: 2,
   updatedAt: "2026-06-01T00:00:00.000Z",
   cards,
 });
@@ -78,7 +78,7 @@ describe("data file", () => {
     await store().writeCollection(collection(makeCard({ player: "Ronald Acuña Jr." })));
     const text = drive.text(drive.named("collection.json")[0]);
     expect(text).toContain("\n");
-    expect(JSON.parse(text).schemaVersion).toBe(1);
+    expect(JSON.parse(text).schemaVersion).toBe(2);
     expect(text).toContain("Ronald Acuña Jr.");
   });
 

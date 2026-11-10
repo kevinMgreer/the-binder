@@ -27,6 +27,11 @@ test("serial equal to print run, and unreadable serial with a print run, are val
   expect(validateCard(makeCard({ parallel: parallel(null, 99, false) }))).toEqual({});
 });
 
+test("subset and insert are optional", () => {
+  expect(validateCard(makeCard())).toEqual({});
+  expect(validateCard(makeCard({ subset: "Future Stars", insert: "Stars of MLB" }))).toEqual({});
+});
+
 test("graded needs a company and a grade", () => {
   expect(Object.keys(validateCard(makeCard({ grading: { kind: "graded", company: "PSA", grade: "" } })))).toEqual(["grading"]);
   expect(validateCard(makeCard({ grading: { kind: "graded", company: "PSA", grade: "9" } }))).toEqual({});

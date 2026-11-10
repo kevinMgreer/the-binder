@@ -24,7 +24,7 @@ function renderApp(email: string | null, auth = new FakeAuthProvider(email ? { e
 
 test("signed-in app shell renders against the fake ports", async () => {
   renderApp("owner@example.test");
-  expect((await screen.findByTestId("summary")).textContent).toBe("0 cards, 0 distinct");
+  expect(await screen.findByRole("button", { name: "Cards, 0" })).toBeTruthy();
   expect(screen.getByTestId("sync-status").textContent).toBe("Synced");
 });
 
@@ -39,5 +39,5 @@ test("a failing sign-in shows its message instead of doing nothing", async () =>
 test("signed-out app shows only the sign-in screen", async () => {
   renderApp(null);
   expect(await screen.findByRole("button", { name: "Sign in with Google" })).toBeTruthy();
-  expect(screen.queryByTestId("summary")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Browse collection" })).toBeNull();
 });

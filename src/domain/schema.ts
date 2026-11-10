@@ -14,6 +14,8 @@ export const cardSchema = z
     year: z.number({ error: "Enter a year" }).int("Enter a year").min(1800, "Enter a year"),
     manufacturer: z.string(),
     set: required,
+    subset: z.string().optional(),
+    insert: z.string().optional(),
     cardNumber: required,
     parallel: z
       .object({

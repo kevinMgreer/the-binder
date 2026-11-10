@@ -170,7 +170,7 @@ export class SyncEngine {
   }
 
   private file(cards: Card[]): CollectionFile {
-    return { schemaVersion: 1, updatedAt: this.now().toISOString(), cards };
+    return { schemaVersion: 2, updatedAt: this.now().toISOString(), cards };
   }
 
   private async syncOnce(): Promise<"done" | "needs-decision"> {
@@ -251,7 +251,8 @@ export class SyncEngine {
         const r = remoteById.get(c.id);
         return !!r && r.updatedAt === c.updatedAt && (r === c || JSON.stringify(r) === JSON.stringify(c));
       };
-      if (merged.length === remoteById.size && merged.every(sameAsRemote)) {
+      // A version 1 file is rewritten once even when no card changed.
+      if (remoteData.file.schemaVersion === 2 && merged.length === remoteById.size && merged.every(sameAsRemote)) {
         await collection.clearPending(pendingBefore);
         this.lastVersion = remoteData.version;
         return fromRemote;

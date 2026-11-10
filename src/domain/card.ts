@@ -8,6 +8,8 @@ export type Grading =
   | { kind: "graded"; company: string; grade: string }
   | { kind: "raw"; condition: string };
 
+export const CONDITIONS = ["Mint", "Near Mint", "Excellent", "Very Good", "Good", "Fair", "Poor"] as const;
+
 export interface Card {
   id: string;
   player: string;
@@ -15,6 +17,8 @@ export interface Card {
   year: number;
   manufacturer: string;
   set: string;
+  subset?: string;
+  insert?: string;
   cardNumber: string;
   parallel: { name: string; serial: number | null; serialLegible: boolean; printRun: number | null } | null;
   flags: { rookie: boolean; autograph: boolean; relic: boolean };
@@ -29,7 +33,7 @@ export interface Card {
 }
 
 export interface CollectionFile {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   updatedAt: string;
   cards: Card[];
 }

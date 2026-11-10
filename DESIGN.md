@@ -67,6 +67,11 @@ components:
     rounded: "{rounded.m}"
     padding: "0 16px"
     height: "48px"
+  stat-tile:
+    backgroundColor: "{colors.pocket}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.m}"
+    padding: "12px"
   chip:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.on-accent}"
@@ -99,7 +104,7 @@ Recorded from `src/app/tokens.css` and `src/app/app.css` as shipped. The frontma
 
 A card binder page: a flat, quiet page with see-through pockets holding things. Every interactive surface (button, input, select, summary, dialog, banner, zoom frame) is a pocket: a translucent gradient, a hairline edge and a lit top edge. Nothing floats on shadows or blurs. The one loud voice is a warm card-sleeve yellow accent, used for the primary action, filter chips and counts.
 
-The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 12px page gutters, one bottom-anchored add button.
+The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 12px page gutters, one bottom-anchored add button on each screen that adds cards (the dashboard and the list).
 
 **Key Characteristics:**
 - Pocket treatment on all controls, flat page behind them.
@@ -181,7 +186,10 @@ Three radii: small 4px (thumbnails, tags), medium 10px (the pocket: buttons, inp
 - **Primary:** flat Sleeve Yellow fill and border, Ink on Yellow text, weight 500, no inset highlight. One per sheet/screen footer; in a row it takes the remaining width.
 - **Danger:** default pocket with Danger text.
 - **States:** active drops opacity to 0.8; disabled 0.5; focus-visible 2px Deep Amber outline, 2px offset.
-- **Add button:** primary, fixed to the bottom with 12px side margins; the single entry point for adding.
+- **Add button:** primary, fixed to the bottom with 12px side margins; the one entry point for adding on its screen. The dashboard and the list each have exactly one, the same component and sheet.
+
+### Stat tile
+A pocket button on the dashboard, in a two-column grid with 8px gaps, at least 48px high (80px). The label sits on top in muted label-size text, the number below it in the mono face at title size in Ink; both are readable text, not an icon. Never accent-filled (the accent stays on the one primary action and on chips). Tapping opens the list filtered to what the tile counts. The accessible name is "label, number".
 
 ### Chips
 Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 48px min height. A trailing close mark follows the label (see Do's and Don'ts). One chip per active filter, wrapping with 8px gaps. Tapping removes the filter.
@@ -205,7 +213,7 @@ Detail screen, top to bottom: the player as a large title (title size, weight 50
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.
 
 ### Navigation
-The detail and settings screens have no on-screen Back button: Android's back button and gesture return to the list. Forms keep Cancel and sheets keep Close.
+The dashboard is home: Android's back button closes the app from there. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to list, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.
@@ -225,7 +233,7 @@ Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb b
 - **Don't** add blur, backdrop-filter or drop shadows; the inset lit edge is the only box-shadow.
 - **Don't** add an in-app theme toggle.
 - **Don't** use yellow as small text on the light page.
-- **Don't** add a second add entry point or a centered modal where a sheet fits.
+- **Don't** add a second add button to a screen, or a centered modal where a sheet fits.
 
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`), a glyph icon; future surfaces should use a proper icon, not copy it.

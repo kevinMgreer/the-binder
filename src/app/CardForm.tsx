@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Card, CardSide, Suggestion } from "../domain/card";
+import { CONDITIONS, type Card, type CardSide, type Suggestion } from "../domain/card";
 import { findDuplicate } from "../domain/query";
 import { REQUIRED_FIELDS, validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
 import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
@@ -14,6 +14,8 @@ interface Draft {
   year: string;
   manufacturer: string;
   set: string;
+  subset: string;
+  insert: string;
   cardNumber: string;
   parallel: string;
   serial: string;
@@ -30,6 +32,10 @@ interface Draft {
   notes: string;
 }
 
+/** The list entry a stored condition equals ignoring case, else the stored value. */
+const listedCondition = (stored: string) =>
+  CONDITIONS.find((o) => o.toLowerCase() === stored.trim().toLowerCase()) ?? stored;
+
 function toDraft(c?: Card): Draft {
   return {
     player: c?.player ?? "",
@@ -37,6 +43,8 @@ function toDraft(c?: Card): Draft {
     year: c ? String(c.year) : "",
     manufacturer: c?.manufacturer ?? "",
     set: c?.set ?? "",
+    subset: c?.subset ?? "",
+    insert: c?.insert ?? "",
     cardNumber: c?.cardNumber ?? "",
     parallel: c?.parallel?.name ?? "",
     serial: c?.parallel?.serial?.toString() ?? "",
@@ -48,7 +56,7 @@ function toDraft(c?: Card): Draft {
     graded: c?.grading.kind === "graded",
     company: c?.grading.kind === "graded" ? c.grading.company : "",
     grade: c?.grading.kind === "graded" ? c.grading.grade : "",
-    condition: c?.grading.kind === "raw" ? c.grading.condition : "",
+    condition: c?.grading.kind === "raw" ? listedCondition(c.grading.condition) : "",
     quantity: String(c?.quantity ?? 1),
     notes: c?.notes ?? "",
   };
@@ -60,12 +68,15 @@ function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): C
   const now = new Date().toISOString();
   const hasParallel = d.parallel.trim() !== "" || d.serial !== "" || d.printRun !== "" || d.serialUnreadable;
   return {
+    ...existing,
     id: existing?.id ?? crypto.randomUUID(),
     player: d.player.trim(),
     team: d.team.trim(),
     year: d.year.trim() === "" ? Number.NaN : Number(d.year),
     manufacturer: d.manufacturer.trim(),
     set: d.set.trim(),
+    subset: d.subset.trim(),
+    insert: d.insert.trim(),
     cardNumber: d.cardNumber.trim(),
     parallel: hasParallel
       ? {
@@ -253,6 +264,8 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
       {text("year", "Year", "year", "number")}
       {text("manufacturer", "Manufacturer")}
       {text("set", "Set", "set")}
+      {text("subset", "Subset")}
+      {text("insert", "Insert")}
       {text("cardNumber", "Card number", "cardNumber")}
       {text("parallel", "Parallel")}
       {text("serial", "Serial", "serial", "number")}
@@ -268,7 +281,17 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
           {text("grade", "Grade", "grading")}
         </>
       ) : (
-        text("condition", "Condition")
+        <Field label="Condition">
+          <select id={fieldId("Condition")} value={draft.condition} onChange={(e) => edit("condition", e.target.value)}>
+            <option value="">Not set</option>
+            {draft.condition !== "" && !(CONDITIONS as readonly string[]).includes(draft.condition) && (
+              <option>{draft.condition}</option>
+            )}
+            {CONDITIONS.map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
+        </Field>
       )}
       {text("quantity", "Quantity", "quantity", "number")}
       <Field label="Notes">

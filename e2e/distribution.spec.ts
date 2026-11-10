@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any };
 
@@ -61,11 +62,11 @@ test("A failed check is silent on its own and reported on a manual check, and th
   await configure(page, "1.2.3", new Error("offline"));
   await startCheck(page);
   await expect(page.getByText(/update/i)).toHaveCount(0);
-  await expect(page.getByTestId("summary")).toBeVisible();
+  await openCollection(page);
 
   await openSettings(page);
   await page.getByRole("button", { name: "Check for updates" }).click();
   await expect(page.getByText("Could not check for updates")).toBeVisible();
   await page.reload();
-  await expect(page.getByTestId("summary")).toBeVisible();
+  await openCollection(page);
 });

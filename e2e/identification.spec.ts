@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any };
 
@@ -103,6 +104,7 @@ test("Claude is never called unless the user taps Identify with Claude", async (
   await field(page, "Set").fill("Series 1");
   await field(page, "Card number").fill("27");
   await page.getByRole("button", { name: "Save" }).click();
+  await openCollection(page);
   await expect(page.getByTestId("card-row")).toHaveCount(1);
   expect(await calls(page, "claude")).toBe(0);
 });
@@ -132,6 +134,7 @@ test("The user's own value wins over a suggestion, and the card records where it
   await field(page, "Player").fill("Ronald Acuna");
   await expect(hint(page, "player")).toHaveCount(0);
   await page.getByRole("button", { name: "Save" }).click();
+  await openCollection(page);
   await expect(page.getByTestId("card-row").first()).toContainText("Ronald Acuna");
   const source = await page.evaluate(async () => (await (window as unknown as Win).__ports.collection.list())[0].source);
   expect(source).toBe("claude");
@@ -142,6 +145,7 @@ test("Cards record on-device recognition or manual entry as their source", async
   await scanFront(page);
   await field(page, "Player").fill("Ronald Acuña Jr.");
   await page.getByRole("button", { name: "Save" }).click();
+  await openCollection(page);
   await expect(page.getByTestId("card-row")).toHaveCount(1);
 
   await page.getByRole("button", { name: "Add card" }).click();

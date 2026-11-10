@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any; __sync: any };
 type Seed = Record<string, unknown>;
@@ -16,6 +17,7 @@ async function seed(page: Page, cards: Seed[]) {
     await (window as unknown as Win).__ports.collection.putMany(list.map((o) => makeCard(o)));
   }, cards);
   await page.reload();
+  await openCollection(page);
 }
 
 async function showUpdateBanner(page: Page) {
@@ -152,6 +154,7 @@ for (const size of PHONES) {
         await ports.collection.putMany(cards.slice(0, 1).map((c: any) => ({ ...c, quantity: 1 })));
       });
       await page.reload();
+      await openCollection(page);
       await expect(page.getByTestId("summary")).toHaveText("1 card, 1 distinct");
     });
 
@@ -261,6 +264,7 @@ test.describe("destructive actions stay apart", () => {
       }
     });
     await page.reload();
+    await openCollection(page);
     await page.getByTestId("card-row").first().click();
     const thumb = page.getByRole("button", { name: "View front photo" });
     await expect(thumb).toBeVisible();
@@ -341,6 +345,7 @@ test.describe("polish after the second phone review", () => {
   ] as const) {
     test(`${name} sheet sits above a bottom system bar`, async ({ page }) => {
       await page.goto("/");
+      await openCollection(page);
       await page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
       await open(page);
       const button = page.getByRole("dialog").getByRole("button", { name: last, exact: true });
@@ -529,6 +534,7 @@ test.describe("States at phone size", () => {
           await ports.photos.cacheThumb(card.id, "front", await canvas.convertToBlob({ type: "image/webp" }));
         });
         await page.reload();
+        await openCollection(page);
         await page.context().setOffline(true);
         await page.getByTestId("card-row").first().click();
         await page.getByRole("button", { name: "View front photo" }).click();
@@ -546,7 +552,7 @@ test.describe("States at phone size", () => {
           document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
           document.documentElement.style.setProperty("--safe-area-inset-bottom", "24px");
         });
-        await expect(page.getByTestId("summary")).toBeVisible();
+        await openCollection(page);
         const target = await show(page);
         await expect(target).toBeVisible();
         expect(await legible(target)).toBeGreaterThanOrEqual(4.5);
@@ -560,4 +566,36 @@ test.describe("States at phone size", () => {
       });
     }
   }
+
+  for (const scheme of ["dark", "light"] as const) {
+    test(`Both themes: dashboard tiles are legible in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await expect(page.getByTestId("tile")).toHaveCount(7);
+      for (const tile of await page.getByTestId("tile").all()) {
+        expect(await legible(tile.locator(".tile-label"))).toBeGreaterThanOrEqual(4.5);
+        expect(await legible(tile.locator(".tile-value"))).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(await legible(page.getByRole("button", { name: "Browse collection" }))).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+
+  test("Tiles at phone size: seven tiles and Browse collection are 48 dp, in view, clear of the system bars", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => {
+      document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
+      document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
+    });
+    await expect(page.getByTestId("tile")).toHaveCount(7);
+    await expectTouchable(page, "dashboard");
+    for (const el of [...(await page.getByTestId("tile").all()), page.getByRole("button", { name: "Browse collection" })]) {
+      await expect(el).toBeInViewport({ ratio: 1 });
+    }
+    const add = page.getByRole("button", { name: "Add card", exact: true });
+    expect(await bottom(add)).toBeLessThanOrEqual(800 - 48);
+    expect((await page.getByTestId("tile").first().boundingBox())!.y).toBeGreaterThanOrEqual(24);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+    // The fixed Add card button must not cover Browse collection.
+    expect((await page.getByRole("button", { name: "Browse collection" }).boundingBox())!.y + 48).toBeLessThanOrEqual((await add.boundingBox())!.y + 1);
+  });
 });

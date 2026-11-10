@@ -29,6 +29,8 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
   const facts: Array<[string, ReactNode]> = [
     ["Manufacturer", card.manufacturer],
+    ["Subset", card.subset],
+    ["Insert", card.insert],
     ["Team", card.team],
     ["Parallel", card.parallel?.name],
     ["Condition", gradeLabel(card.grading)],
