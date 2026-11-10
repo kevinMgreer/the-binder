@@ -51,3 +51,5 @@
 {"v":1,"ts":"2026-11-10T14:49:26.500Z","from":"a1a8541a","id":"T-18","set":{"status":"done","note":"Merged in PR #11 (3.9-3.13 incl. back-button removal, sync status race fix)."}}
 {"v":1,"ts":"2026-11-10T14:49:26.620Z","from":"a1a8541a","id":"T-19","set":{"status":"done","note":"Proposal merged in PR #10."}}
 {"v":1,"ts":"2026-11-10T14:49:28.249Z","from":"a1a8541a","id":"T-9","set":{"note":"Redesign merged (PRs #7, #8, #11). Left: 4.1 remaining phone screens, 4.2 owner review of both themes, 5.2 archive redesign-ui-binder-pockets."}}
+{"v":1,"ts":"2026-11-10T15:42:54.648Z","from":"a1a8541a","id":"T-21","set":{"note":"PR #12 merged (groups 1-6). Left: 7.1-7.2 phone checks (dashboard tiles vs list, picklist, subset/insert, back), 7.3 owner review, 7.4 archive; update every device first."}}
+{"v":1,"ts":"2026-11-10T15:42:57.607Z","from":"a1a8541a","id":"T-22","set":{"title":"refine-navigation-and-add-flow: build (groups 1-6; phone checks last)","status":"open","area":"the-binder","size":"small"}}
