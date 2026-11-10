@@ -1,3 +1,5 @@
+Unticked phone checks (4.1) move to desk todo T-24.
+
 ## 1. Tokens and guard tests
 
 - [x] 1.1 Write the failing tests first: no colour literals (hex, rgb, hsl) in `src/**` styles or components outside `src/app/tokens.css`; both themes define every colour role; every pair listed in design D8 meets 4.5 to 1 (3 to 1 for large text and icons) in both themes with the pocket blended over the page; a Playwright test sets `colorScheme` dark then light, then flips it with `page.emulateMedia` while open, and the page background token differs each time; a test overrides `--color-accent` on the root and the primary button, an active chip and a serial tag change with it; verify they fail before the token file exists
@@ -37,9 +39,9 @@
 ## 4. On the phone
 
 - [ ] 4.1 Install the debug build, switch Android between dark and light with `adb shell cmd uimode night yes` and `no`, and screenshot the list, detail, form, scan and settings screens in each; verify both themes render with legible text and the pocket look, nothing sits under the system bars, and there is no white flash at launch in dark mode
-- [ ] 4.2 Owner review on the phone of both themes and the serial tag; verify the owner accepts or lists changes, and apply them in one batch
+- [x] 4.2 Owner review on the phone of both themes and the serial tag; verify the owner accepts or lists changes, and apply them in one batch (owner accepted 2026-11-10)
 
 ## 5. Finish
 
 - [x] 5.1 Run the impeccable finish review on the built screens, fix its material findings in one batch, and write `DESIGN.md` with the documenter; verify the reviewer's disposition is ship and `DESIGN.md` records the tokens
-- [ ] 5.2 Run `openspec validate redesign-ui-binder-pockets --strict`, then archive the change with `/opsx:archive` once everything is merged; verify `app-theme` and `collection-list` appear under `openspec/specs/`
+- [x] 5.2 Run `openspec validate redesign-ui-binder-pockets --strict`, then archive the change with `/opsx:archive` once everything is merged; verify `app-theme` and `collection-list` appear under `openspec/specs/`

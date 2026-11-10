@@ -1,3 +1,5 @@
+Unticked phone checks (7.1, 7.2) move to desk todo T-24.
+
 ## 1. Card fields and the data file
 
 - [x] 1.1 Write the failing tests first: in `src/domain/schema.test.ts`, a card without `subset` and `insert` is valid and one with them is valid; in `src/sync/merge.test.ts`, a remote card without the fields merged with a later local copy holding subset "Future Stars" keeps it ("Merge with a card from an older install"); in `src/sync/engine.test.ts`, a version 1 file whose cards lack the fields and equal the local cards syncs, and the file is written once with `schemaVersion: 2` and deep-equal cards, and a second sync writes nothing ("Version 1 file from an earlier install"); verify the subset and version assertions fail
@@ -40,5 +42,5 @@
 
 - [ ] 7.1 Install the debug build over an install that already has cards from before this change; verify the existing cards show, a card edited there gains an insert and syncs, and the collection file in Drive reads `"schemaVersion": 2` with the old cards intact after the first sync ("Version 1 file from an earlier install", "Old local card edited after the update")
 - [ ] 7.2 On the phone, with `adb shell cmd uimode night yes` and `no`, screenshot the dashboard in both themes; verify tiles are legible, at least 48 dp, nothing sits under the system bars, back on the list returns to the dashboard, back on Settings opened from the dashboard returns to it, and back on the dashboard closes the app
-- [ ] 7.3 Owner review on the phone of the tile set, the Topps Gold and Braves counts against the owner's own cards, and the condition list; verify the owner accepts or lists changes (including the design open questions), and apply them in one batch
-- [ ] 7.4 Archive with `/opsx:archive` once every task here is merged (no other change needs archiving first; the card-catalog, drive-storage and collection-list deltas are ADDED only); verify `dashboard` appears under `openspec/specs/`, `app-shell` carries the new back rules, and `card-catalog`, `drive-storage` and `collection-list` hold the added requirements
+- [x] 7.3 Owner review on the phone of the tile set, the Topps Gold and Braves counts against the owner's own cards, and the condition list; verify the owner accepts or lists changes (including the design open questions), and apply them in one batch (owner accepted 2026-11-10)
+- [x] 7.4 Archive with `/opsx:archive` once every task here is merged (no other change needs archiving first; the card-catalog, drive-storage and collection-list deltas are ADDED only); verify `dashboard` appears under `openspec/specs/`, `app-shell` carries the new back rules, and `card-catalog`, `drive-storage` and `collection-list` hold the added requirements
