@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Card, CardSide, Suggestion } from "../domain/card";
 import { findDuplicate } from "../domain/query";
-import { validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
+import { REQUIRED_FIELDS, validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
 import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
 import { Field, fieldId } from "./Field";
 import { PhotoSlot } from "./PhotoSlot";
@@ -97,10 +97,21 @@ interface Props {
   onCancel: () => void;
 }
 
+// Top-to-bottom order of the form, so "first problem" is the one nearest the top.
+const FORM_ORDER: FieldKey[] = ["player", "year", "set", "cardNumber", "serial", "printRun", "grading", "quantity"];
+
+function labelFor(key: FieldKey, draft: Draft): string {
+  if (key === "cardNumber") return "Card number";
+  if (key === "printRun") return "Print run";
+  if (key === "grading") return draft.company.trim() === "" ? "Grading company" : "Grade";
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
 export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => toDraft(card));
   const [photos, setPhotos] = useState<Photos>(initialPhotos ?? {});
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [blocked, setBlocked] = useState<string[]>([]);
   const [duplicate, setDuplicate] = useState<{ existing: Card; added: Card }>();
 
   const { ocr, claude, photos: photoStore } = usePorts();
@@ -186,13 +197,15 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
 
   const text = (key: keyof Draft & string, label: string, error?: FieldKey, type = "text") => {
     const message = error && errors[error];
+    const required = (REQUIRED_FIELDS as readonly string[]).includes(key);
     return (
-      <Field label={label} error={message} hint={hintFor(key)}>
+      <Field label={label} error={message} hint={hintFor(key)} required={required}>
         <input
           id={fieldId(label)}
           type={type}
           value={draft[key] as string}
           onChange={(e) => edit(key, e.target.value)}
+          aria-required={required || undefined}
           aria-invalid={message ? true : undefined}
           aria-describedby={message ? `${fieldId(label)}-error` : undefined}
           disabled={key === "serial" && draft.serialUnreadable}
@@ -213,6 +226,11 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
     const next = toCard(draft, card, origin ?? card?.source ?? "manual");
     const found = validateCard(next);
     setErrors(found);
+    const failed = FORM_ORDER.filter((k) => found[k]);
+    const labels = failed.map((k) => labelFor(k, draft));
+    setBlocked(labels);
+    // Focusing scrolls the first problem into view; on a long form the field itself is far from Save.
+    if (labels.length > 0) document.getElementById(fieldId(labels[0]))?.focus();
     if (Object.keys(found).length > 0) return;
     const existing = card ? undefined : findDuplicate(cards, next);
     if (existing) setDuplicate({ existing, added: next });
@@ -257,6 +275,11 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
         <textarea id={fieldId("Notes")} value={draft.notes} onChange={(e) => set("notes", e.target.value)} />
       </Field>
       {errors.card && <p role="alert">{errors.card}</p>}
+      {blocked.length > 0 && (
+        <p role="alert" data-testid="save-blocked">
+          Can't save yet. Check: {blocked.join(", ")}.
+        </p>
+      )}
       <div className="actions">
         <button type="submit">Save</button>
         <button type="button" onClick={onCancel}>

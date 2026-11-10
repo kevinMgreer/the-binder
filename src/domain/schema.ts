@@ -43,6 +43,9 @@ export const cardSchema = z
     }
   });
 
+/** Fields every card needs; the form marks these, and card-form-guidance.test.tsx checks the list against the schema. */
+export const REQUIRED_FIELDS = ["player", "year", "set", "cardNumber"] as const;
+
 const fieldKeys = ["player", "year", "set", "cardNumber", "serial", "printRun", "grading", "quantity"] as const;
 export type FieldKey = (typeof fieldKeys)[number] | "card";
 export type FieldErrors = Partial<Record<FieldKey, string>>;
