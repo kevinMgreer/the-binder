@@ -1,9 +1,9 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { flushSync } from "react-dom";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type Filters } from "../domain/query";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
+import { Sheet } from "./Sheet";
 import { SyncIndicator } from "./SyncIndicator";
 import { UpdateLink } from "./UpdateLink";
 import type { UpdateInfo } from "./useUpdates";
@@ -17,11 +17,19 @@ interface Props {
   onOpen: (card: Card) => void;
 }
 
+const FLAG_LABELS = {
+  serialNumbered: "Serial-numbered",
+  rookie: "Rookie",
+  autograph: "Autograph",
+  relic: "Relic",
+  graded: "Graded",
+} as const;
+
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
 export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onOpen }: Props) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [sheet, setSheet] = useState<"add" | "filter" | null>(null);
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters)), [cards, filters]);
@@ -60,21 +68,21 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
   );
 
   const f = filters;
-  const groups = [
-    { label: "Year", first: "Year from", active: f.yearFrom !== null || f.yearTo !== null },
-    { label: "Team", first: "Team", active: f.team !== "" },
-    { label: "Set", first: "Set", active: f.set !== "" },
-    { label: "Parallel", first: "Parallel", active: f.parallel !== "" },
-    { label: "Serial", first: "Print run", active: f.printRun !== null || f.serialNumbered },
-    { label: "Traits", first: "Rookie", active: f.rookie || f.autograph || f.relic },
-    { label: "Graded", first: "Graded", active: f.graded },
+  const applied: { name: string; text: string; clear: Partial<Filters> }[] = [
+    ...(f.yearFrom !== null || f.yearTo !== null
+      ? [{ name: "Year", text: `Year ${f.yearFrom ?? ""}–${f.yearTo ?? ""}`, clear: { yearFrom: null, yearTo: null } }]
+      : []),
+    ...(f.team ? [{ name: "Team", text: f.team, clear: { team: "" } }] : []),
+    ...(f.set ? [{ name: "Set", text: f.set, clear: { set: "" } }] : []),
+    ...(f.parallel ? [{ name: "Parallel", text: f.parallel, clear: { parallel: "" } }] : []),
+    ...(f.printRun !== null ? [{ name: "Print run", text: `Print run ${f.printRun}`, clear: { printRun: null } }] : []),
+    ...(["serialNumbered", "rookie", "autograph", "relic", "graded"] as const)
+      .filter((key) => f[key])
+      .map((key) => ({ name: FLAG_LABELS[key], text: FLAG_LABELS[key], clear: { [key]: false } })),
   ];
-
-  // The panel must be open before its field can take focus.
-  const openPanel = (first: string) => {
-    flushSync(() => setPanelOpen(true));
-    document.getElementById(fieldId(first))?.focus();
-  };
+  const clearAll = () => setFilters((cur) => ({ ...emptyFilters, search: cur.search }));
+  const closeSheet = useCallback(() => setSheet(null), []);
+  const countLabel = `${shown.length} ${shown.length === 1 ? "card" : "cards"}`;
 
   return (
     <section className="collection">
@@ -85,49 +93,36 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
         </div>
         <div className="meta">
           <p data-testid="summary">
-            {total} cards, {distinct} distinct
+            {total} {total === 1 ? "card" : "cards"}, {distinct} distinct
           </p>
           <SyncIndicator />
         </div>
-        <div className="actions">
-          <button className="primary" onClick={() => onScan("camera")}>
-            Scan card
-          </button>
-          <button onClick={onAdd}>Add card</button>
-          <button onClick={() => onScan("pick")}>Pick from photos</button>
-        </div>
       </header>
       {update && <UpdateLink update={update} />}
-      <Field label="Search">
-        <input
-          id={fieldId("Search")}
-          type="search"
-          placeholder="Search"
-          value={filters.search}
-          onChange={(e) => set("search", e.target.value)}
-        />
-      </Field>
-      <div className="chips">
-        {groups.map((g) => (
-          <button key={g.label} type="button" className="chip" aria-pressed={g.active} onClick={() => openPanel(g.first)}>
-            {g.label}
-          </button>
-        ))}
+      <div className="search-row">
+        <Field label="Search">
+          <input
+            id={fieldId("Search")}
+            type="search"
+            placeholder="Search"
+            value={filters.search}
+            onChange={(e) => set("search", e.target.value)}
+          />
+        </Field>
+        <button onClick={() => setSheet("filter")}>
+          Filter
+          {applied.length > 0 && <span className="badge">{applied.length}</span>}
+        </button>
       </div>
-      <details open={panelOpen} onToggle={(e) => setPanelOpen(e.currentTarget.open)}>
-        <summary>Filters</summary>
-        {number("yearFrom", "Year from")}
-        {number("yearTo", "Year to")}
-        {select("team", "Team", teams)}
-        {select("set", "Set", sets)}
-        {select("parallel", "Parallel", parallels)}
-        {number("printRun", "Print run")}
-        {check("serialNumbered", "Serial-numbered")}
-        {check("rookie", "Rookie")}
-        {check("autograph", "Autograph")}
-        {check("relic", "Relic")}
-        {check("graded", "Graded")}
-      </details>
+      {applied.length > 0 && (
+        <div className="chips">
+          {applied.map((a) => (
+            <button key={a.name} className="chip" aria-label={`Remove ${a.name} filter`} onClick={() => setFilters((cur) => ({ ...cur, ...a.clear }))}>
+              {a.text}
+            </button>
+          ))}
+        </div>
+      )}
       <p className="shown" data-testid="shown">
         Showing {shown.length}
       </p>
@@ -141,6 +136,60 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
         <p className="empty" data-testid="no-match">
           No cards match. Clear the search or a filter.
         </p>
+      )}
+      <button className="primary add-button" onClick={() => setSheet("add")}>
+        Add card
+      </button>
+      {sheet === "add" && (
+        <Sheet label="Add a card" onClose={closeSheet}>
+          <button className="primary" onClick={() => onScan("camera")}>
+            Scan card
+          </button>
+          <button onClick={() => onScan("pick")}>Pick from photos</button>
+          <button onClick={onAdd}>Enter by hand</button>
+        </Sheet>
+      )}
+      {sheet === "filter" && (
+        <Sheet
+          label="Filters"
+          full
+          onClose={closeSheet}
+          foot={
+            <>
+              <button className="primary" onClick={closeSheet}>
+                Show {countLabel}
+              </button>
+              <button onClick={clearAll}>Clear all</button>
+            </>
+          }
+        >
+          <div className="group">
+            <h3>Year</h3>
+            {number("yearFrom", "Year from")}
+            {number("yearTo", "Year to")}
+          </div>
+          <div className="group">
+            <h3>Card</h3>
+            {select("team", "Team", teams)}
+            {select("set", "Set", sets)}
+            {select("parallel", "Parallel", parallels)}
+          </div>
+          <div className="group">
+            <h3>Serial number</h3>
+            {number("printRun", "Print run")}
+            {check("serialNumbered", "Serial-numbered")}
+          </div>
+          <div className="group">
+            <h3>Traits</h3>
+            {check("rookie", "Rookie")}
+            {check("autograph", "Autograph")}
+            {check("relic", "Relic")}
+          </div>
+          <div className="group">
+            <h3>Grade</h3>
+            {check("graded", "Graded")}
+          </div>
+        </Sheet>
       )}
     </section>
   );

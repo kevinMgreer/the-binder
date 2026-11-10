@@ -20,9 +20,9 @@
 
 ## 3b. Revisions after the first phone review
 
-- [ ] 3.6 Write the failing e2e tests first, then rebuild the list header per D9 and the filters per D7: one Add card button opening a sheet with Scan card, Pick from photos and Enter by hand; one Filter button with a count badge opening a sheet with the existing labelled fields, Show N cards and Clear all; removable chips only for applied filters; at least three rows visible at 360 by 800; update the existing specs that click the old buttons or the old panel; verify the full Playwright suite passes ("One add action", "First screen", "Filter applied", "Remove a filter", "Nothing applied")
-- [ ] 3.7 Write the failing e2e test first, then make the detail photos thumbnails per D10 that open the existing photo view; verify the Edit and Delete buttons are visible without scrolling past the photos at 360 by 800 on a card with two photos, and the existing photo tests pass
-- [ ] 3.8 Fix the count wording ("1 card", "N cards") in the header; verify an e2e assertion for one card and several
+- [x] 3.6 Write the failing e2e tests first, then rebuild the list header per D9 and the filters per D7: one Add card button opening a sheet with Scan card, Pick from photos and Enter by hand; one Filter button with a count badge opening a sheet with the existing labelled fields, Show N cards and Clear all; removable chips only for applied filters; at least three rows visible at 360 by 800; update the existing specs that click the old buttons or the old panel; verify the full Playwright suite passes ("One add action", "First screen", "Filter applied", "Remove a filter", "Nothing applied")
+- [x] 3.7 Write the failing e2e test first, then make the detail photos thumbnails per D10 that open the existing photo view; verify the Edit and Delete buttons are visible without scrolling past the photos at 360 by 800 on a card with two photos, and the existing photo tests pass
+- [x] 3.8 Fix the count wording ("1 card", "N cards") in the header; verify an e2e assertion for one card and several
 
 ## 4. On the phone
 

@@ -277,7 +277,9 @@ const CONTROLS = "button, a[href], input:not([type=checkbox]), select, textarea,
 
 async function controls(page: Page) {
   return page.evaluate((selector) => {
-    return [...document.querySelectorAll<HTMLElement>(selector)]
+    // An open sheet covers the screen behind it, so only its own controls count.
+    const scope = document.querySelector("[aria-modal=true]") ?? document;
+    return [...scope.querySelectorAll<HTMLElement>(selector)]
       .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden")
       .map((el) => {
         const r = el.getBoundingClientRect();
