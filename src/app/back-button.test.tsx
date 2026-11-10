@@ -63,7 +63,7 @@ async function renderSignedIn(cards = [makeCard()]) {
 }
 
 const onDashboard = () => screen.findByRole("heading", { name: "Dashboard" });
-const onList = () => screen.findByTestId("summary");
+const onList = () => screen.findByTestId("shown");
 const openList = async () => {
   await onDashboard();
   tap("Cards");
@@ -165,6 +165,24 @@ test("Back from card detail shows the list with Cards active", async () => {
   await pressBack();
   await onList();
   expect(bar().getByRole("button", { name: "Cards" }).getAttribute("aria-current")).toBe("page");
+});
+
+test("back from a card opened on the dashboard shows the dashboard", async () => {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  fireEvent.click(screen.getByRole("button", { name: /^Hank Aaron, / }));
+  expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
+  await pressBack();
+  await onDashboard();
+  expect(native.exitApp).not.toHaveBeenCalled();
+});
+
+test("delete from a card opened on the dashboard shows the dashboard", async () => {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  fireEvent.click(screen.getByRole("button", { name: /^Hank Aaron, / }));
+  fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+  fireEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+  await onDashboard();
+  expect(screen.queryByRole("button", { name: /^Hank Aaron, / })).toBeNull();
 });
 
 test("back from a card's detail view shows the list, and the detail view has no Back button", async () => {
