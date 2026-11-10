@@ -62,10 +62,11 @@ async function renderSignedIn(cards = [makeCard()]) {
   await onDashboard();
 }
 
-const onDashboard = () => screen.findByRole("button", { name: "Browse collection" });
+const onDashboard = () => screen.findByRole("heading", { name: "Dashboard" });
 const onList = () => screen.findByTestId("summary");
 const openList = async () => {
-  fireEvent.click(await onDashboard());
+  await onDashboard();
+  tap("Cards");
   await onList();
 };
 const openAddForm = () => {
@@ -74,6 +75,17 @@ const openAddForm = () => {
 };
 const bar = () => within(screen.getByRole("navigation", { name: "Main" }));
 const tap = (name: "Dashboard" | "Cards") => fireEvent.click(bar().getByRole("button", { name }));
+
+test("the dashboard has no Browse collection button; a tile and the Cards tab both reach the list", async () => {
+  await renderSignedIn();
+  expect(screen.queryByRole("button", { name: "Browse collection" })).toBeNull();
+  tap("Cards");
+  await onList();
+  tap("Dashboard");
+  await onDashboard();
+  fireEvent.click(screen.getAllByTestId("tile")[0]);
+  await onList();
+});
 
 test("back from the dashboard closes the app", async () => {
   await renderSignedIn();

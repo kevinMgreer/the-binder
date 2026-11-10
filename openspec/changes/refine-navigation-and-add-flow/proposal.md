@@ -5,14 +5,14 @@ After using the dashboard build on the phone, the owner found that once he leave
 ## What Changes
 
 - A bottom navigation bar with two destinations, Dashboard and Cards, on the two top-level screens (dashboard and collection list). Each item has an icon and a text label at least 48 dp; the active one is marked by an indicator shape, the accent colour and `aria-current`, never colour alone. It clears the gesture or button bar and uses design tokens only. It is hidden on card detail, the add and edit forms and Settings; an open sheet covers it with its scrim.
-- Back semantics stay as shipped and are now stated for the bar: Cards → back → Dashboard; Dashboard → back → the app closes, however the user reached it. Switching to Cards keeps the list's last search and filters; Browse collection and the stat tiles keep their behaviour (they clear or set the filters).
+- Back semantics stay as shipped and are now stated for the bar: Cards → back → Dashboard; Dashboard → back → the app closes, however the user reached it. Switching to Cards keeps the list's last search and filters; the stat tiles set the filters. The dashboard's Browse collection button is removed: Cards covers it.
 - The in-app "The Binder" heading goes from the signed-in screens (Android apps rarely repeat their launcher name): the header of each top-level screen is titled by the screen, "Dashboard" or "Cards", with the list's count and sync state beneath its title. The app name stays only on the signed-out sign-in screen.
 - Settings becomes a gear icon button (accessible name "Settings", 48 dp) at the top right of the header on the dashboard and the list, replacing the text button.
 - **BREAKING (UI)**: Add card opens the card form directly. The Add sheet is removed. The form's photo section offers, for front and back, Scan (rear-camera scanner with crop, falling back to the system camera, as today) and Pick from photos; manual entry is the form itself. After a photo is taken the user is on the same form with the photo attached and every field kept. Cancel discards the new card and its photos. Identification is unchanged: on-device recognition runs when a photo is attached in the form, Claude only when the user taps Identify with Claude.
 - The Add card button stays one per top-level screen and sits just above the bottom navigation bar. The list's first screen at 360 by 800 still shows at least three full card rows above it.
 - `DESIGN.md` gains a Bottom navigation component and an icon button entry, and its add-button, sheet and navigation lines are updated.
 
-Out of scope: more destinations (Settings stays a header action, not a tab), removing Browse collection from the dashboard, a navigation rail or tablet layout, the nav bar on card detail, restoring the form after Android kills the app while the camera is open, animations between tabs, a new icon dependency, and any change to sync, storage or identification logic.
+Out of scope: more destinations (Settings stays a header action, not a tab), a navigation rail or tablet layout, the nav bar on card detail, restoring the form after Android kills the app while the camera is open, animations between tabs, a new icon dependency, and any change to sync, storage or identification logic.
 
 ## Capabilities
 

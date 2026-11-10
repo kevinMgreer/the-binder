@@ -33,19 +33,19 @@ test("Large collection: the dashboard shows 5,000 cards within 1 s with 4x CPU t
   expect(ready).toBeLessThan(1000);
 });
 
-test("Large collection: the list shows its first rows within 1 s of tapping Browse collection", async ({ page, context }) => {
+test("Large collection: the list shows its first rows within 1 s of tapping the Cards tab", async ({ page, context }) => {
   await throttledReload(page, context);
   await expect(cardsTile(page)).toHaveAttribute("aria-label", /^Cards, 5\D?000$/);
   await page.evaluate(() =>
     document.addEventListener(
       "click",
       (e) => {
-        if ((e.target as Element).closest("button")?.textContent === "Browse collection") performance.mark("browse-tap");
+        if ((e.target as Element).closest("nav button")?.textContent === "Cards") performance.mark("browse-tap");
       },
       true,
     ),
   );
-  await page.getByRole("button", { name: "Browse collection" }).click();
+  await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Cards", exact: true }).click();
   await expect(rows(page).first()).toBeVisible();
   const ms = await page.evaluate(
     () => performance.getEntriesByName("collection-first-render")[0].startTime - performance.getEntriesByName("browse-tap")[0].startTime,

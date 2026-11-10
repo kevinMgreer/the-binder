@@ -14,7 +14,6 @@ Specs touched: `app-shell` and `card-scanner` are in `openspec/specs/`; `collect
 **Non-Goals:**
 - A router or history stack (the `view` state plus `from` covers every path).
 - Restoring the form after Android kills the app while the camera or scanner is open.
-- Removing Browse collection (it differs from Cards: it clears the filters).
 
 ## Decisions
 
@@ -36,7 +35,7 @@ Specs touched: `app-shell` and `card-scanner` are in `openspec/specs/`; `collect
 
 **D8. Layout: Add card sits 8 dp above the bar, the scroller ends 8 dp above Add card.** `.add-button` bottom becomes `inset + bar height + space-2`; `.list-scroller` reserves `target-min + bar height + space-2 + space-2` beneath it (Add card, bar, the gap under Add card, the gap above it), and the dashboard's scroll end reserves the same. Rows are then measured against the scroller's bottom, which is 8 dp above Add card. Budget at 360 by 800 with the update banner, a 24 dp status bar and a 48 dp bottom inset: top inset 24, header and banner about 170, search row 56 plus 8 gap, "Showing N" line 20, three rows 300, gap 8, Add card 48, gap 8, bar 64, bottom inset 48: about 754 of 800, so three rows hold with about 46 dp spare. The header is not shorter after D3a: "Cards" replaces "The Binder" on the same title row, whose height is set by the 48 dp gear just as it was by the 48 dp text Settings button, so the title and gear change reclaim width, not height, and the budget above already counts the header as it is. If the check needs room, merging the count and sync line into the title row (about 28 dp) is the next lever after the 56 dp bar. If the e2e check fails, the bar drops to 56 dp before anything else changes. $0: CSS only.
 
-**D9. Performance.** The bar is static markup; switching tabs remounts `Dashboard`, which recomputes the tiles once (one pass, measured under 1 s at 5,000 cards by the existing perf test), and remounts the virtualised list. No new data work, no extra re-render on sync state. The existing perf tests stay as they are, with their Browse collection entry.
+**D9. Performance.** The bar is static markup; switching tabs remounts `Dashboard`, which recomputes the tiles once (one pass, measured under 1 s at 5,000 cards by the existing perf test), and remounts the virtualised list. No new data work, no extra re-render on sync state. The list perf test times from the Cards tab tap (the Browse collection button is gone); the 1 s budget stays.
 
 ## Risks / Trade-offs
 

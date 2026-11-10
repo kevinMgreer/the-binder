@@ -93,7 +93,7 @@ test("Cancel discards: a scanned front stores nothing and returns to the dashboa
   await page.getByRole("button", { name: "Scan front" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
   await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByRole("button", { name: "Browse collection" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   const pending = await page.evaluate(async () => (await (window as unknown as Win).__ports.photos.pendingUploads()).length);
   expect(pending).toBe(0);
   await openCollection(page);

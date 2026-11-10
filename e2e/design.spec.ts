@@ -582,11 +582,10 @@ test.describe("States at phone size", () => {
         expect(await legible(tile.locator(".tile-label"))).toBeGreaterThanOrEqual(4.5);
         expect(await legible(tile.locator(".tile-value"))).toBeGreaterThanOrEqual(4.5);
       }
-      expect(await legible(page.getByRole("button", { name: "Browse collection" }))).toBeGreaterThanOrEqual(4.5);
     });
   }
 
-  test("Tiles at phone size: seven tiles and Browse collection are 48 dp, in view, clear of the system bars", async ({ page }) => {
+  test("Tiles at phone size: seven tiles are 48 dp, in view, clear of the system bars", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
       document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
@@ -594,15 +593,14 @@ test.describe("States at phone size", () => {
     });
     await expect(page.getByTestId("tile")).toHaveCount(7);
     await expectTouchable(page, "dashboard");
-    for (const el of [...(await page.getByTestId("tile").all()), page.getByRole("button", { name: "Browse collection" })]) {
+    for (const el of await page.getByTestId("tile").all()) {
       await expect(el).toBeInViewport({ ratio: 1 });
     }
     const add = page.getByRole("button", { name: "Add card", exact: true });
     expect(await bottom(add)).toBeLessThanOrEqual(800 - 48);
     expect((await page.getByTestId("tile").first().boundingBox())!.y).toBeGreaterThanOrEqual(24);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
-    // The fixed Add card button must not cover Browse collection.
-    expect((await page.getByRole("button", { name: "Browse collection" }).boundingBox())!.y + 48).toBeLessThanOrEqual((await add.boundingBox())!.y + 1);
+    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual((await add.boundingBox())!.y + 1);
   });
 });
 
@@ -713,7 +711,7 @@ test.describe("Bottom navigation and header", () => {
     await page.getByRole("button", { name: "Autos, 1", exact: true }).click();
     await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
     await item(page, "Dashboard").click();
-    await expect(page.getByRole("button", { name: "Browse collection" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
     await item(page, "Cards").click();
     await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
   });
@@ -737,7 +735,6 @@ test.describe("Bottom navigation and header", () => {
     await insets(page);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
-    expect((await page.getByRole("button", { name: "Browse collection" }).boundingBox())!.y + 48).toBeLessThanOrEqual(add.y + 1);
     expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual(add.y);
   });
 });
