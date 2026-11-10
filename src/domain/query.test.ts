@@ -34,6 +34,35 @@ test("filters combine, and print run matches unreadable serials", () => {
   expect(applyFilters([unreadable, other], { ...emptyFilters, serialNumbered: true, yearFrom: 2025 })).toEqual([]);
 });
 
+test("search finds a card by subset and by insert", () => {
+  const a = makeCard({ subset: "Future Stars" });
+  const b = makeCard({ insert: "Future Stars" });
+  const c = makeCard();
+  expect(applyFilters([a, b, c], { ...emptyFilters, search: "future stars" })).toEqual([a, b]);
+});
+
+test("team filter ignores case and surrounding spaces", () => {
+  const a = makeCard({ team: "atlanta braves" });
+  const b = makeCard({ team: " Atlanta Braves " });
+  const c = makeCard({ team: "Boston Red Sox" });
+  expect(applyFilters([a, b, c], { ...emptyFilters, team: "Atlanta Braves" })).toEqual([a, b]);
+});
+
+test("manufacturer and parallel filters are exact after normalizing", () => {
+  const gold = makeCard({ manufacturer: "topps", parallel: { name: "gold", serial: null, serialLegible: true, printRun: null } });
+  const refractor = makeCard({ manufacturer: "Topps", parallel: { name: "Gold Refractor", serial: null, serialLegible: true, printRun: null } });
+  const bowman = makeCard({ manufacturer: "Bowman", parallel: { name: "Gold", serial: null, serialLegible: true, printRun: null } });
+  expect(applyFilters([gold, refractor, bowman], { ...emptyFilters, manufacturer: "Topps", parallel: "Gold" })).toEqual([gold]);
+});
+
+test("insert filter matches only that insert", () => {
+  const a = makeCard({ insert: "Stars of MLB" });
+  const b = makeCard({ insert: "Other" });
+  const c = makeCard();
+  expect(applyFilters([a, b, c], { ...emptyFilters, insert: "Stars of MLB" })).toEqual([a]);
+  expect(applyFilters([a, b, c], { ...emptyFilters, subset: "Stars of MLB" })).toEqual([]);
+});
+
 test("duplicate match uses player, year, set, number, parallel and grade, and ignores tombstones", () => {
   const existing = makeCard();
   expect(findDuplicate([existing], makeCard({ player: "ronald acuna jr." }))).toBe(existing);
