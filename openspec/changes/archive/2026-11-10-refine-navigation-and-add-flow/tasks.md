@@ -1,3 +1,5 @@
+Archived with phone checks still pending; tracked in desk todo T-24.
+
 Unticked phone checks (6.1, 6.2, 6.3) move to desk todo T-24.
 
 ## 1. Spec housekeeping
