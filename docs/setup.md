@@ -30,7 +30,7 @@ keytool -genkeypair -v -keystore release.jks -alias thebinder -keyalg RSA -keysi
 No billing account is needed or wanted; do not add one.
 
 1. Create a project at https://console.cloud.google.com and **enable the Google Drive API**.
-2. **OAuth consent screen**: user type External. Scopes: `.../auth/drive.file`, `openid`, `email` only. Then **publish the app to "In production"** (these scopes are non-sensitive, so no Google review is needed and tokens do not expire after 7 days).
+2. **OAuth consent screen**: user type External. Scopes (the Data Access page names them this way): `.../auth/drive.file`, `openid` and `.../auth/userinfo.email` only; remove any other scope, such as `gmail.readonly`, which is restricted and would force Google's verification. Then **publish the app to "In production"** (these scopes are non-sensitive, so no Google review is needed and tokens do not expire after 7 days).
 3. **Credentials > Create credentials > OAuth client ID**:
    - **Web application** (no origins needed). Its client ID is `GOOGLE_WEB_CLIENT_ID` (**keep**). It is the app's `serverClientId` and the audience the proxy checks.
    - **Android** for package `io.github.kevinmgreer.thebinder` with the **release** key's SHA-1 (step 1).
