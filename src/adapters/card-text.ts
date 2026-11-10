@@ -8,7 +8,8 @@ const SETS = [
 const SERIAL_LINE = /^(\d{1,4}|\?{1,2})?\s*\/\s*(\d{1,4})$/;
 const COPYRIGHT_YEAR = /(?:©|\(c\)|copyright)\s*((?:19|20)\d\d)\b/i;
 const ANY_YEAR = /\b((?:19|20)\d\d)\b/;
-const LABELLED_NUMBER = /(?:\bNO\b\.?|#)\s*([A-Z]{0,4}\d{1,4}(?:-\d{1,3})?)\b/i;
+// Must end its line, so "Drafted No. 1 overall" and "#1 prospect" are not card numbers.
+const LABELLED_NUMBER = /(?:\bNO\b\.?|#)\s*([A-Z]{0,4}\d{1,4}(?:-\d{1,3})?)$/i;
 const STANDALONE_NUMBER = /^(?:[A-Z]{1,4}-?\d{1,4}|\d{1,3})$/;
 
 /** First entry of `names` found in `text` as whole words, by position in the text. */
@@ -37,7 +38,8 @@ export function parseCardText(text: string, now = new Date()): Suggestion {
   const year = plausible(copyright) ? copyright : otherYear;
   if (year) suggestion.year = year;
 
-  const number = text.match(LABELLED_NUMBER)?.[1] ?? lines.find((line) => STANDALONE_NUMBER.test(line));
+  const labelled = lines.map((line) => line.match(LABELLED_NUMBER)?.[1]).find(Boolean);
+  const number = labelled ?? lines.find((line) => STANDALONE_NUMBER.test(line));
   if (number) suggestion.cardNumber = number.toUpperCase();
 
   const manufacturer = firstKnown(text, MANUFACTURERS);
