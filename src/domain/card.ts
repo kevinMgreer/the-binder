@@ -8,6 +8,8 @@ export type Grading =
   | { kind: "graded"; company: string; grade: string }
   | { kind: "raw"; condition: string };
 
+export const CONDITIONS = ["Mint", "Near Mint", "Excellent", "Very Good", "Good", "Fair", "Poor"] as const;
+
 export interface Card {
   id: string;
   player: string;
