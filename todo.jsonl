@@ -1,0 +1,19 @@
+{"v":1,"ts":"2026-11-10T00:35:42.890Z","from":"a1a8541a","id":"T-1","set":{"title":"Phone: add a card and confirm it syncs to Drive (5.3, 4.2 consent check)","status":"open","area":"watch","size":"small"}}
+{"v":1,"ts":"2026-11-10T00:35:43.020Z","from":"a1a8541a","id":"T-2","set":{"title":"Phone: camera capture, deny permission, pick from photos (3.2)","status":"open","area":"watch","size":"small"}}
+{"v":1,"ts":"2026-11-10T00:35:43.138Z","from":"a1a8541a","id":"T-3","set":{"title":"Phone: 12 MP photo size and serial zoom, pinch-zoom smooth (3.3, 3.5)","status":"open","area":"watch","size":"small"}}
+{"v":1,"ts":"2026-11-10T00:35:43.281Z","from":"a1a8541a","id":"T-4","set":{"title":"Phone: sign out wipes IndexedDB, idle token renewal (4.3, 4.4)","status":"open","area":"watch","size":"small"}}
+{"v":1,"ts":"2026-11-10T00:35:43.415Z","from":"a1a8541a","id":"T-5","set":{"title":"Release key, GitHub secrets, release Android OAuth client, test tag (1.5, 1.6, 7.4)","status":"open","area":"watch","size":"medium"}}
+{"v":1,"ts":"2026-11-10T00:35:43.555Z","from":"a1a8541a","id":"T-6","set":{"title":"Deploy Worker, set Anthropic spend limit, check APK has no sk-ant- (6.7)","status":"open","area":"watch","size":"medium"}}
+{"v":1,"ts":"2026-11-10T00:35:43.692Z","from":"a1a8541a","id":"T-7","set":{"title":"Fix docs/setup.md scope name (userinfo.email) and the check command's timing test","status":"open","area":"the-binder","size":"tiny"}}
+{"v":1,"ts":"2026-11-10T00:38:02.223Z","from":"a1a8541a","id":"T-1","set":{"status":"active","owner":"a1a8541a"}}
+{"v":1,"ts":"2026-11-10T00:46:04.632Z","from":"a1a8541a","id":"T-8","set":{"title":"Card form: mark required fields and say why a save is blocked","status":"open","area":"the-binder","size":"small","kind":"fix"}}
+{"v":1,"ts":"2026-11-10T00:46:04.777Z","from":"a1a8541a","id":"T-9","set":{"title":"Visual redesign: replace the plain white unstyled UI (needs /opsx:propose and a design pass)","status":"open","area":"the-binder","size":"large"}}
+{"v":1,"ts":"2026-11-10T00:46:04.934Z","from":"a1a8541a","id":"T-10","set":{"title":"Camera: detect the card's edges and crop to the card, like a document scanner (needs /opsx:propose)","status":"open","area":"the-binder","size":"large"}}
+{"v":1,"ts":"2026-11-10T00:47:13.448Z","from":"a1a8541a","id":"T-1","set":{"note":"User saw the card photos in Drive. Folder name 'The Binder (dev)' and collection.json not confirmed; consent-screen scope not confirmed."}}
+{"v":1,"ts":"2026-11-10T00:47:13.560Z","from":"a1a8541a","id":"T-1","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T00:49:31.184Z","from":"a1a8541a","id":"T-2","set":{"note":"Camera opens the system camera app via intent (no CAMERA permission declared in manifest, so 'deny permission' can never occur); front/back capture works; cancel returns cleanly; Pick from photos opens the system picker. Picking an image and a spec decision on the denied scenario are open."}}
+{"v":1,"ts":"2026-11-10T00:51:58.784Z","from":"a1a8541a","id":"T-2","set":{"note":"Pick from photos confirmed by user. Denied-permission scenario cannot occur (no CAMERA permission declared, system camera intent); revisit with T-10."}}
+{"v":1,"ts":"2026-11-10T00:51:58.901Z","from":"a1a8541a","id":"T-2","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T00:51:59.043Z","from":"a1a8541a","id":"T-11","set":{"title":"App draws under the Android nav/status bars: buttons hidden, title under status bar","status":"open","area":"the-binder","size":"small","kind":"fix"}}
+{"v":1,"ts":"2026-11-10T00:51:59.208Z","from":"a1a8541a","id":"T-12","set":{"title":"Android back button does nothing; should go back one screen, exit only at the list","status":"open","area":"the-binder","size":"small","kind":"fix"}}
+{"v":1,"ts":"2026-11-10T00:51:59.359Z","from":"a1a8541a","id":"T-13","set":{"title":"Camera opens in selfie mode; should open the rear camera","status":"open","area":"the-binder","size":"small","kind":"fix"}}
