@@ -37,11 +37,17 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
+  const manufacturers = useMemo(() => distinctValues(cards, (c) => c.manufacturer), [cards]);
+  const subsets = useMemo(() => distinctValues(cards, (c) => c.subset), [cards]);
+  const inserts = useMemo(() => distinctValues(cards, (c) => c.insert), [cards]);
 
-  const select = (key: "team" | "set" | "parallel", label: string, options: string[]) => (
+  type TextKey = "team" | "manufacturer" | "set" | "subset" | "insert" | "parallel";
+  const select = (key: TextKey, label: string, options: string[]) => (
     <Field label={label}>
       <select id={fieldId(label)} value={filters[key]} onChange={(e) => set(key, e.target.value)}>
         <option value="">Any</option>
+        {/* A tile's value may not match any card's spelling; it must still show as selected. */}
+        {filters[key] && !options.includes(filters[key]) && <option>{filters[key]}</option>}
         {options.map((o) => (
           <option key={o}>{o}</option>
         ))}
@@ -73,7 +79,10 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
       ? [{ name: "Year", text: `Year ${f.yearFrom ?? ""}–${f.yearTo ?? ""}`, clear: { yearFrom: null, yearTo: null } }]
       : []),
     ...(f.team ? [{ name: "Team", text: f.team, clear: { team: "" } }] : []),
+    ...(f.manufacturer ? [{ name: "Manufacturer", text: f.manufacturer, clear: { manufacturer: "" } }] : []),
     ...(f.set ? [{ name: "Set", text: f.set, clear: { set: "" } }] : []),
+    ...(f.subset ? [{ name: "Subset", text: f.subset, clear: { subset: "" } }] : []),
+    ...(f.insert ? [{ name: "Insert", text: f.insert, clear: { insert: "" } }] : []),
     ...(f.parallel ? [{ name: "Parallel", text: f.parallel, clear: { parallel: "" } }] : []),
     ...(f.printRun !== null ? [{ name: "Print run", text: `Print run ${f.printRun}`, clear: { printRun: null } }] : []),
     ...(["serialNumbered", "rookie", "autograph", "relic", "graded"] as const)
@@ -171,7 +180,10 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
           <div className="group">
             <h3>Card</h3>
             {select("team", "Team", teams)}
+            {select("manufacturer", "Manufacturer", manufacturers)}
             {select("set", "Set", sets)}
+            {select("subset", "Subset", subsets)}
+            {select("insert", "Insert", inserts)}
             {select("parallel", "Parallel", parallels)}
           </div>
           <div className="group">
