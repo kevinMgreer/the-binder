@@ -1,7 +1,7 @@
 # dashboard Specification
 
 ## Purpose
-The first screen of the app: a summary of the collection as a fixed set of stat tiles, each of which opens the collection list filtered to the cards it counts.
+The first screen of the app: a summary of the collection as six stat tiles (Cards, Distinct, Autos, Relics, Serial-numbered, Rookies), each of which opens the collection list filtered to the cards it counts, then a Recently added group, whose cards each open that card, and a Top teams group, whose entries each open the list filtered to that team.
 
 ## Requirements
 

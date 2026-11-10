@@ -1,7 +1,7 @@
 # app-shell Specification
 
 ## Purpose
-Defines how the app sits inside Android's system bars and answers the hardware back button, so every control is reachable and navigation behaves like an Android app.
+Defines how the app sits inside Android's system bars and answers the hardware back button, and the shared chrome: the bottom navigation, screen titles, the settings gear and the Add card button, so every control is reachable and navigation behaves like an Android app.
 
 ## Requirements
 
@@ -136,4 +136,4 @@ The system SHALL show exactly one Add card button on the dashboard and on the co
 
 #### Scenario: One add button per screen
 - **WHEN** the dashboard or the list is showing
-- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the dashboard's last item (the last Top teams entry, or the last tile when no other group shows) once scrolled to the end
+- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the dashboard's last item (the last entry of the last group shown) once scrolled to the end

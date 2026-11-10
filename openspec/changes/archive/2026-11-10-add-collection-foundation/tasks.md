@@ -1,6 +1,6 @@
 # Tasks
 
-> Note: tasks ticked with "device check moved" or "owner step, moved" are NOT verified on a phone or account. Their code is done and merged with automated checks passing; the pending checks live in `docs/device-checklist.md` (desk T-5, T-6, T-24, T-26).
+> Note: tasks ticked with "device check moved" or "owner step, moved" are NOT verified on a phone or account. Their code is done and merged with automated checks passing (there is no real-account Drive integration test yet, only FakeDrive tests); the pending checks live in `docs/device-checklist.md` (desk T-5, T-6, T-24, T-26).
 
 ## 1. Project setup
 
