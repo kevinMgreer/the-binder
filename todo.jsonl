@@ -28,3 +28,4 @@
 {"v":1,"ts":"2026-11-10T01:02:36.693Z","from":"a1a8541a","id":"T-13","set":{"note":"Folded into T-10 (in-app camera). Spec note: foundation scenario 'rear camera opens' is not guaranteed until then."}}
 {"v":1,"ts":"2026-11-10T01:02:36.816Z","from":"a1a8541a","id":"T-13","set":{"status":"dropped"}}
 {"v":1,"ts":"2026-11-10T01:14:19.423Z","from":"a1a8541a","id":"T-14","set":{"note":"fix-android-shell 8/9: only 3.2 (archive after merge) left. Branch agent/android-shell-fixes at f974953, not merged or pushed; waiting on the push OK."}}
+{"v":1,"ts":"2026-11-10T01:37:27.515Z","from":"a1a8541a","id":"T-14","set":{"note":"Merged and pushed: main = origin/main @234162e. Left: 3.2 (validate + archive fix-android-shell)."}}
