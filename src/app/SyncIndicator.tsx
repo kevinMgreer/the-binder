@@ -1,9 +1,8 @@
 import { useSession } from "./session";
 import { useSync, useSyncStatus } from "./sync-context";
 
+/** The sync state in words, for the title row. */
 export function SyncIndicator() {
-  const sync = useSync();
-  const session = useSession();
   const { state, pending } = useSyncStatus();
 
   const label = {
@@ -15,10 +14,20 @@ export function SyncIndicator() {
   }[state];
 
   return (
+    <span className="sync" role="status" data-state={state} data-testid="sync-status">
+      {label}
+    </span>
+  );
+}
+
+/** What the user can do about a sync state; shown beneath the title row while it lasts. */
+export function SyncActions() {
+  const sync = useSync();
+  const session = useSession();
+  const { state } = useSyncStatus();
+
+  return (
     <>
-      <span className="sync" data-state={state} data-testid="sync-status">
-        {label}
-      </span>
       {state === "paused" && <button onClick={session.signInAgain}>Sign in again</button>}
       {state === "needs-decision" && (
         <div role="dialog" aria-modal="true" aria-label="Data file missing">

@@ -70,9 +70,18 @@ form, section, main { padding: var(--space-3) var(--space-3) calc(var(--space-3)
 .tile-label { color: var(--color-text-muted); font-size: var(--type-label); }
 .tile-value { font-family: var(--type-mono); font-size: var(--type-title); color: var(--color-text); }
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.meta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3); color: var(--color-text-muted); font-size: var(--type-label); }
-.meta > p { margin: 0; font-family: var(--type-mono); }
-.sync { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 500; }
+.title-row h1 { flex: none; }
+/* Takes the room between title and gear; wraps rather than cutting the words. */
+.sync { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-2); flex: 1; min-width: 0; font-size: var(--type-label); line-height: 1.3; font-weight: 500; }
+.sync::before { flex: none; }
+.group h2 { margin: var(--space-2) 0 var(--space-2); font-size: var(--type-label); color: var(--color-text-muted); font-weight: 500; }
+.recent { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); }
+.recent-card { flex-direction: column; justify-content: flex-start; gap: var(--space-1); min-width: 0; padding: var(--space-2) var(--space-1); }
+.recent-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--type-label); }
+.teams { display: flex; flex-direction: column; gap: var(--space-2); }
+.team { justify-content: space-between; gap: var(--space-3); text-align: left; }
+.team-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-count { flex: none; font-family: var(--type-mono); color: var(--color-text-muted); }
 .sync::before { content: ""; width: var(--space-2); height: var(--space-2); border-radius: 50%; background: currentColor; }
 .sync[data-state="idle"] { color: var(--color-ok); }
 .sync[data-state="error"], .sync[data-state="paused"], .sync[data-state="needs-decision"] { color: var(--color-danger); }
@@ -111,8 +120,10 @@ form, section, main { padding: var(--space-3) var(--space-3) calc(var(--space-3)
 .list { position: relative; margin: 0; padding: 0; list-style: none; }
 .list li { position: absolute; top: 0; left: 0; right: 0; box-sizing: border-box; padding: 0 var(--space-2) var(--space-2); }
 .list li button { justify-content: flex-start; gap: var(--space-3); width: 100%; height: 100%; padding: var(--space-3); text-align: left; }
-.thumb { width: 48px; height: 67px; background: var(--color-pocket); border-radius: var(--radius-s); flex: none; }
-img.thumb { object-fit: cover; }
+.thumb-slot { display: flex; align-items: center; justify-content: center; width: 67px; height: 67px; flex: none; }
+/* The image sizes itself from its own pixels, so a landscape photo stays landscape and nothing is cropped. */
+.thumb { display: block; width: 48px; height: 67px; background: var(--color-pocket); border-radius: var(--radius-s); }
+img.thumb { width: auto; height: auto; max-width: 100%; max-height: 100%; }
 .text { display: flex; flex-direction: column; justify-content: center; gap: var(--space-1); flex: 1; min-width: 0; font-size: var(--type-label); color: var(--color-text-muted); }
 .text .player { font-size: var(--type-body); font-weight: 500; color: var(--color-text); }
 .head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; }

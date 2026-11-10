@@ -1,3 +1,5 @@
+Archived with phone checks still pending; tracked in desk todo T-24.
+
 Unticked phone checks (4.1) move to desk todo T-24.
 
 ## 1. Tokens and guard tests

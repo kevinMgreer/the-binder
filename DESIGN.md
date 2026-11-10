@@ -163,7 +163,7 @@ A cool grey-blue neutral page with translucent pockets and a single warm yellow 
 - **Title** (400/default, 1.375rem, 1.2): h1 and h2 screen and sheet titles.
 - **Body** (400, 1rem, 1.3): default text, inputs, buttons, the player name in list rows (weight 500).
 - **Label** (500 where emphasised, 0.875rem): meta lines, hints, errors, group headings (muted), badge, tag, secondary row text.
-- **Mono** (0.875rem): item count line, "shown" line, card number, tag, sync-adjacent meta.
+- **Mono** (0.875rem): "shown" line, Top teams counts, card number, tag, sync-adjacent meta.
 
 ### Named Rules
 **The Three Sizes Rule.** Only title, body and label sizes exist. A new size is a new token.
@@ -172,7 +172,7 @@ A cool grey-blue neutral page with translucent pockets and a single warm yellow 
 
 Single column, full-bleed phone layout. Page gutter is 12px (space-3); the list screen uses 8px vertical, 12px horizontal. Rhythm runs on the 4px scale (space-1 4, 2 8, 3 12, 4 16, 5 24, 6 32, 7 40, 8 48). Gaps between related controls are 8px; between groups 12px; danger zone separated by 32px.
 
-The app draws under the system bars: `#root` and scrolling screens add safe-area insets (Capacitor `--safe-area-*` vars, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). The fixed add button spans the width just above it (inset + 64px + 8px) and the list scroller reserves target-min + 64px + 8px + 8px beneath it, so its end clears the add button by at least 8px (16px with the list's own bottom padding); the dashboard reserves the same at the end of its scroll. Headers carry the screen title ("Dashboard", "Cards") at the left and the Settings gear at the right; the app name "The Binder" appears only on the sign-in screen. The list is virtualised with absolutely positioned rows; each row is a full-width pocket button with a 48x67px thumbnail (card ratio), text column and optional tag.
+The app draws under the system bars: `#root` and scrolling screens add safe-area insets (Capacitor `--safe-area-*` vars, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). The fixed add button spans the width just above it (inset + 64px + 8px) and the list scroller reserves target-min + 64px + 8px + 8px beneath it, so its end clears the add button by at least 8px (16px with the list's own bottom padding); the dashboard reserves the same at the end of its scroll. Headers are one row: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right; there is no count line beneath, and Sign in again or the missing-file choice appear below the row while their state lasts. The app name "The Binder" appears only on the sign-in screen. The list is virtualised with absolutely positioned rows; each row is a full-width pocket button with a 67px square thumbnail slot, text column and optional tag.
 
 Hit targets: `--target-min` is 48px; every button, summary, banner link, input and checkbox row meets it (checkbox glyph itself is 24px inside a 48px row).
 
@@ -207,7 +207,10 @@ A bar fixed to the bottom of the two top-level screens only (never on detail, fo
 An icon-only pocket button, 48x48, 10px radius, for header actions (the Settings gear). Its name comes from `aria-label`. Icons are inline SVG, `currentColor`, `aria-hidden`, defined in `src/app/Icon.tsx` (gear, dashboard, cards); there is no icon font or package.
 
 ### Stat tile
-A pocket button on the dashboard, in a two-column grid with 8px gaps, at least 48px high (80px). The label sits on top in muted label-size text, the number below it in the mono face at title size in Ink; both are readable text, not an icon. Never accent-filled (the accent stays on the one primary action and on chips). Tapping opens the list filtered to what the tile counts. The accessible name is "label, number".
+A pocket button on the dashboard, in a two-column grid with 8px gaps, at least 48px high (80px). The label sits on top in muted label-size text, the number below it in the mono face at title size in Ink; both are readable text, not an icon. Never accent-filled (the accent stays on the one primary action and on chips). Tapping opens the list filtered to what the tile counts. The accessible name is "label, number". Six tiles: Cards, Distinct, Autos, Relics, Serial-numbered, Rookies; none for one team or parallel (the Filter reaches those).
+
+### Dashboard groups
+Below the tiles, two groups, each under a muted label-size weight-500 heading and shown only when they have content. Recently added: the four newest cards in a four-column grid of pocket buttons, each the list's thumbnail slot with the player's name beneath on one ellipsised line. Top teams: up to five pocket buttons, 48px high and 8px apart, team name at the left (ellipsis) and its count in mono at the right. No new colour, size or shadow; the accent stays off both groups.
 
 ### Chips
 Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 48px min height. A trailing close mark follows the label (see Do's and Don'ts). One chip per active filter, wrapping with 8px gaps. Tapping removes the filter.
@@ -222,16 +225,16 @@ Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inse
 Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textarea min 96px. Placeholder in Muted Ink. Invalid input shows a Danger border with a Danger label-size message. Required note is muted label. Checkbox is 24px with accent colour in a 48px row. Search label is visually hidden but present.
 
 ### List row
-Full-width pocket button, 12px padding and gap, 48x67 thumbnail (4px radius, pocket placeholder, cover fit). Two lines, row height 100px: the player name (body size, weight 500, single-line ellipsis) with the Tag as a badge at the right end of the same line, and one quiet muted label-size line "year set · #number" (number mono) continuing with parallel, grade and quantity as plain text. The line never wraps: the extras shrink first, then the set, never the number.
+Full-width pocket button, 12px padding and gap, a 67px square thumbnail slot holding the whole photo in its own orientation (about 48x67 portrait, 67x48 landscape; 4px radius, no crop) or the 48x67 portrait pocket placeholder without a photo. Two lines, row height 100px: the player name (body size, weight 500, single-line ellipsis) with the Tag as a badge at the right end of the same line, and one quiet muted label-size line "year set · #number" (number mono) continuing with parallel, grade and quantity as plain text. The line never wraps: the extras shrink first, then the set, never the number.
 
 ### Card facts
 Detail screen, top to bottom: the player as a large title (title size, weight 500) with the Tag badge beside it, a muted label-size subtitle "year set · #number", `dl.facts`, a plain list with 1px pocket-edge dividers (no box): muted label-size label at the left, body-size value right-aligned, 12px row padding, rows only for what the card has; then a strip of pocket photo thumbnails. Last edited is a muted line below that, Edit is the full-width primary button, Delete sits apart below a divider in the danger zone.
 
 ### Banner and status
-Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.
+Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text at label size, with `role="status"`, on the title row between title and gear: Ok when idle, Danger on error/paused/needs-decision. It wraps to two lines rather than being cut. Empty state is a dashed pocket-edge box with muted text.
 
 ### Navigation
-The dashboard is the start destination: Android's back button closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to list, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
+The dashboard is the start destination: Android's back button closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.
@@ -255,4 +258,4 @@ Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb b
 
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`), a glyph icon; future surfaces should use an inline SVG from `src/app/Icon.tsx`, not copy it.
-- Sizes outside the token scales (thumbnails 48x67 / 56x78, 96px thumb and textarea, 60vh zoom, 1.3 and 1.2 line-heights) are one-off literals in `app.css`, not system tokens.
+- Sizes outside the token scales (thumbnail slot 67x67, placeholder 48x67, photo slots 56x78, 96px thumb and textarea, 60vh zoom, 1.3 and 1.2 line-heights) are one-off literals in `app.css`, not system tokens.

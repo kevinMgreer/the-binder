@@ -57,7 +57,7 @@ test("A deleted data file asks what to do and does nothing until the user choose
   await expect(dialog).toHaveCount(0);
   await openCollection(page);
   await expect(page.getByTestId("card-row")).toHaveCount(0);
-  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });
 
 test("Sync starts by itself after sign-in and saves a new card without any action", async ({ page }) => {

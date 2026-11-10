@@ -20,6 +20,19 @@ async function seed(page: Page, cards: Seed[]) {
   await openCollection(page);
 }
 
+/** Eight cards from eight teams, saved one after another, then the dashboard (not the list). */
+async function seedDashboard(page: Page) {
+  await page.evaluate(async () => {
+    const { makeCard } = await import("/src/domain/fixtures.ts");
+    const cards = Array.from({ length: 8 }, (_, i) =>
+      makeCard({ player: `Player ${i}`, cardNumber: String(i), team: `Team ${i}`, createdAt: `2026-03-0${i + 1}T00:00:00.000Z` }),
+    );
+    await (window as unknown as Win).__ports.collection.putMany(cards);
+  });
+  await page.reload();
+  await expect(page.getByTestId("team")).toHaveCount(5);
+}
+
 async function showUpdateBanner(page: Page) {
   await page.evaluate(() => {
     const ports = (window as unknown as Win).__ports;
@@ -98,12 +111,11 @@ for (const size of PHONES) {
       await showUpdateBanner(page);
     });
 
-    test("First screen with the bar: count, sync state, gear, search, Filter and Showing N, then three rows above the scroller's end", async ({ page }) => {
+    test("First screen with the bar: sync state, gear, search, Filter and Showing N, then three rows above the scroller's end", async ({ page }) => {
       await page.evaluate(() => {
         document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
         document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
       });
-      const summary = page.getByTestId("summary");
       const gear = page.getByRole("button", { name: "Settings", exact: true });
       const shown = page.getByTestId("shown");
       const scroller = page.locator(".list-scroller");
@@ -111,9 +123,8 @@ for (const size of PHONES) {
       const search = page.getByLabel("Search", { exact: true });
       const filter = page.getByRole("button", { name: /^Filter/ });
       const add = page.getByRole("button", { name: "Add card", exact: true });
-      for (const el of [summary, status, gear, search, filter, shown, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
-      const ys = await Promise.all([summary, search].map(async (l) => (await l.boundingBox())!.y));
-      expect(ys[0]).toBeLessThan(ys[1]);
+      for (const el of [status, gear, search, filter, shown, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      expect((await status.boundingBox())!.y).toBeLessThan((await search.boundingBox())!.y);
       expect(Math.abs((await search.boundingBox())!.y - (await filter.boundingBox())!.y)).toBeLessThan(24);
       const scrollerBottom = await bottom(scroller);
       expect((await add.boundingBox())!.y - scrollerBottom).toBeGreaterThanOrEqual(7.5);
@@ -159,17 +170,63 @@ for (const size of PHONES) {
       await expect(page.locator("header").getByRole("button", { name: "Sign in again" })).toBeVisible();
     });
 
-    test("The count reads 1 card or N cards", async ({ page }) => {
-      await expect(page.getByTestId("summary")).toHaveText(/^5 cards, 4 distinct$/);
+    test("No count line: the header holds no 'N cards, N distinct' text", async ({ page }) => {
+      await expect(page.getByTestId("shown")).toBeVisible();
+      await expect(page.getByText(/\d+ cards?, \d+ distinct/)).toHaveCount(0);
+    });
+
+    test("Sync status is a status region on the title row, left of the gear", async ({ page }) => {
+      await setStatus(page, { state: "idle", pending: 0 });
+      const status = page.locator("header").getByRole("status");
+      await expect(status).toHaveText("Synced");
+      const row = (await page.locator("header .title-row").boundingBox())!;
+      const s = (await status.boundingBox())!;
+      const gear = (await page.getByRole("button", { name: "Settings", exact: true }).boundingBox())!;
+      expect(s.y).toBeGreaterThanOrEqual(row.y - 1);
+      expect(s.y + s.height).toBeLessThanOrEqual(row.y + row.height + 1);
+      expect(s.x + s.width).toBeLessThanOrEqual(gear.x + 1);
+    });
+
+    test("Error wording is whole on at most two lines", async ({ page }) => {
+      await setStatus(page, { state: "error", pending: 3 });
+      const status = page.locator("header").getByTestId("sync-status");
+      await expect(status).toHaveText("Sync problem, retrying (3 unsynced)");
+      const [h, line] = await status.evaluate((el) => [el.getBoundingClientRect().height, parseFloat(getComputedStyle(el).lineHeight)]);
+      expect(h).toBeLessThanOrEqual(2 * line + 1);
+      expect(await status.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    });
+
+    test("Thumbnails keep the photo's ratio in the same row height, text aligned, placeholder portrait", async ({ page }) => {
       await page.evaluate(async () => {
         const ports = (window as unknown as Win).__ports;
-        const cards = await ports.collection.list();
-        await ports.collection.clear();
-        await ports.collection.putMany(cards.slice(0, 1).map((c: any) => ({ ...c, quantity: 1 })));
+        const { makeCard } = await import("/src/domain/fixtures.ts");
+        const shapes: [string, number, number][] = [["Landscape Lou", 448, 320], ["Portrait Pat", 320, 448]];
+        const cards = [];
+        for (const [player, w, h] of shapes) {
+          const card = makeCard({ player, cardNumber: player, photos: { front: { fileId: `f${w}`, thumbId: `t${w}` }, back: null } });
+          const canvas = new OffscreenCanvas(w, h);
+          canvas.getContext("2d")!.fillRect(0, 0, w, h);
+          await ports.photos.cacheThumb(card.id, "front", await canvas.convertToBlob({ type: "image/webp" }));
+          cards.push(card);
+        }
+        await ports.collection.putSynced(cards);
       });
       await page.reload();
       await openCollection(page);
-      await expect(page.getByTestId("summary")).toHaveText("1 card, 1 distinct");
+      const row = (name: string) => page.getByTestId("card-row").filter({ hasText: name });
+      const land = row("Landscape Lou"), port = row("Portrait Pat"), none = row("Plain Card");
+      await expect(land.locator("img.thumb")).toBeVisible();
+      await expect(port.locator("img.thumb")).toBeVisible();
+      const lb = (await land.locator("img.thumb").boundingBox())!;
+      const pb = (await port.locator("img.thumb").boundingBox())!;
+      expect(Math.abs(lb.width / lb.height / (448 / 320) - 1)).toBeLessThan(0.02);
+      expect(Math.abs(pb.width / pb.height / (320 / 448) - 1)).toBeLessThan(0.02);
+      expect((await land.boundingBox())!.height).toBe((await port.boundingBox())!.height);
+      const x = async (r: Locator) => (await r.locator(".player").boundingBox())!.x;
+      expect(await x(land)).toBe(await x(port));
+      expect(await x(none)).toBe(await x(port));
+      const ph = (await none.locator(".thumb").boundingBox())!;
+      expect(ph.height).toBeGreaterThan(ph.width);
     });
 
     test("Each sync state shows its wording in the header", async ({ page }) => {
@@ -577,30 +634,59 @@ test.describe("States at phone size", () => {
     test(`Both themes: dashboard tiles are legible in ${scheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
-      await expect(page.getByTestId("tile")).toHaveCount(7);
+      await expect(page.getByTestId("tile")).toHaveCount(6);
       for (const tile of await page.getByTestId("tile").all()) {
         expect(await legible(tile.locator(".tile-label"))).toBeGreaterThanOrEqual(4.5);
         expect(await legible(tile.locator(".tile-value"))).toBeGreaterThanOrEqual(4.5);
       }
     });
+
+    test(`Both themes: Recently added and Top teams are legible and 48 dp in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await seedDashboard(page);
+      for (const el of [...(await page.getByTestId("recent").all()), ...(await page.getByTestId("team").all())]) {
+        const box = (await el.boundingBox())!;
+        expect(box.height).toBeGreaterThanOrEqual(47.5);
+        expect(box.width).toBeGreaterThanOrEqual(47.5);
+      }
+      for (const text of await page.locator(".recent-name, .team-name, .team-count, .dashboard h2").all()) {
+        expect(await legible(text)).toBeGreaterThanOrEqual(4.5);
+      }
+    });
   }
 
-  test("Tiles at phone size: seven tiles are 48 dp, in view, clear of the system bars", async ({ page }) => {
+  test("Dashboard groups: four recent cards and five teams, nothing scrolls sideways, Add card clears the last entry", async ({ page }) => {
+    await page.goto("/");
+    await seedDashboard(page);
+    await page.evaluate(() => {
+      document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
+      document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
+    });
+    await expect(page.getByTestId("recent")).toHaveCount(4);
+    await expect(page.getByTestId("team")).toHaveCount(5);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
+    expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual(add.y);
+  });
+
+  test("Tiles at phone size: six tiles are 48 dp, in view, clear of the system bars", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
       document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
       document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
     });
-    await expect(page.getByTestId("tile")).toHaveCount(7);
+    await expect(page.getByTestId("tile")).toHaveCount(6);
     await expectTouchable(page, "dashboard");
     for (const el of await page.getByTestId("tile").all()) {
       await expect(el).toBeInViewport({ ratio: 1 });
     }
     const add = page.getByRole("button", { name: "Add card", exact: true });
     expect(await bottom(add)).toBeLessThanOrEqual(800 - 48);
+    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual((await add.boundingBox())!.y);
     expect((await page.getByTestId("tile").first().boundingBox())!.y).toBeGreaterThanOrEqual(24);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
-    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual((await add.boundingBox())!.y + 1);
   });
 });
 
@@ -621,7 +707,7 @@ test.describe("Bottom navigation and header", () => {
     await expect(item(page, "Dashboard")).toHaveAttribute("aria-current", "page");
     await expect(item(page, "Cards")).not.toHaveAttribute("aria-current", "page");
     await item(page, "Cards").click();
-    await expect(page.getByTestId("summary")).toBeVisible();
+    await expect(page.getByTestId("shown")).toBeVisible();
     await expect(item(page, "Cards")).toHaveAttribute("aria-current", "page");
     await expect(item(page, "Dashboard")).not.toHaveAttribute("aria-current", "page");
   });
@@ -689,10 +775,10 @@ test.describe("Bottom navigation and header", () => {
     await page.getByRole("button", { name: "Settings", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
     await hardwareBack(page);
-    await expect(page.getByTestId("summary")).toBeVisible();
+    await expect(page.getByTestId("shown")).toBeVisible();
   });
 
-  test("Cards title: the list is titled Cards with the count and sync beneath", async ({ page }) => {
+  test("Cards title: the list is titled Cards with the sync state on its row and no count line", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "The Binder" })).toHaveCount(0);
@@ -700,8 +786,7 @@ test.describe("Bottom navigation and header", () => {
     const title = page.getByRole("heading", { level: 1, name: "Cards", exact: true });
     await expect(title).toBeVisible();
     await expect(page.getByRole("heading", { name: "The Binder" })).toHaveCount(0);
-    expect((await title.boundingBox())!.y).toBeLessThan((await page.getByTestId("summary").boundingBox())!.y);
-    await expect(page.locator("header").getByTestId("sync-status")).toBeVisible();
+    await expect(page.locator("header .title-row").getByTestId("sync-status")).toBeVisible();
   });
 
   test("Switch to Cards keeps the list as it was", async ({ page }) => {
@@ -730,11 +815,12 @@ test.describe("Bottom navigation and header", () => {
     await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
   });
 
-  test("Add card clears the last dashboard tile at the end of the scroll", async ({ page }) => {
+  test("Add card clears the last dashboard item at the end of the scroll", async ({ page }) => {
     await page.goto("/");
+    await seedDashboard(page);
     await insets(page);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
-    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual(add.y);
+    expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual(add.y);
   });
 });

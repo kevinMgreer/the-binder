@@ -140,7 +140,7 @@ test("Delete a card removes it after confirmation", async ({ page }) => {
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Confirm delete" }).click();
   await expect(rows(page)).toHaveCount(0);
-  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });
 
 test("Text search ignores case and accents", async ({ page }) => {
@@ -230,5 +230,7 @@ test("Filter by manufacturer", async ({ page }) => {
 test("Totals count quantity and distinct cards", async ({ page }) => {
   await addCard(page, { ...base, quantity: "3" });
   await addCard(page, { ...base, cardNumber: "28" });
-  await expect(page.getByTestId("summary")).toHaveText("4 cards, 2 distinct");
+  await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Dashboard", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Cards, 4" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Distinct, 2" })).toBeVisible();
 });

@@ -75,10 +75,6 @@ export function sortCards(cards: Card[]): Card[] {
   );
 }
 
-export function summarize(cards: Card[]) {
-  return { total: cards.reduce((n, c) => n + c.quantity, 0), distinct: cards.length };
-}
-
 export function distinctValues(cards: Card[], pick: (c: Card) => string | undefined): string[] {
   return [...new Set(cards.map(pick).filter((v): v is string => !!v))].sort(collator.compare);
 }

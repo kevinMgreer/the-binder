@@ -63,7 +63,7 @@ async function renderSignedIn(cards = [makeCard()]) {
 }
 
 const onDashboard = () => screen.findByRole("heading", { name: "Dashboard" });
-const onList = () => screen.findByTestId("summary");
+const onList = () => screen.findByTestId("shown");
 const openList = async () => {
   await onDashboard();
   tap("Cards");
@@ -167,6 +167,48 @@ test("Back from card detail shows the list with Cards active", async () => {
   expect(bar().getByRole("button", { name: "Cards" }).getAttribute("aria-current")).toBe("page");
 });
 
+test("back from a card opened on the dashboard shows the dashboard", async () => {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, / }));
+  expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
+  await pressBack();
+  await onDashboard();
+  expect(native.exitApp).not.toHaveBeenCalled();
+});
+
+test("a card opened on the dashboard and removed by a sync shows the dashboard, not the list", async () => {
+  const card = makeCard({ player: "Hank Aaron" });
+  const ports = { ...createFakePorts(), auth: new FakeAuthProvider({ email: "owner@example.test" }) };
+  await ports.collection.putMany([card]);
+  const engine = new SyncEngine(ports);
+  render(
+    <PortsProvider ports={ports}>
+      <SyncProvider engine={engine}>
+        <AuthGate autoSync={false}>
+          <App />
+        </AuthGate>
+      </SyncProvider>
+    </PortsProvider>,
+  );
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, / }));
+  expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
+  await ports.collection.putMany([{ ...card, deletedAt: new Date().toISOString() }]);
+  await act(async () => {
+    await engine.syncNow();
+  });
+  await onDashboard();
+  expect(screen.queryByTestId("shown")).toBeNull();
+});
+
+test("delete from a card opened on the dashboard shows the dashboard", async () => {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, / }));
+  fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+  fireEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+  await onDashboard();
+  expect(screen.queryByRole("button", { name: /^Hank Aaron, / })).toBeNull();
+});
+
 test("back from a card's detail view shows the list, and the detail view has no Back button", async () => {
   await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
   await openList();
@@ -181,7 +223,7 @@ test("back from a card's detail view shows the list, and the detail view has no 
 test("a filter survives opening a card and going back", async () => {
   const cards = [makeCard({ player: "Hank Aaron", flags: { rookie: false, autograph: true, relic: false } }), makeCard({ player: "Plain Joe", cardNumber: "2" })];
   await renderSignedIn(cards);
-  fireEvent.click(screen.getByRole("button", { name: "Autos, 1" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Autos, 1" }));
   await onList();
   expect(screen.queryByRole("button", { name: "Plain Joe" })).toBeNull();
   fireEvent.click(await screen.findByRole("button", { name: /Hank Aaron/ }));

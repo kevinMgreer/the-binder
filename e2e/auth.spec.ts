@@ -45,7 +45,7 @@ async function addCardWithPhoto(page: Page) {
 test("First launch shows the sign-in screen and no collection", async ({ page }) => {
   await page.goto("/?auth=signed-out");
   await expect(signInButton(page)).toBeVisible();
-  await expect(page.getByTestId("summary")).toHaveCount(0);
+  await expect(page.getByTestId("shown")).toHaveCount(0);
   await expect(page.getByTestId("card-row")).toHaveCount(0);
 });
 
@@ -61,7 +61,7 @@ test("Successful sign-in shows the collection", async ({ page }) => {
   await page.goto("/?auth=signed-out");
   await signInButton(page).click();
   await openCollection(page);
-  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });
 
 test("Declining Drive access stays on the sign-in screen with an explanation", async ({ page }) => {
@@ -72,7 +72,7 @@ test("Declining Drive access stays on the sign-in screen with an explanation", a
   await signInButton(page).click();
   await expect(page.getByText("Drive access is required to store your collection")).toBeVisible();
   await expect(signInButton(page)).toBeVisible();
-  await expect(page.getByTestId("summary")).toHaveCount(0);
+  await expect(page.getByTestId("shown")).toHaveCount(0);
 });
 
 test("When silent renewal is refused sync pauses, local changes stay, and Sign in again resumes", async ({ page }) => {

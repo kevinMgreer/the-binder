@@ -1,3 +1,5 @@
+Archived with phone checks still pending; tracked in desk todo T-24.
+
 Unticked phone checks (7.1, 7.2) move to desk todo T-24.
 
 ## 1. Card fields and the data file

@@ -84,7 +84,7 @@ test("Scanner closed without a photo leaves the form as it was and adds nothing"
   await expect(page.getByLabel("Year", { exact: true })).toHaveValue("2024");
   await page.getByRole("button", { name: "Cancel" }).click();
   await openCollection(page);
-  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });
 
 test("Cancel discards: a scanned front stores nothing and returns to the dashboard", async ({ page }) => {
@@ -97,7 +97,7 @@ test("Cancel discards: a scanned front stores nothing and returns to the dashboa
   const pending = await page.evaluate(async () => (await (window as unknown as Win).__ports.photos.pendingUploads()).length);
   expect(pending).toBe(0);
   await openCollection(page);
-  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });
 
 // Not a spec scenario: Android's camera app never reports a denied permission, but the app still handles one if a source raises it.

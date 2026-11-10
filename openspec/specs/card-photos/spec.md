@@ -33,3 +33,51 @@ The system SHALL offer, in the photo section of the add and edit card forms, for
 #### Scenario: Identification triggers unchanged
 - **WHEN** a front photo is attached on the add form
 - **THEN** on-device recognition fills empty, unedited fields as suggestions, "Identify with Claude" is offered, and no request is made to Claude until the user taps it
+
+### Requirement: Capture front and back
+The system SHALL let the user take a photo of a card's front and back with the device camera, or choose existing images from the device.
+
+#### Scenario: Camera capture on Android
+- **WHEN** the user taps "Scan front" on the add card form on an Android phone
+- **THEN** the card scanner opens on the rear camera (see the `card-scanner` capability), takes the front photo and returns to the form, where the back slot offers "Scan back" and "Pick back from photos"
+
+#### Scenario: Camera closed without a photo
+- **WHEN** the user backs out of the camera without taking a photo
+- **THEN** the form stays as it was, nothing is added, and "Pick front from photos" or "Pick back from photos" remains available
+
+#### Scenario: Choose existing image
+- **WHEN** the user chooses "Pick front from photos" or "Pick back from photos" on the card form and selects an image
+- **THEN** that image is used as that side's card photo
+
+### Requirement: Compress photos
+The system SHALL resize and compress each photo on the device before storing it, keeping enough detail to read the card number and serial number, and producing a separate small thumbnail.
+
+#### Scenario: Large phone photo
+- **WHEN** the user captures a 12-megapixel photo
+- **THEN** the stored full photo is no more than 500 KB and the serial number stamp is still legible when zoomed in
+
+### Requirement: Retake and replace
+The system SHALL let the user retake or replace a card's front or back photo, and SHALL remove the replaced photo from Drive.
+
+#### Scenario: Replace front photo
+- **WHEN** the user replaces a card's front photo and saves
+- **THEN** the card shows the new photo and the old photo is no longer in the Drive photos folder
+
+### Requirement: View photos
+The system SHALL show thumbnails in the collection list and thumbnails of the front and back photos on the card detail screen, and SHALL open a full-size, zoomable view of a photo when its thumbnail is tapped, fetching and caching the full photo when it is not on the device.
+
+#### Scenario: View full photo offline
+- **GIVEN** the device is offline and the full photo was not opened on this device before
+- **WHEN** the user taps a photo thumbnail on the card detail
+- **THEN** the thumbnail is shown with a note that the full photo will load when online
+
+#### Scenario: Zoom to read serial
+- **WHEN** the user pinches to zoom on a full photo
+- **THEN** the photo zooms and pans smoothly
+
+### Requirement: Photos stored as named files
+The system SHALL save each photo in the Drive photos folder under a name that identifies the card and side, so photos are recognizable when browsed in Google Drive.
+
+#### Scenario: Browse photos in Google Drive
+- **WHEN** the user opens the photos folder in Google Drive
+- **THEN** each file name includes the year, player, card number and "front" or "back"
