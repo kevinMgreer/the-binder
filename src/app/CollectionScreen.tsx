@@ -156,7 +156,6 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
       {filterOpen && (
         <Sheet
           label="Filters"
-          full
           onClose={closeSheet}
           foot={
             <>
