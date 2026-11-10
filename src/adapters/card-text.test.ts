@@ -56,6 +56,10 @@ describe("parseCardText", () => {
     expect(parse("© 2024 Topps\n?/99").parallel).toEqual({ name: "", serial: null, serialLegible: false, printRun: 99 });
   });
 
+  test("a bare print run with no serial is an unreadable serial", () => {
+    expect(parse("© 2024 Topps\n/99").parallel).toEqual({ name: "", serial: null, serialLegible: false, printRun: 99 });
+  });
+
   test("a serial above its print run is ignored", () => {
     expect(parse("© 2024 Topps\n150/99").parallel).toBeUndefined();
   });
