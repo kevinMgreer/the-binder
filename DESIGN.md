@@ -190,13 +190,16 @@ Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 4
 Mono label-size, weight 500, Deep Amber text with a 1px Deep Amber outline, 4px radius, 4px horizontal padding, sits at the end of a list row. Outline only, never filled.
 
 ### Sheets
-Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px padding plus bottom inset, 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). `.sheet.full` takes full height (add sheet); filter sheet is content height. Group headings inside are muted label-size, weight 500.
+Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below (same clearance as the add button), 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). `.sheet.full` takes full height (add sheet); filter sheet is content height. Group headings inside are muted label-size, weight 500.
 
 ### Inputs / Fields
 Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textarea min 96px. Placeholder in Muted Ink. Invalid input shows a Danger border with a Danger label-size message. Required note is muted label. Checkbox is 24px with accent colour in a 48px row. Search label is visually hidden but present.
 
 ### List row
-Full-width pocket button, 12px padding and gap, 48x67 thumbnail (4px radius, pocket placeholder, cover fit). Player name body size, weight 500, single-line ellipsis; set name label-size muted, two-line clamp; card number mono.
+Full-width pocket button, 12px padding and gap, 48x67 thumbnail (4px radius, pocket placeholder, cover fit). Three lines: player name (body size, weight 500, single-line ellipsis); one muted label-size line "year set #number" (set two-line clamp, number mono); one compact muted line with the tag first, then parallel, grade and quantity, omitted when the card has none of them.
+
+### Card facts
+Detail screen: thumbnails, player title, then a two-column grid (`dl.facts`) on the Sheet Paper surface with 12px by 16px gaps: muted label-size label above a body-size value, rows only for what the card has (Year, Set, Number always). Last edited is a muted line below, Edit is the primary button, Delete sits apart in the danger zone.
 
 ### Banner and status
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.

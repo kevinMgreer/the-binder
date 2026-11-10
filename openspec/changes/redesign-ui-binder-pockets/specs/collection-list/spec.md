@@ -27,11 +27,11 @@ The system SHALL show the sync state in words in the header, covering every stat
 - **THEN** the header shows its wording (for example "Synced" or "Unsynced: 3"), not colour alone
 
 ### Requirement: Each card is a pocket row
-The system SHALL show each card as one row with its photo thumbnail, player name, "year set #number", and the parallel, grade and quantity where present, and SHALL NOT truncate the player name or the card number while the text size is at its default.
+The system SHALL show each card as one fixed-height row with its photo thumbnail and three lines: the player name in bold, one muted line "year set #number", and one compact muted line with the serial tag followed by the parallel, grade and quantity where present. A card with none of those SHALL show no third line. The system SHALL NOT truncate the card number while the text size is at its default.
 
 #### Scenario: Row content
 - **WHEN** a card is listed
-- **THEN** the row shows the thumbnail, the player, "year set #number", and its parallel, grade and quantity when it has them
+- **THEN** the row shows the thumbnail, the player in bold, "year set #number" below it, and below that one line with the tag, parallel, grade and quantity when it has them
 
 #### Scenario: Long names
 - **WHEN** a card's set name is longer than the row width
@@ -66,3 +66,17 @@ The system SHALL put all filters behind one Filter button that opens a full-heig
 #### Scenario: Nothing applied
 - **WHEN** no filter is applied
 - **THEN** no chip row is shown and the Filter button has no badge
+
+### Requirement: Sheets clear the system bars
+The system SHALL keep every sheet and its pinned buttons above the system navigation or gesture bar, using the bottom safe-area inset (the Capacitor `--safe-area-inset-bottom` variable or `env(safe-area-inset-bottom)`, whichever is larger, the same inset `#root` uses) plus a 16 dp gap.
+
+#### Scenario: Sheet above a bottom bar
+- **WHEN** the Add card or Filter sheet is open and the bottom inset is 48 dp
+- **THEN** the sheet's last button ends at least 64 dp above the bottom edge of the screen
+
+### Requirement: The card detail screen is a tidy fact sheet
+The system SHALL lay the card detail screen out as: the photo thumbnails, the player as the title, a two-column grid of labelled values (Year, Set, Number, Team, Parallel, Serial tag, Condition or grade, Quantity, and Traits when set) showing only the values the card has, a muted last-edited line, Edit as the primary button, and Delete set apart from Edit.
+
+#### Scenario: Fact grid
+- **WHEN** a card with a team, a serial-numbered parallel, a grade and quantity 3 is opened
+- **THEN** the grid lists each label with its value, the serial tag in the accent colour, below the title and above the last-edited line, and Edit is below that

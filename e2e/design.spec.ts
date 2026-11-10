@@ -286,6 +286,57 @@ test.describe("destructive actions stay apart", () => {
   });
 });
 
+test.describe("polish after the second phone review", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test("Row is player, one muted set line, and one compact tag and parallel line", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const row = page.getByTestId("card-row").filter({ hasText: "Acuña" });
+    const player = row.locator(".player");
+    const set = row.locator(".set-line");
+    const extra = row.locator(".extra");
+    await expect(player).toHaveText("Ronald Acuña Jr.");
+    await expect(set).toHaveText("2024 Series 1 #27");
+    await expect(extra).toHaveText("13/150 Gold");
+    await expect(extra.locator(".tag")).toHaveText("13/150");
+    expect(await css(player, "font-weight")).toBe("500");
+    const [p, s, x] = await Promise.all([player, set, extra].map((l) => l.boundingBox()));
+    expect(s!.y).toBeGreaterThanOrEqual(p!.y + p!.height - 1);
+    expect(x!.y).toBeGreaterThanOrEqual(s!.y + s!.height - 1);
+    await expect(page.getByTestId("card-row").filter({ hasText: "Plain Card" }).locator(".extra")).toHaveCount(0);
+  });
+
+  for (const [name, open, last] of [
+    ["Add card", (p: Page) => p.getByRole("button", { name: "Add card", exact: true }).click(), "Enter by hand"],
+    ["Filters", (p: Page) => p.getByRole("button", { name: /^Filter/ }).click(), "Clear all"],
+  ] as const) {
+    test(`${name} sheet sits above a bottom system bar`, async ({ page }) => {
+      await page.goto("/");
+      await page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
+      await open(page);
+      const button = page.getByRole("dialog").getByRole("button", { name: last, exact: true });
+      await expect(button).toBeVisible();
+      expect(await bottom(button)).toBeLessThanOrEqual(800 - 48 - 16);
+    });
+  }
+
+  test("Card detail is a thumbnails row, a title, a labelled grid and a muted last-edited", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ ...CARDS[0], grading: { kind: "graded", company: "PSA", grade: "9" }, quantity: 3 }]);
+    await page.getByTestId("card-row").first().click();
+    const grid = page.getByTestId("facts");
+    expect(await grid.locator("dt").allTextContents()).toEqual(["Year", "Set", "Number", "Team", "Parallel", "Serial tag", "Condition", "Quantity"]);
+    expect(await grid.locator("dd").allTextContents()).toEqual(["2024", "Topps Series 1", "27", "Atlanta Braves", "Gold", "13/150", "PSA 9", "3"]);
+    const edited = page.getByTestId("updated");
+    const y = async (l: Locator) => (await l.boundingBox())!.y;
+    expect(await y(page.getByRole("heading", { name: "Ronald Acuña Jr." }))).toBeLessThan(await y(grid));
+    expect(await y(grid)).toBeLessThan(await y(edited));
+    expect(await y(edited)).toBeLessThan(await y(page.getByRole("button", { name: "Edit", exact: true })));
+    expect(await css(edited, "color")).toBe(await css(page.getByTestId("facts").locator("dt").first(), "color"));
+  });
+});
+
 type Box = { x: number; y: number; width: number; height: number };
 const CONTROLS = "button, a[href], input:not([type=checkbox]), select, textarea, summary, label.check, [data-testid=card-row] > button";
 

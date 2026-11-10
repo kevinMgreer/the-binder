@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { useThumbUrl } from "./hooks";
@@ -28,6 +28,17 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
   const [viewing, setViewing] = useState<CardSide | null>(null);
   const serial = serialLabel(card.parallel);
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
+  const facts: Array<[string, ReactNode]> = [
+    ["Year", card.year],
+    ["Set", `${card.manufacturer} ${card.set}`.trim()],
+    ["Number", card.cardNumber],
+    ["Team", card.team],
+    ["Parallel", card.parallel?.name],
+    ["Serial tag", serial && <span className="tag">{serial}</span>],
+    ["Condition", gradeLabel(card.grading)],
+    ["Quantity", card.quantity],
+    ["Traits", flags.join(", ")],
+  ].filter(([, v]) => v) as Array<[string, ReactNode]>;
 
   return (
     <section>
@@ -41,18 +52,14 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
         </Sheet>
       )}
       <h2>{card.player}</h2>
-      <p>
-        {card.year} {card.manufacturer} {card.set} #{card.cardNumber}
-      </p>
-      {card.team && <p>{card.team}</p>}
-      {card.parallel && (
-        <p>
-          {card.parallel.name} {serial && <span className="tag">{serial}</span>}
-        </p>
-      )}
-      {gradeLabel(card.grading) && <p>{gradeLabel(card.grading)}</p>}
-      {flags.length > 0 && <p>{flags.join(", ")}</p>}
-      <p>Quantity: {card.quantity}</p>
+      <dl className="facts" data-testid="facts">
+        {facts.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
       {card.notes && <p>{card.notes}</p>}
       <p>
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>

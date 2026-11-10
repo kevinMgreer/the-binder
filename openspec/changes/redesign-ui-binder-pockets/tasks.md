@@ -24,6 +24,12 @@
 - [x] 3.7 Write the failing e2e test first, then make the detail photos thumbnails per D10 that open the existing photo view; verify the Edit and Delete buttons are visible without scrolling past the photos at 360 by 800 on a card with two photos, and the existing photo tests pass
 - [x] 3.8 Fix the count wording ("1 card", "N cards") in the header; verify an e2e assertion for one card and several
 
+## 3c. Revisions after the second phone review
+
+- [x] 3.9 Write the failing e2e test first, then simplify the list row to the player in bold, one muted "year set #number" line and one compact tag and parallel line (grade and quantity follow the parallel), keeping the number visible and the row height fixed; verify the 5,000-card performance test still passes ("Row content")
+- [x] 3.10 Write the failing e2e test first (a 48 dp bottom inset, the last button of the Add card and Filter sheets at least 64 dp above the bottom), then give `.sheet` the same inset as `#root` plus a 16 dp gap; the inset is already the larger of the Capacitor var and `env()`, so no new approach is needed ("Sheet above a bottom bar")
+- [x] 3.11 Write the failing e2e test first, then restructure the card detail into thumbnails, title, a labelled fact grid, a muted last-edited line, Edit primary and Delete apart, on tokens in both themes ("Fact grid")
+
 ## 4. On the phone
 
 - [ ] 4.1 Install the debug build, switch Android between dark and light with `adb shell cmd uimode night yes` and `no`, and screenshot the list, detail, form, scan and settings screens in each; verify both themes render with legible text and the pocket look, nothing sits under the system bars, and there is no white flash at launch in dark mode

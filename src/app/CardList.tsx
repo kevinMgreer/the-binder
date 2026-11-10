@@ -32,6 +32,7 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
           const c = cards[item.index];
           const serial = serialLabel(c.parallel);
           const grade = c.grading.kind === "graded" ? gradeLabel(c.grading) : "";
+          const rest = [c.parallel?.name, grade, c.quantity > 1 && `×${c.quantity}`].filter(Boolean).join(" ");
           return (
             <li
               key={c.id}
@@ -41,17 +42,19 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
               <button onClick={() => onOpen(c)}>
                 <Thumb card={c} />
                 <span className="text">
-                  <span className="line">
-                    <strong className="player">{c.player}</strong>
-                    {serial && <span className="tag">{serial}</span>}
-                  </span>
-                  <span className="line">
+                  <strong className="player">{c.player}</strong>
+                  <span className="set-line">
                     <span className="set">
                       {c.year} {c.set}
                     </span>{" "}
                     <span className="num">#{c.cardNumber}</span>
                   </span>
-                  <span>{[c.parallel?.name, grade, c.quantity > 1 && `×${c.quantity}`].filter(Boolean).join(" ")}</span>
+                  {(serial || rest) && (
+                    <span className="extra">
+                      {serial && <span className="tag">{serial}</span>}{" "}
+                      {rest}
+                    </span>
+                  )}
                 </span>
               </button>
             </li>
