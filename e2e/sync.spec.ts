@@ -5,7 +5,6 @@ type Win = { __ports: any; __sync: any };
 
 async function addCard(page: Page, player: string, cardNumber: string) {
   await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Enter by hand" }).click();
   await page.getByLabel("Player", { exact: true }).fill(player);
   await page.getByLabel("Year", { exact: true }).fill("2024");
   await page.getByLabel("Set", { exact: true }).fill("Series 1");

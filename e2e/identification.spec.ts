@@ -21,9 +21,8 @@ async function configure(page: Page, which: "ocr" | "claude", result: object) {
 
 async function scanFront(page: Page) {
   await setNextPhoto(page);
-  await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Scan card" }).click();
-  await page.getByRole("button", { name: "Skip back" }).click();
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByRole("button", { name: "Scan front" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
 }
 
@@ -118,6 +117,17 @@ test("Identify with Claude while offline says it needs a connection and sends no
   expect(await calls(page, "claude")).toBe(0);
 });
 
+test("Identification triggers unchanged: a scan fills suggestions on device and calls Claude only on the button", async ({ page }) => {
+  await configure(page, "ocr", { year: 2024, cardNumber: "27", set: "Series 1" });
+  await scanFront(page);
+  await expect(field(page, "Year")).toHaveValue("2024");
+  await expect(hint(page, "year")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Identify with Claude" })).toBeVisible();
+  expect(await calls(page, "claude")).toBe(0);
+  await page.getByRole("button", { name: "Identify with Claude" }).click();
+  await expect.poll(() => calls(page, "claude")).toBe(1);
+});
+
 test("An uncertain field is visibly flagged for review", async ({ page }) => {
   await configure(page, "claude", { ...goldParallel, lowConfidence: ["player"] });
   await scanFront(page);
@@ -149,7 +159,6 @@ test("Cards record on-device recognition or manual entry as their source", async
   await expect(page.getByTestId("card-row")).toHaveCount(1);
 
   await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Enter by hand" }).click();
   await field(page, "Player").fill("Mookie Betts");
   await field(page, "Year").fill("2023");
   await field(page, "Set").fill("Series 2");
