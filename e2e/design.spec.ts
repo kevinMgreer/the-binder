@@ -724,8 +724,10 @@ test.describe("Bottom navigation and header", () => {
     await insets(page);
     await page.locator(".list-scroller").evaluate((el) => el.scrollTo(0, el.scrollHeight));
     const last = page.getByTestId("card-row").last();
-    await expect(last).toBeInViewport({ ratio: 1 });
-    expect(await bottom(last)).toBeLessThanOrEqual((await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!.y);
+    const scrollerBottom = await bottom(page.locator(".list-scroller"));
+    await expect(last).toBeInViewport();
+    expect(await bottom(last)).toBeLessThanOrEqual(scrollerBottom + 1);
+    expect(scrollerBottom).toBeLessThanOrEqual((await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!.y - 7.5);
     await last.click();
     await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
   });
