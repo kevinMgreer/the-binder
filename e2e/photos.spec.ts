@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any };
 
@@ -52,6 +53,7 @@ test("Scan card takes the front photo, then offers the back with a skip option",
   await expect(page.getByAltText("Back photo")).toBeVisible();
   await fillRequired(page);
   await page.getByRole("button", { name: "Save" }).click();
+  await openCollection(page);
   await expect(page.getByTestId("card-row").first().locator("img")).toBeVisible();
 });
 
@@ -71,6 +73,7 @@ test("Camera closed without a photo returns to the list and adds nothing", async
   await page.getByRole("button", { name: "Add card" }).click();
   await page.getByRole("button", { name: "Scan card" }).click();
   await expect(page.getByRole("button", { name: "Add card" })).toBeVisible();
+  await openCollection(page);
   await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
 });
 
@@ -171,6 +174,7 @@ test("Photo size budget: a card with front and back photos adds at most 1 MB to 
 
 test("Offline without a cached full photo shows the thumbnail and a note", async ({ page, context }) => {
   await seedCardWithPhoto(page, "thumb");
+  await openCollection(page);
   await context.setOffline(true);
   await page.getByTestId("card-row").first().click();
   await page.getByRole("button", { name: "View front photo" }).click();
@@ -180,6 +184,7 @@ test("Offline without a cached full photo shows the thumbnail and a note", async
 
 test("Double-tap zooms the full photo in and out", async ({ page }) => {
   await seedCardWithPhoto(page, "full");
+  await openCollection(page);
   await page.getByTestId("card-row").first().click();
   await page.getByRole("button", { name: "View front photo" }).click();
   const zoom = page.getByTestId("zoom-front");

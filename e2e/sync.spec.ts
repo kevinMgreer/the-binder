@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any; __sync: any };
 
@@ -55,6 +56,7 @@ test("A deleted data file asks what to do and does nothing until the user choose
 
   await dialog.getByRole("button", { name: "Start an empty collection" }).click();
   await expect(dialog).toHaveCount(0);
+  await openCollection(page);
   await expect(page.getByTestId("card-row")).toHaveCount(0);
   await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
 });
@@ -80,6 +82,7 @@ test("Restoring a deleted data file recreates it from this device", async ({ pag
     await w.__sync.syncNow();
   });
   await page.getByRole("button", { name: "Restore Drive from this device" }).click();
+  await openCollection(page);
   await expect(page.getByTestId("card-row")).toHaveCount(1);
   await expect
     .poll(() =>

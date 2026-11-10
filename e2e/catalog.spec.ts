@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 interface Draft {
   player?: string;
@@ -66,6 +67,7 @@ const rows = (page: Page) => page.getByTestId("card-row");
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
+  await openCollection(page);
 });
 
 test("Minimum card: player, year, set and card number are enough", async ({ page }) => {
@@ -193,6 +195,7 @@ test("Old local card edited after the update", async ({ page }) => {
     await (window as unknown as { __ports: any }).__ports.collection.putMany([old]);
   });
   await page.reload();
+  await openCollection(page);
   await rows(page).first().click();
   await page.getByRole("button", { name: "Edit" }).click();
   await fill(page, "Insert", "Stars of MLB");
@@ -218,6 +221,7 @@ test("Filter by manufacturer", async ({ page }) => {
     await (window as unknown as { __ports: any }).__ports.collection.putMany(cards);
   });
   await page.reload();
+  await openCollection(page);
   await openFilters(page);
   await page.getByLabel("Manufacturer", { exact: true }).selectOption({ label: "Topps" });
   await expect(rows(page)).toHaveCount(1);

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { openCollection } from "./helpers";
 
 type Win = { __ports: any; __sync: any };
 type Seed = Record<string, unknown>;
@@ -16,6 +17,7 @@ async function seed(page: Page, cards: Seed[]) {
     await (window as unknown as Win).__ports.collection.putMany(list.map((o) => makeCard(o)));
   }, cards);
   await page.reload();
+  await openCollection(page);
 }
 
 async function showUpdateBanner(page: Page) {
@@ -152,6 +154,7 @@ for (const size of PHONES) {
         await ports.collection.putMany(cards.slice(0, 1).map((c: any) => ({ ...c, quantity: 1 })));
       });
       await page.reload();
+      await openCollection(page);
       await expect(page.getByTestId("summary")).toHaveText("1 card, 1 distinct");
     });
 
@@ -261,6 +264,7 @@ test.describe("destructive actions stay apart", () => {
       }
     });
     await page.reload();
+    await openCollection(page);
     await page.getByTestId("card-row").first().click();
     const thumb = page.getByRole("button", { name: "View front photo" });
     await expect(thumb).toBeVisible();
@@ -341,6 +345,7 @@ test.describe("polish after the second phone review", () => {
   ] as const) {
     test(`${name} sheet sits above a bottom system bar`, async ({ page }) => {
       await page.goto("/");
+      await openCollection(page);
       await page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
       await open(page);
       const button = page.getByRole("dialog").getByRole("button", { name: last, exact: true });
@@ -529,6 +534,7 @@ test.describe("States at phone size", () => {
           await ports.photos.cacheThumb(card.id, "front", await canvas.convertToBlob({ type: "image/webp" }));
         });
         await page.reload();
+        await openCollection(page);
         await page.context().setOffline(true);
         await page.getByTestId("card-row").first().click();
         await page.getByRole("button", { name: "View front photo" }).click();
@@ -546,7 +552,7 @@ test.describe("States at phone size", () => {
           document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
           document.documentElement.style.setProperty("--safe-area-inset-bottom", "24px");
         });
-        await expect(page.getByTestId("summary")).toBeVisible();
+        await openCollection(page);
         const target = await show(page);
         await expect(target).toBeVisible();
         expect(await legible(target)).toBeGreaterThanOrEqual(4.5);

@@ -29,14 +29,16 @@ export function App() {
   const [view, setView] = useState<View>({ name: "dashboard" });
   const [filters, setFilters] = useState<Filters>(emptyFilters);
 
-  // Android back: one screen up, and leave the app only from the list.
+  // Android back: one screen up, and leave the app only from the dashboard.
   useEffect(() => {
     const handle = CapacitorApp.addListener("backButton", () => {
       const sheet = openSheets.at(-1);
       if (sheet) sheet();
-      else if (view.name === "list") void CapacitorApp.exitApp();
+      else if (view.name === "dashboard") void CapacitorApp.exitApp();
+      else if (view.name === "list") setView({ name: "dashboard" });
+      else if (view.name === "detail") setView({ name: "list" });
       else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id });
-      else setView({ name: "list" });
+      else if ("from" in view) setView({ name: view.from });
     });
     return () => void handle.then((h) => h.remove());
   }, [view]);
