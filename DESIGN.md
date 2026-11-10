@@ -234,7 +234,7 @@ Detail screen, top to bottom: the player as a large title (title size, weight 50
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text at label size, with `role="status"`, on the title row between title and gear: Ok when idle, Danger on error/paused/needs-decision. It wraps to two lines rather than being cut. Empty state is a dashed pocket-edge box with muted text.
 
 ### Navigation
-The dashboard is the start destination: Android's back button closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to list, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
+The dashboard is the start destination: Android's back button closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.

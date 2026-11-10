@@ -684,6 +684,7 @@ test.describe("States at phone size", () => {
     }
     const add = page.getByRole("button", { name: "Add card", exact: true });
     expect(await bottom(add)).toBeLessThanOrEqual(800 - 48);
+    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual((await add.boundingBox())!.y);
     expect((await page.getByTestId("tile").first().boundingBox())!.y).toBeGreaterThanOrEqual(24);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   });

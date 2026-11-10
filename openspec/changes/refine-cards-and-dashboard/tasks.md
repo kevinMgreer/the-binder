@@ -26,7 +26,7 @@
 
 - [ ] 4.1 On the phone, light and dark: dashboard shows six tiles, Recently added and Top teams look clean and read well; tapping a team opens Cards filtered to it; tapping a recent card opens it and back returns to the dashboard. Owner confirms.
 - [ ] 4.2 On the phone: a card photographed landscape shows landscape in the Cards list, a portrait one portrait, nothing cropped, scroll through a long list stays smooth. Owner confirms.
-- [ ] 4.3 On the phone: "Synced" sits beside the gear on both screens; with airplane mode the error wording shows whole; TalkBack reads the sync state. Owner confirms.
+- [ ] 4.3 On the phone: "Synced" sits beside the gear on both screens; with airplane mode the error wording shows whole; TalkBack reads the sync state; with TalkBack on, wait through one background sync and one offline retry. Owner confirms.
 
 ## 5. Archive
 

@@ -126,6 +126,7 @@ test("Add from the dashboard returns to the dashboard with the count up by the q
   await page.getByRole("button", { name: "Save" }).click();
   await expect(tile(page, "Cards")).toHaveAccessibleName("Cards, 4");
   await expect(tile(page, "Distinct")).toHaveAccessibleName("Distinct, 2");
+  await expect(page.getByTestId("recent").first()).toHaveAccessibleName(/^Hank Aaron,/);
 });
 
 test("Empty collection and a zero tile open the no-match list", async ({ page }) => {

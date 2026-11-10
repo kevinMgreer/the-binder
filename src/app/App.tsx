@@ -95,7 +95,8 @@ export function App() {
     onSettings: () => setView({ name: "settings", from }),
   });
 
-  if (view.name === "dashboard") {
+  // A card opened from the dashboard that has since vanished (deleted, or removed by a sync) returns there.
+  if (view.name === "dashboard" || (view.name === "detail" && view.from === "dashboard")) {
     return (
       <Dashboard
         {...shared("dashboard")}
