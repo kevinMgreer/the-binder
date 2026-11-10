@@ -38,7 +38,7 @@ The system SHALL show these tiles in this order, each with its label and its num
 - **THEN** every tile reads 0 and each stays tappable
 
 ### Requirement: A tile opens the list filtered to what it counts
-The system SHALL open the collection list when a tile is tapped, with that tile's filters applied and shown as removable chips and any earlier search and filters cleared; the number of cards the list shows SHALL equal the tile's number. Cards and Distinct SHALL open the list with no filter.
+The system SHALL open the collection list when a tile is tapped, with that tile's filters applied and shown as removable chips and any earlier search and filters cleared. For every tile except Cards, the number of cards the list shows SHALL equal the tile's number; Cards counts quantity, so its list shows the distinct rows. Cards and Distinct SHALL open the list with no filter.
 
 #### Scenario: Tap Topps Gold
 - **GIVEN** the Topps Gold tile reads 3
@@ -55,15 +55,15 @@ The system SHALL open the collection list when a tile is tapped, with that tile'
 - **THEN** the list shows every card
 
 ### Requirement: The dashboard stays fast on a large collection
-The system SHALL compute all tile numbers in one pass over the cards, only when the cards change, and SHALL show the dashboard with its numbers within 1 second of launch for a collection of 5,000 cards on a mid-range Android phone.
+The system SHALL compute all tile numbers in one pass over the cards, only when the list of cards it is given changes, and SHALL show the dashboard with its numbers within 1 second of launch for a collection of 5,000 cards on a mid-range Android phone.
 
 #### Scenario: Large collection
 - **GIVEN** a collection of 5,000 cards
 - **WHEN** the user opens the app with 4x CPU throttling in the performance test
-- **THEN** the dashboard with all seven numbers appears within 1 second
+- **THEN** the dashboard appears within 1 second with the Cards tile reading 5,000 (one copy of each seeded card)
 
 #### Scenario: No recount without a change
-- **WHEN** the dashboard re-renders for a sync state change while the cards are unchanged
+- **WHEN** the dashboard re-renders for a sync state change while the cards list is unchanged
 - **THEN** the tile numbers are not recomputed
 
 ### Requirement: The dashboard follows the design system

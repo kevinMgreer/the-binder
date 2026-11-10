@@ -22,3 +22,7 @@ The system SHALL handle the Android back button by returning to the previous scr
 #### Scenario: Back from the add form opened on the dashboard
 - **WHEN** the user opens the add form from the dashboard and presses back
 - **THEN** the dashboard is shown and the app stays open
+
+#### Scenario: Back from settings
+- **WHEN** the user opens Settings from the dashboard and presses back or taps Back
+- **THEN** the dashboard is shown; when Settings was opened from the list, the list is shown

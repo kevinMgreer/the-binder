@@ -8,7 +8,7 @@ See proposal.md for why. The code this change lands on:
 - The Drive file is cast, not parsed: `DriveRemoteStore.readCollection` returns `response.json() as CollectionFile`, the engine ignores `schemaVersion` on read and writes `1` in `SyncEngine.file()`. `merge` returns the input card objects, so fields it does not know survive a pull-merge-push. Dexie stores cards keyed by `id` only.
 - `CardForm.toCard` rebuilds a card field by field from the draft, so any field it does not list is dropped when a card is edited.
 - `App.tsx` holds a `View` union with `list` as home; `CollectionScreen` owns its filter state, which is lost whenever the user opens a card.
-- `add-collection-foundation` and `redesign-ui-binder-pockets` are not archived yet; `card-catalog`, `drive-storage` and `collection-list` live only in those changes. `openspec validate` passes, but archive refuses the MODIFIED deltas until both are archived.
+- `add-collection-foundation` and `redesign-ui-binder-pockets` are not archived yet; `card-catalog`, `drive-storage` and `collection-list` live only in those changes. This change therefore only ADDs requirements to those three capabilities (new requirement names, no MODIFIED), so it archives on its own in any order; `app-shell` is in `openspec/specs/` and is MODIFIED.
 
 ## Goals / Non-Goals
 
@@ -29,7 +29,7 @@ See proposal.md for why. The code this change lands on:
 - $0: no new service or dependency.
 
 ### D2. Data file version 2, read leniently
-`CollectionFile.schemaVersion` becomes `1 | 2`; `SyncEngine.file()` writes `2`. Reading stays as it is: any version is accepted and cards are used as stored, so version 1 files load. No card is rewritten for the bump; a card only changes when it is edited. Tests cover a version 1 file round trip in `engine.test.ts` and a missing-field card in `merge.test.ts`.
+`CollectionFile.schemaVersion` becomes `1 | 2`; `SyncEngine.file()` writes `2`. `pullMergePush` today skips the write when every merged card equals the remote one (`src/sync/engine.ts` around line 253); that skip also requires `remoteData.file.schemaVersion === 2`, so the first sync after the update rewrites a version 1 file as version 2 once. Reading stays as it is: any version is accepted and cards are used as stored, so version 1 files load. No card is changed for the bump; the rewrite carries the same card objects, and a card only changes when it is edited. Tests cover a version 1 file round trip in `engine.test.ts` and a missing-field card in `merge.test.ts`.
 - Alternative: keep version 1 (the fields are optional, so nothing strictly needs the bump). Rejected because the owner asked for the bump and a reader of the file in Drive should see that its shape changed.
 - Alternative: reject unknown versions on read. Deferred (non-goal): nothing newer exists and older APKs cannot be made to honour it.
 - $0: unchanged storage.
@@ -68,7 +68,7 @@ Match tiles count distinct cards, so the list a tile opens shows exactly the til
 - $0: no change.
 
 ### D6. One predicate, one pass
-`applyFilters` is split into `matches(card, filters): boolean` and `applyFilters = cards.filter(c => matches(c, f))`. `collectionStats(cards)` loops over the cards once and, per card, adds quantity to the total and runs `matches` for each match tile. `Dashboard` calls it inside `useMemo(() => collectionStats(cards), [cards])`; `useCards` only replaces `cards` when data changes, so a sync status update does not recount. Tile filter values are normalized once, outside the loop.
+`applyFilters` is split into `matches(card, filters): boolean` and `applyFilters = cards.filter(c => matches(c, f))`. `collectionStats(cards)` loops over the cards once and, per card, adds quantity to the total and runs `matches` for each match tile. `Dashboard` calls it inside `useMemo(() => collectionStats(cards), [cards])`, so it recounts only when the cards list it is given changes, not on a re-render for a sync state or update-banner change. `useCards` sets a new array after every finished sync even when no card changed, so one recount per sync remains; at one pass that is cheap, and avoiding it is not worth a deep compare. Tile filter values are normalized once, outside the loop.
 - Alternative: `applyFilters` once per tile. Five passes and five array allocations; simple but against the owner's one-pass request. Rejected.
 - Alternative: keep counters in Dexie updated on write. A second source of truth that sync merges would have to maintain. Rejected.
 - Budget: 5,000 cards x 5 predicates with at most three `normalize` calls per card is well under the 1 s first-screen budget; the e2e perf test proves it on the throttled run.
@@ -80,9 +80,9 @@ In `matches`, team, manufacturer, set, subset, insert and parallel compare `norm
 ### D8. Dashboard is home; filters live in `App`
 `View` gains `{ name: "dashboard" }`, which becomes the initial view. `App` holds `filters` in state and passes `filters` and `onFiltersChange` to `CollectionScreen` (which drops its own `useState`). A tile tap sets `{ ...emptyFilters, ...tile.filters }` and shows the list; Browse collection sets `emptyFilters`. Because the state sits above the views, the list keeps its filters across card detail and edit.
 
-`scan` and `form` views carry `from: "dashboard" | "list"` for new cards, so cancel, save and back return to the screen that opened them. Back handling: list goes to dashboard, dashboard exits, the rest as today. The `CollectionScreen` header gets a Back button.
+`scan`, `settings` and new-card `form` views carry `from: "dashboard" | "list"`, so cancel, save, Back and the hardware back return to the screen that opened them. Back handling: list goes to dashboard, dashboard exits, the rest as today. The `CollectionScreen` header gets a Back button.
 
-The Add card button and its sheet move out of `CollectionScreen` into a small `AddCard` component used by both screens, so each screen keeps exactly one add entry. `DESIGN.md`'s "Don't add a second add entry point" is reworded to "one add button per screen".
+The Add card button and its sheet move out of `CollectionScreen` into a small `AddCard` component used by both screens, so each screen keeps exactly one add entry. `DESIGN.md`'s three single-add-button lines (Overview "one bottom-anchored add button", Buttons "the single entry point for adding", Don't "add a second add entry point") are reworded to one add button per screen, on the list and the dashboard.
 - Alternative: a router library. A dependency for two more states. Rejected.
 - Alternative: no Add card on the dashboard. Adding a card, the most frequent action, would cost an extra tap from launch. Rejected.
 
@@ -97,11 +97,12 @@ Tiles are pocket buttons (the `button` styles) in a two-column CSS grid with `--
 - [Owner enters the team as "Braves"] → Not counted by the tile. The owner can correct the team; aliases are out of scope.
 - [Owner's idea of Topps Gold includes Gold Refractor or Gold Foil] → The definition is one entry in `TILES`; widening it is a later spec change.
 - [Normalizing filter values adds cost per card] → Measured by the existing 5,000-card perf test on both the dashboard and the list.
-- [Archive order] → Archive `add-collection-foundation` and `redesign-ui-binder-pockets` first; archive refuses this change's MODIFIED deltas before that.
+- [The foundation's "Card record" and "Search and filter" texts do not mention subset, insert or the condition list] → The ADDED requirements here extend them by name; a later spec tidy can fold them together once all three changes are archived.
+- [This change archives before the foundation] → Archive creates `card-catalog`, `drive-storage` and `collection-list` with a placeholder Purpose; the later archives add their requirements to them and the Purpose is filled in by hand then.
 
 ## Migration Plan
 
-No data migration. Ship the APK through the existing release flow; the first sync after install writes the file as version 2. Rollback: install the previous APK; it reads the version 2 file (it ignores the version) and keeps subsets and inserts on cards it does not edit.
+No data migration. Ship the APK through the existing release flow; the first sync after install rewrites the file as version 2 even when no card changed (D2). Rollback: install the previous APK; it reads the version 2 file (it ignores the version) and keeps subsets and inserts on cards it does not edit.
 
 ## Open Questions
 
