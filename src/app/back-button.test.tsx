@@ -16,7 +16,8 @@ const native = vi.hoisted(() => {
     exitApp: vi.fn(),
     addListener: vi.fn(async (event: string, handler: () => void) => {
       if (event === "backButton") handlers.push(handler);
-      return { remove: async () => void handlers.splice(handlers.indexOf(handler), 1) };
+      // indexOf is -1 once removed; splice(-1, 1) would then drop an unrelated, newer handler.
+      return { remove: async () => void (handlers.includes(handler) && handlers.splice(handlers.indexOf(handler), 1)) };
     }),
   };
 });
