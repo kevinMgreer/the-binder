@@ -24,7 +24,7 @@ Capacitor 8 on Android 16 (target SDK 36) draws edge to edge, so the WebView run
 - Alternatives: pushing a `history` entry per screen (a router for four screens, and exit behaviour still needs the plugin); handling it natively in `MainActivity` (cannot see the view state).
 - Keeps $0: no new dependency.
 
-**D3. Required marking and the blocked-save message live in `Field` and `CardForm`, not the schema.** `Field` gets a `required` prop that adds visible text ("required"), not just a colour. `CardForm` already holds the validation result; on a refused save it renders a summary next to the Save button naming the fields and focuses the first invalid input (the browser scrolls it into view). The schema is the single list of required fields; the form derives the marks from it so the two cannot drift.
+**D3. Required marking and the blocked-save message live in `Field` and `CardForm`, not the schema.** `Field` gets a `required` prop that adds visible text ("required"), not just a colour. `CardForm` already holds the validation result; on a refused save it focuses the first invalid input (the browser scrolls it into view, so the user lands on a field with its error showing) and renders a summary next to the Save button naming all the fields. On a long form the summary is therefore off-screen right after the jump; the user chose the jump over keeping the summary in view. The schema is the single list of required fields; the form derives the marks from it so the two cannot drift.
 - Alternatives: native HTML `required` attributes (the form is `noValidate` on purpose, and Android's bubble is poor); a toast (disappears, not tied to the fields).
 - Keeps $0: no new dependency.
 

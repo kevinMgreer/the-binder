@@ -13,9 +13,9 @@ The system SHALL let the user take a photo of a card's front and back with the d
 - **WHEN** the user taps "Scan card" on an Android phone
 - **THEN** the rear camera opens, takes the front photo, then prompts for the back photo, with an option to skip the back
 
-#### Scenario: Camera permission denied
-- **WHEN** the user denies camera permission
-- **THEN** the system offers to pick images from the device instead
+#### Scenario: Camera closed without a photo
+- **WHEN** the user backs out of the camera without taking a photo
+- **THEN** the app returns to where the user started, nothing is added, and "Pick from photos" remains available
 
 #### Scenario: Choose existing image
 - **WHEN** the user chooses "Pick from photos" and selects an image
