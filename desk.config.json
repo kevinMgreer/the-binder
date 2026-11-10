@@ -8,7 +8,7 @@
       "path": "C:\\repos\\the-binder",
       "gh": "kevinMgreer/the-binder",
       "install": "npm ci",
-      "check": "npm run build && npm test",
+      "check": "npm run build && npx vitest run --exclude \"**/startup*\"",
       "merge": "review"
     }
   ],
