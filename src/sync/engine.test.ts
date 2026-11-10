@@ -45,7 +45,7 @@ describe("collection folder in Drive", () => {
   test("first sign-in creates an empty data file", async () => {
     const remote = new InMemoryRemoteStore();
     await install(remote).engine.syncNow();
-    expect((await remote.readCollection())?.file).toMatchObject({ schemaVersion: 1, cards: [] });
+    expect((await remote.readCollection())?.file).toMatchObject({ schemaVersion: 2, cards: [] });
   });
 
   test("reinstall or second device uses the existing collection without duplicating it", async () => {
@@ -84,9 +84,29 @@ describe("human-readable data file", () => {
     await saveCard(a.deps, card({ player: "Ronald Acuña Jr.", cardNumber: "27" }), { front: photo() });
     await a.engine.syncNow();
     const { file } = (await remote.readCollection())!;
-    expect(file.schemaVersion).toBe(1);
+    expect(file.schemaVersion).toBe(2);
     expect(file.cards[0].player).toBe("Ronald Acuña Jr.");
     expect(file.cards[0].photos.front?.name).toMatch(/^2024-.*-27-.*front.*\.webp$/);
+  });
+});
+
+describe("version 1 file from an earlier install", () => {
+  test("is rewritten once as version 2 with the same cards, then left alone", async () => {
+    const remote = new InMemoryRemoteStore();
+    const old = card();
+    remote.writeAsOtherInstall({ schemaVersion: 1, updatedAt: at(0), cards: [old] });
+    const a = install(remote);
+    await a.collection.putSynced([old]);
+    const write = vi.spyOn(remote, "writeCollection");
+
+    await a.engine.syncNow();
+    expect(write).toHaveBeenCalledTimes(1);
+    const { file } = (await remote.readCollection())!;
+    expect(file.schemaVersion).toBe(2);
+    expect(file.cards).toEqual([old]);
+
+    await a.engine.syncNow();
+    expect(write).toHaveBeenCalledTimes(1);
   });
 });
 
