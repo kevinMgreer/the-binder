@@ -18,6 +18,12 @@
 - [x] 3.4 Write the touch-target Playwright check first at 360 by 800 (every button, chip, input and row at least 48 dp high and wide, 8 dp to the next control) and run it against the unstyled screens to see it fail; verify it passes after 2.2 and 3.1 to 3.3 ("Touch targets")
 - [x] 3.5 Style the empty collection, no-match, sync error, needs-decision dialog, confirm dialogs, update banner and offline photo note from tokens; verify an e2e test shows each at 360 by 800 in both themes with legible text, 48 dp controls and nothing under the system bars ("States at phone size")
 
+## 3b. Revisions after the first phone review
+
+- [ ] 3.6 Write the failing e2e tests first, then rebuild the list header per D9 and the filters per D7: one Add card button opening a sheet with Scan card, Pick from photos and Enter by hand; one Filter button with a count badge opening a sheet with the existing labelled fields, Show N cards and Clear all; removable chips only for applied filters; at least three rows visible at 360 by 800; update the existing specs that click the old buttons or the old panel; verify the full Playwright suite passes ("One add action", "First screen", "Filter applied", "Remove a filter", "Nothing applied")
+- [ ] 3.7 Write the failing e2e test first, then make the detail photos thumbnails per D10 that open the existing photo view; verify the Edit and Delete buttons are visible without scrolling past the photos at 360 by 800 on a card with two photos, and the existing photo tests pass
+- [ ] 3.8 Fix the count wording ("1 card", "N cards") in the header; verify an e2e assertion for one card and several
+
 ## 4. On the phone
 
 - [ ] 4.1 Install the debug build, switch Android between dark and light with `adb shell cmd uimode night yes` and `no`, and screenshot the list, detail, form, scan and settings screens in each; verify both themes render with legible text and the pocket look, nothing sits under the system bars, and there is no white flash at launch in dark mode

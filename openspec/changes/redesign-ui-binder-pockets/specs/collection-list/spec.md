@@ -5,15 +5,19 @@ Defines what the collection list screen shows so a card can be found and a new o
 ## ADDED Requirements
 
 ### Requirement: The list leads with finding a card
-The system SHALL show, on the collection screen, the collection count and the sync state in a header, then a search field, then filter chips, then the card list, with Scan card as the single primary button. Add card, Pick from photos, Settings and Sign in again SHALL stay reachable as secondary actions.
+The system SHALL show, on the collection screen, a header with the title, the collection count, the sync state and Settings, then one row holding the search field and a Filter button, then the card list. It SHALL offer exactly one add action, a primary "Add card" button fixed above the system bars, which opens a sheet with Scan card, Pick from photos and Enter by hand.
 
 #### Scenario: First screen
 - **WHEN** the collection screen opens on a 360 by 800 phone, with the update banner showing
-- **THEN** the count, the sync state, the search field and the filter chips are visible without scrolling, followed by the first card rows
+- **THEN** the count, the sync state, the search field and the Filter button are visible without scrolling, and at least three card rows are visible below them
 
-#### Scenario: Secondary actions stay reachable
+#### Scenario: One add action
 - **WHEN** the collection screen is shown
-- **THEN** Add card, Pick from photos, Settings and (when the session needs it) Sign in again are each reachable in one tap, and only Scan card is drawn as the primary button
+- **THEN** exactly one add button is visible, and tapping it shows Scan card, Pick from photos and Enter by hand, each reachable in one more tap
+
+#### Scenario: Sign in again stays reachable
+- **WHEN** the session needs a new sign-in
+- **THEN** Sign in again is shown in the header area in one tap
 
 ### Requirement: Sync state is always visible
 The system SHALL show the sync state in words in the header, covering every state `SyncIndicator` has: syncing, error, paused, needs-decision, synced, and unsynced with the pending count.
@@ -49,12 +53,16 @@ The system SHALL mark a serial-numbered card with its existing serial label (for
 - **THEN** its row shows no tag and no empty space reserved for one
 
 ### Requirement: The active filter is clear
-The system SHALL show one chip per filter group (including Year); a chip whose filter has a value SHALL be in the accent colour and expose `aria-pressed="true"`, and the list SHALL show how many cards match.
+The system SHALL put all filters behind one Filter button that opens a full-height sheet with the existing labelled fields grouped under headings, a Show N cards button and a Clear all button. It SHALL show each applied filter as a removable chip below the search row, show a count badge on the Filter button, and show how many cards match. No chips appear while no filter is applied.
 
 #### Scenario: Filter applied
-- **WHEN** the user sets a Year value in the filters
-- **THEN** the Year chip shows the accent colour with `aria-pressed="true"` and the header or list shows the number of matching cards
+- **WHEN** the user sets a Year value in the filter sheet and taps Show cards
+- **THEN** the sheet closes, a Year chip with a remove control appears below the search row, the Filter button shows a count of 1, and the list shows the number of matching cards
 
-#### Scenario: Chip opens its field
-- **WHEN** the user taps a chip
-- **THEN** the filter panel opens at that group's existing labelled fields
+#### Scenario: Remove a filter
+- **WHEN** the user taps the remove control on an applied chip
+- **THEN** that filter clears and the list updates
+
+#### Scenario: Nothing applied
+- **WHEN** no filter is applied
+- **THEN** no chip row is shown and the Filter button has no badge
