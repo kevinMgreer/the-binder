@@ -120,6 +120,7 @@ function labelFor(key: FieldKey, draft: Draft): string {
 export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => toDraft(card));
   const [photos, setPhotos] = useState<Photos>({});
+  const [preparing, setPreparing] = useState({ front: false, back: false });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [blocked, setBlocked] = useState<string[]>([]);
   const [duplicate, setDuplicate] = useState<{ existing: Card; added: Card }>();
@@ -250,8 +251,16 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   return (
     <form onSubmit={submit} noValidate>
       <h2>{card ? "Edit card" : "Add card"}</h2>
-      <PhotoSlot side="front" card={card} captured={photos.front} onChange={(p) => setPhotos((s) => ({ ...s, front: p }))} />
-      <PhotoSlot side="back" card={card} captured={photos.back} onChange={(p) => setPhotos((s) => ({ ...s, back: p }))} />
+      {(["front", "back"] as const).map((side) => (
+        <PhotoSlot
+          key={side}
+          side={side}
+          card={card}
+          captured={photos[side]}
+          onChange={(p) => setPhotos((s) => ({ ...s, [side]: p }))}
+          onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
+        />
+      ))}
       {(photos.front || photos.back || card?.photos.front || card?.photos.back) && (
         <button type="button" disabled={identifying} onClick={identify}>
           Identify with Claude
@@ -303,7 +312,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
         </p>
       )}
       <div className="actions">
-        <button type="submit" className="primary">
+        <button type="submit" className="primary" disabled={preparing.front || preparing.back}>
           Save
         </button>
         <button type="button" onClick={onCancel}>
