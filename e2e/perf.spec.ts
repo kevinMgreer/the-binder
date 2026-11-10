@@ -1,17 +1,44 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // Runs alone, after the other tests, so CPU contention does not distort the timing (see playwright.config.ts).
-const rows = (page: import("@playwright/test").Page) => page.getByTestId("card-row");
+// Measured on a production bundle (the perf project's baseURL): the unbundled dev server adds module-loading time the shipped app does not have.
+const rows = (page: Page) => page.getByTestId("card-row");
+const cardsTile = (page: Page) => page.getByTestId("tile").first();
 
-test("Large collection: first screen within 1 s with 4x CPU throttling", async ({ page, context }) => {
-  // Measured on a production bundle: the unbundled dev server adds module-loading time the shipped app does not have.
-  await page.goto("http://localhost:4173/?seed=5000");
-  await expect(page.getByTestId("summary")).toHaveText("5000 cards, 5000 distinct");
+async function throttledReload(page: Page, context: import("@playwright/test").BrowserContext) {
+  await page.goto("/?seed=5000");
+  await expect(cardsTile(page)).toHaveAttribute("aria-label", /^Cards, 5\D?000$/);
   const cdp = await context.newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   await page.reload();
+}
+
+test("Large collection: the dashboard shows 5,000 cards within 1 s with 4x CPU throttling", async ({ page, context }) => {
+  await throttledReload(page, context);
+  // Not the first render, which shows zeros before the cards are read.
+  await expect(cardsTile(page)).toHaveAttribute("aria-label", /^Cards, 5\D?000$/);
+  const ready = await page.evaluate(() => performance.now());
+  test.info().annotations.push({ type: "dashboard-ms", description: String(Math.round(ready)) });
+  expect(ready).toBeLessThan(1000);
+});
+
+test("Large collection: the list shows its first rows within 1 s of tapping Browse collection", async ({ page, context }) => {
+  await throttledReload(page, context);
+  await expect(cardsTile(page)).toHaveAttribute("aria-label", /^Cards, 5\D?000$/);
+  await page.evaluate(() =>
+    document.addEventListener(
+      "click",
+      (e) => {
+        if ((e.target as Element).closest("button")?.textContent === "Browse collection") performance.mark("browse-tap");
+      },
+      true,
+    ),
+  );
+  await page.getByRole("button", { name: "Browse collection" }).click();
   await expect(rows(page).first()).toBeVisible();
-  const firstRender = await page.evaluate(() => performance.getEntriesByName("collection-first-render")[0].startTime);
-  test.info().annotations.push({ type: "first-render-ms", description: String(Math.round(firstRender)) });
-  expect(firstRender).toBeLessThan(1000);
+  const ms = await page.evaluate(
+    () => performance.getEntriesByName("collection-first-render")[0].startTime - performance.getEntriesByName("browse-tap")[0].startTime,
+  );
+  test.info().annotations.push({ type: "list-ms", description: String(Math.round(ms)) });
+  expect(ms).toBeLessThan(1000);
 });
