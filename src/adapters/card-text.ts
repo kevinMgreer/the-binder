@@ -5,7 +5,7 @@ const SETS = [
   "Chrome", "Heritage", "Update", "Series 1", "Series 2", "Prizm", "Optic", "Select", "Mosaic", "Stadium Club", "Allen & Ginter", "Gypsy Queen",
 ];
 
-const SERIAL_LINE = /^(\d{1,4}|\?{1,2})\s*\/\s*(\d{1,4})$/;
+const SERIAL_LINE = /^(\d{1,4}|\?{1,2})?\s*\/\s*(\d{1,4})$/;
 const COPYRIGHT_YEAR = /(?:©|\(c\)|copyright)\s*((?:19|20)\d\d)\b/i;
 const ANY_YEAR = /\b((?:19|20)\d\d)\b/;
 const LABELLED_NUMBER = /(?:\bNO\b\.?|#)\s*([A-Z]{0,4}\d{1,4}(?:-\d{1,3})?)\b/i;
@@ -47,8 +47,9 @@ export function parseCardText(text: string, now = new Date()): Suggestion {
 
   for (const line of lines) {
     const [, serial, run] = line.match(SERIAL_LINE) ?? [];
-    if (!run || (serial !== "?" && serial !== "??" && Number(serial) > Number(run))) continue;
-    const legible = /^\d/.test(serial);
+    if (!run) continue;
+    const legible = /^\d/.test(serial ?? "");
+    if (legible && Number(serial) > Number(run)) continue;
     suggestion.parallel = { name: "", serial: legible ? Number(serial) : null, serialLegible: legible, printRun: Number(run) };
     break;
   }
