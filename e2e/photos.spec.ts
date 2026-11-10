@@ -62,7 +62,18 @@ test("Skipping the back keeps only the front photo", async ({ page }) => {
   await expect(page.getByAltText("Back photo")).toHaveCount(0);
 });
 
-test("Camera permission denied offers to pick from photos instead", async ({ page }) => {
+test("Camera closed without a photo returns to the list and adds nothing", async ({ page }) => {
+  await page.evaluate(() => {
+    (window as unknown as Win).__ports.photoSource.next = null;
+  });
+  await page.getByRole("button", { name: "Scan card" }).click();
+  await expect(page.getByRole("button", { name: "Scan card" })).toBeVisible();
+  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+  await expect(page.getByRole("button", { name: "Pick from photos" })).toBeVisible();
+});
+
+// Not a spec scenario: Android's camera app never reports a denied permission, but the app still handles one if a source raises it.
+test("A denied-permission error from the photo source offers to pick from photos instead", async ({ page }) => {
   await page.evaluate(async () => {
     const { PermissionDeniedError } = await import("/src/ports/index.ts");
     (window as unknown as Win).__ports.photoSource.error = new PermissionDeniedError();
