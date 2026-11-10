@@ -68,7 +68,8 @@ export class SyncEngine {
   }
 
   async refreshStatus() {
-    this.setStatus({ ...this.status, pending: await this.deps.collection.pendingChanges() });
+    const pending = await this.deps.collection.pendingChanges();
+    this.setStatus({ ...this.status, pending });
   }
 
   /** Call after every local save: updates the pending count and schedules a push. */

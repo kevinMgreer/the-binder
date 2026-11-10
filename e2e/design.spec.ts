@@ -468,13 +468,6 @@ test.describe("States at phone size", () => {
       return (hi + 0.05) / (lo + 0.05);
     });
 
-  // The app's own sync can overwrite a status set right after load, so set it again until it shows.
-  const forceStatus = (page: Page, status: object, shown: Locator) =>
-    expect(async () => {
-      await setStatus(page, status);
-      await expect(shown).toBeVisible({ timeout: 500 });
-    }).toPass();
-
   const states: [string, (page: Page) => Promise<Locator>][] = [
     ["empty collection", async (page) => page.getByTestId("empty-state")],
     [
@@ -488,17 +481,15 @@ test.describe("States at phone size", () => {
     [
       "sync error",
       async (page) => {
-        const target = page.getByTestId("sync-status");
-        await forceStatus(page, { state: "error", pending: 2 }, target.filter({ hasText: "Sync problem" }));
-        return target;
+        await setStatus(page, { state: "error", pending: 2 });
+        return page.getByTestId("sync-status");
       },
     ],
     [
       "needs-decision dialog",
       async (page) => {
-        const target = page.getByRole("dialog", { name: "Data file missing" });
-        await forceStatus(page, { state: "needs-decision", pending: 0 }, target);
-        return target;
+        await setStatus(page, { state: "needs-decision", pending: 0 });
+        return page.getByRole("dialog", { name: "Data file missing" });
       },
     ],
     [
