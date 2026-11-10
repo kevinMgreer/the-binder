@@ -31,5 +31,5 @@
 
 ## 5. Finish
 
-- [ ] 5.1 Run the impeccable finish review on the built screens, fix its material findings in one batch, and write `DESIGN.md` with the documenter; verify the reviewer's disposition is ship and `DESIGN.md` records the tokens
+- [x] 5.1 Run the impeccable finish review on the built screens, fix its material findings in one batch, and write `DESIGN.md` with the documenter; verify the reviewer's disposition is ship and `DESIGN.md` records the tokens
 - [ ] 5.2 Run `openspec validate redesign-ui-binder-pockets --strict`, then archive the change with `/opsx:archive` once everything is merged; verify `app-theme` and `collection-list` appear under `openspec/specs/`

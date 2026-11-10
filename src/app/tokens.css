@@ -4,8 +4,9 @@
 
   --color-page: #f4f5f7;
   --color-surface: #ffffff;
-  --color-pocket-top: #ffffffcc;
+  --color-pocket-top: var(--color-pocket);
   --color-pocket: #e4e8f0cc;
+  --color-scrim: #14161a66;
   --color-pocket-edge: #14161a1f;
   --color-text: #14161a;
   --color-text-muted: #4a5160;
@@ -43,6 +44,7 @@
     --color-surface: #17181c;
     --color-pocket-top: #ffffff14;
     --color-pocket: #ffffff08;
+    --color-scrim: #000000a6;
     --color-pocket-edge: #ffffff21;
     --color-text: #eceff4;
     --color-text-muted: #aab3c2;
