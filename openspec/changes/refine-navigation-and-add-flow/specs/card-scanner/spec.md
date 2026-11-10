@@ -1,0 +1,39 @@
+## MODIFIED Requirements
+
+### Requirement: Scan a card with the rear camera
+The system SHALL open an in-app scanner on the rear camera when the user taps "Scan front" or "Scan back" on the card form, and SHALL detect the card's edges and save the photo straightened and cropped to the card.
+
+#### Scenario: Scanner opens on the rear camera
+- **WHEN** the user taps "Scan front" on the add form on a phone that has Google Play services
+- **THEN** the scanner opens showing the rear camera, not the front camera
+
+#### Scenario: Photo cropped to the card
+- **WHEN** the user captures a card lying on a table
+- **THEN** the saved photo shows only the card, straightened, with the surrounding table cropped away
+
+#### Scenario: Front then back
+- **WHEN** the user finishes the front scan
+- **THEN** the form shows the front photo, and its back slot offers "Scan back" and "Pick back from photos"; the user skips the back by not using them
+
+#### Scenario: Retake
+- **WHEN** the user is not happy with a scan and retakes it before accepting
+- **THEN** the retaken photo replaces the earlier one and only one photo is saved for that side
+
+#### Scenario: Retake from the card form
+- **WHEN** the user taps "Retake front" or "Retake back" on the card form, shown in place of "Scan front" or "Scan back" once that side has a photo
+- **THEN** the same rear-camera scanner opens and the new photo replaces that side's photo
+
+### Requirement: Scanner failure never blocks capture
+The system SHALL add nothing when the user cancels the scanner, and SHALL fall back to the system camera when the scanner cannot run.
+
+#### Scenario: User cancels the scanner
+- **WHEN** the user closes the scanner without accepting a photo
+- **THEN** the app returns to the card form as it was and no photo or card is added
+
+#### Scenario: Scanner unavailable
+- **WHEN** the user taps "Scan front" or "Scan back" on a phone without Google Play services, or where the scanner's module cannot be fetched because the phone is offline
+- **THEN** the system camera opens instead and capture continues as before, with no error shown
+
+#### Scenario: Pick from photos is unaffected
+- **WHEN** the user taps "Pick front from photos" or "Pick back from photos"
+- **THEN** the system image picker opens and the scanner is not involved
