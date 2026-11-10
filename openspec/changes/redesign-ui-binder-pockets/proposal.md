@@ -25,4 +25,4 @@ The app has no visual design: unstyled white screens with default browser contro
 - `src/app/app.css` is replaced by `src/app/tokens.css` plus component styles that use only tokens; `src/app/*.tsx` gain class names and a few structural elements, with no logic changes.
 - New tests: no raw colours outside the token file, token contrast, and the touch-target size.
 - `DESIGN.md` (the project's durable design record, written by the impeccable documenter at finish) and the surface brief for the list screen.
-- No new runtime dependency, no network, no cost; Roboto and Roboto Mono are the Android system faces and are not downloaded.
+- No new runtime dependency, no network, no cost; Roboto and the generic monospace face are the Android system faces and are not downloaded.
