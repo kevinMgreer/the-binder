@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(BinderAuthPlugin.class);
         registerPlugin(BinderScannerPlugin.class);
+        registerPlugin(BinderTextPlugin.class);
         super.onCreate(savedInstanceState);
         matchSystemBarsToTheme();
     }

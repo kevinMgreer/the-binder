@@ -7,6 +7,7 @@ import { capacitorNativeAuth } from "./adapters/capacitor-native-auth";
 import { capacitorScanner } from "./adapters/capacitor-scanner";
 import { ScannerPhotoSource } from "./adapters/document-scanner-photo-source";
 import { ClaudeRecognizer } from "./adapters/claude-recognizer";
+import { MlKitRecognizer, capacitorTextReader } from "./adapters/mlkit-recognizer";
 import { BinderDb } from "./adapters/db";
 import { DexieCollectionStore } from "./adapters/dexie";
 import { DriveRemoteStore } from "./adapters/drive-remote-store";
@@ -46,6 +47,7 @@ if (Capacitor.isNativePlatform()) {
   ports.auth = new NativeGoogleAuthProvider(capacitorNativeAuth, {
     webClientId: import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string,
   });
+  ports.ocr = new MlKitRecognizer(capacitorTextReader());
   ports.appInfo = new CapacitorAppInfo();
   ports.releaseFeed = new GitHubReleaseFeed("kevinMgreer/the-binder");
 }
