@@ -7,9 +7,9 @@ The app has no visual design: unstyled white screens with default browser contro
 - A single design-token file defines colour roles, type scale, spacing (8 dp), radius, touch-target size and both themes; every screen uses only those tokens.
 - The look is "Nine-Pocket Binder", chosen by the owner: a black archival page where each card row is a clear pocket with a lit top edge, one gold accent for the active filter, the primary Scan action and serial-number tags. The light theme is designed in its own right, not an inverted dark one.
 - The theme follows Android's light or dark setting.
-- The collection list becomes list-first: count and sync state in a header, search, filter chips, pocket rows with thumbnail, name, year, set and number, and a gold serial tag; one gold Scan card button above the system bars.
+- The collection list becomes list-first: count and sync state in a header, search with one Filter button (a sheet of the existing fields; removable chips only for applied filters), pocket rows with thumbnail, name, year, set and number, and a gold serial tag; one gold Add card button above the system bars that opens a sheet with Scan card, Pick from photos and Enter by hand. The card detail screen shows its photos as thumbnails that open the zoom view.
 - Detail, card form, scan, settings and sign-in screens are restyled on the same tokens, with 48 dp touch targets and the destructive actions (delete, sign out) kept apart from primary ones.
-- Out of scope: any change to what the app does, which fields exist, navigation structure or sync; a theme switcher inside the app (it follows the phone); animations beyond standard state transitions; new icons or illustrations; a token build pipeline or component library.
+- Out of scope: any change to what the app does, which fields exist, the screens and how they link, or sync (the add and filter sheets and the photo thumbnails change how existing actions are reached, not what they do); a theme switcher inside the app (it follows the phone); animations beyond standard state transitions; new icons or illustrations; a token build pipeline or component library.
 
 ## Capabilities
 

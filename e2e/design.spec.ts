@@ -124,6 +124,20 @@ for (const size of PHONES) {
       for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(sheet.getByRole("button", { name })).toBeVisible();
     });
 
+    test("A sheet takes focus when it opens and closes on Escape", async ({ page }) => {
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      await expect(page.getByRole("button", { name: "Close" })).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog", { name: "Add a card" })).toHaveCount(0);
+    });
+
+    test("Filter and chip names say what they do", async ({ page }) => {
+      await expect(page.getByRole("button", { name: "Filter", exact: true })).toBeVisible();
+      await applyYearFrom(page, "2024");
+      await expect(page.getByRole("button", { name: "Filter, 1 applied", exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Remove Year filter: 2024–", exact: true })).toBeVisible();
+    });
+
     test("Sign in again stays reachable in the header", async ({ page }) => {
       await setStatus(page, { state: "paused", pending: 0 });
       await expect(page.locator("header").getByRole("button", { name: "Sign in again" })).toBeVisible();

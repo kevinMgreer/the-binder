@@ -27,7 +27,7 @@ p { margin: 0 0 var(--space-2); }
 :focus-visible { outline: 2px solid var(--color-accent-text); outline-offset: 2px; }
 
 /* The pocket: a see-through gradient, a hairline edge and a lit top edge. No blur, no shadow. */
-button, input:not([type="checkbox"]), select, textarea, summary, [role="dialog"], [role="alertdialog"], .banner, .zoom {
+button, input:not([type="checkbox"]), select, textarea, [role="dialog"], [role="alertdialog"], .banner, .zoom {
   background: linear-gradient(var(--color-pocket-top), var(--color-pocket));
   border: 1px solid var(--color-pocket-edge);
   box-shadow: inset 0 1px 0 var(--color-pocket-top);
@@ -35,7 +35,7 @@ button, input:not([type="checkbox"]), select, textarea, summary, [role="dialog"]
   color: var(--color-text);
   font: inherit;
 }
-button, summary, .banner a {
+button, .banner a {
   box-sizing: border-box;
   min-width: var(--target-min);
   min-height: var(--target-min);

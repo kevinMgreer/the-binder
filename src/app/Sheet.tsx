@@ -19,10 +19,13 @@ export function Sheet({ label, onClose, full, foot, children }: Props) {
 
   return (
     <div className="backdrop" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={label} className={full ? "sheet full" : "sheet"} onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" aria-label={label} className={full ? "sheet full" : "sheet"}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.key === "Escape" && onClose()}
+      >
         <div className="sheet-head">
           <h2>{label}</h2>
-          <button onClick={onClose}>Close</button>
+          <button autoFocus onClick={onClose}>Close</button>
         </div>
         <div className="sheet-body">{children}</div>
         {foot && <div className="sheet-foot">{foot}</div>}

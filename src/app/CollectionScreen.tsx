@@ -109,7 +109,7 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
             onChange={(e) => set("search", e.target.value)}
           />
         </Field>
-        <button onClick={() => setSheet("filter")}>
+        <button aria-label={applied.length > 0 ? `Filter, ${applied.length} applied` : undefined} onClick={() => setSheet("filter")}>
           Filter
           {applied.length > 0 && <span className="badge">{applied.length}</span>}
         </button>
@@ -117,7 +117,7 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
       {applied.length > 0 && (
         <div className="chips">
           {applied.map((a) => (
-            <button key={a.name} className="chip" aria-label={`Remove ${a.name} filter`} onClick={() => setFilters((cur) => ({ ...cur, ...a.clear }))}>
+            <button key={a.name} className="chip" aria-label={`Remove ${a.name} filter${a.text === a.name ? "" : `: ${a.text.replace(`${a.name} `, "")}`}`} onClick={() => setFilters((cur) => ({ ...cur, ...a.clear }))}>
               {a.text}
             </button>
           ))}
