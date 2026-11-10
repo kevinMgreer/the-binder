@@ -23,6 +23,10 @@ The system SHALL open an in-app scanner on the rear camera when the user taps "S
 - **WHEN** the user is not happy with a scan and retakes it before accepting
 - **THEN** the retaken photo replaces the earlier one and only one photo is saved for that side
 
+#### Scenario: Retake from the card form
+- **WHEN** the user taps "Retake front" or "Retake back" on the card form
+- **THEN** the same rear-camera scanner opens and the new photo replaces that side's photo
+
 ### Requirement: Scanner failure never blocks capture
 The system SHALL add nothing when the user cancels the scanner, and SHALL fall back to the system camera when the scanner cannot run.
 

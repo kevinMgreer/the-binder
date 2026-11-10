@@ -12,11 +12,11 @@
 ## 3. On the phone
 
 - [ ] 3.1 Tap "Scan card" and verify the scanner opens on the rear camera and a card on a table is saved straightened and cropped to the card ("Scanner opens on the rear camera", "Photo cropped to the card")
-- [ ] 3.2 Scan the front, skip the back, retake the front once, and cancel the scanner once; verify one front photo is saved, no back photo, and cancelling adds nothing ("Front then back", "Retake", "User cancels the scanner")
+- [ ] 3.2 Scan the front, skip the back, retake the front once, and cancel the scanner once; then on the card form tap "Retake front" and "Retake back"; verify one front photo is saved, no back photo, cancelling adds nothing, and both retake buttons open the scanner and replace that side's photo ("Front then back", "Retake", "Retake from the card form", "User cancels the scanner")
 - [ ] 3.3 Scan a serial-numbered card and verify the stored full photo is at most 500 KB and the serial stamp is readable when zoomed ("Scanned photo stays within the size budget")
-- [ ] 3.4 Verify the fallback: with the phone offline on a fresh install, or any other way to make the scanner unavailable, "Scan card" opens the system camera with no error; if the scanner cannot be made unavailable on this phone, record that and rely on the 1.1 test ("Scanner unavailable")
+- [ ] 3.4 On a fresh install while online, tap "Scan card" for the first time and verify the scanner (not the system camera) opens; if it falls back while the module downloads, add the `ModuleInstallClient` pre-download to the plugin and verify again. Then verify the fallback: with the phone offline on a fresh install, or any other way to make the scanner unavailable, "Scan card" opens the system camera with no error; if the scanner cannot be made unavailable on this phone, record that and rely on the 1.1 test ("Scanner unavailable")
 
 ## 4. Specs
 
-- [ ] 4.1 Reword the foundation's `card-photos` scenario "Camera capture on Android" to refer to the scanner and close the rear-lens note on its task 3.2 (design D5); verify `openspec validate add-collection-foundation --strict` passes
+- [ ] 4.1 Reword the foundation's `card-photos` scenario "Camera capture on Android" to refer to the scanner and close the rear-lens note on its task 3.2, and add a one-line "superseded by scan-card-with-document-scanner" note to the foundation design D7, which still describes capture through `@capacitor/camera` (design D5); verify `openspec validate add-collection-foundation --strict` passes
 - [ ] 4.2 Run `openspec validate scan-card-with-document-scanner --strict`, then, once 3.1 to 3.4 are ticked and merged, archive the change with `/opsx:archive`; verify `card-scanner` appears under `openspec/specs/`

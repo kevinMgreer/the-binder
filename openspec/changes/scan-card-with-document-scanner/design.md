@@ -16,7 +16,7 @@
 
 ## Decisions
 
-**D1. Use Google ML Kit Document Scanner (`play-services-mlkit-document-scanner`).** It is a ready-made screen: rear camera, live edge detection, perspective correction, crop with manual adjust, retake, on device. It is configured with a page limit of 1, JPEG output and gallery import off (the app has its own "Pick from photos"). It brings no camera permission flow of our own: the scanner activity handles it. The scanner module is delivered by Google Play services.
+**D1. Use Google ML Kit Document Scanner (`play-services-mlkit-document-scanner`).** It is a ready-made screen: rear camera, live edge detection, perspective correction, crop with manual adjust, retake, on device. It is configured with `SCANNER_MODE_BASE` (crop and rotate only: the default FULL mode adds image filters and cleaning tools that are out of scope), a page limit of 1, JPEG output and gallery import off (the app has its own "Pick from photos"). It brings no camera permission flow of our own: the scanner activity handles it. The scanner module is delivered by Google Play services.
 - Alternatives: CameraX plus OpenCV (full control and no Play services, but a native library of many MB, custom UI, and tuning edge detection on shiny cards and busy backgrounds); CameraX plus our own edge detection (the same UI work and worse detection); keep the system camera and crop by hand in the app (still the wrong lens, and manual cropping on every card); a community Capacitor document-scanner plugin (not checked as maintained, and a dependency we do not control; a local plugin is about 80 lines).
 - Keeps $0: the API is free, runs on the device and needs no account or key.
 
@@ -36,9 +36,10 @@
 
 ## Risks / Trade-offs
 
-- [The cropped image is lower resolution than the sensor, so a small serial stamp is unreadable after compression] → measure on the phone with a real serial-numbered card (task 3.3); if it fails, switch the scanner to full mode or reconsider D1 before merging.
+- [The cropped image is lower resolution than the sensor, so a small serial stamp is unreadable after compression] → measure on the phone with a real serial-numbered card (task 3.3); if it fails, reconsider D1 before merging (the scanner mode does not change output resolution).
 - [First use offline cannot fetch the scanner module] → the unavailable fallback opens the system camera; verified by a unit test and, if reproducible, on the phone.
-- [Dependence on Google Play services for scanning] → acceptable for one Samsung phone; the fallback covers the rest. Text recognition (D8 of the foundation) already depends on the same services.
+- [Dependence on Google Play services for scanning] → acceptable for one Samsung phone; the fallback covers the rest. This is the app's first feature that needs Play services to download a module on first use: foundation D8 chose the bundled text-recognition model precisely to avoid that, so this change takes on the "first offline scan can fail" trade-off on purpose and the system-camera fallback is what covers it.
+- [On a fresh install, the first scan while the module is still downloading is mapped to `UNAVAILABLE` and quietly opens the system camera] → checked on the phone (task 3.4); if it happens, download the module ahead of time with `ModuleInstallClient` when the plugin loads.
 - [Edge detection fails on a card against a similar-coloured background] → the scanner lets the user adjust the crop corners or retake; no code of ours.
 - [The scanner's own screens are not themed] → accepted; the visual redesign is a separate change.
 - [The lens choice is the scanner's, not ours] → it opens on the rear camera by design; verified on the phone.
