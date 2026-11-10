@@ -216,7 +216,7 @@ Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 4
 Mono label-size, weight 500, Deep Amber text with a 1px Deep Amber outline, 4px radius, 4px horizontal padding, sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled.
 
 ### Sheets
-Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below (same clearance as the add button), 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). `.sheet.full` takes full height (filter sheet). Group headings inside are muted label-size, weight 500.
+Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below, 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). Every sheet takes the full height (filter sheet and photo view). Group headings inside are muted label-size, weight 500.
 
 ### Inputs / Fields
 Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textarea min 96px. Placeholder in Muted Ink. Invalid input shows a Danger border with a Danger label-size message. Required note is muted label. Checkbox is 24px with accent colour in a 48px row. Search label is visually hidden but present.
