@@ -55,12 +55,12 @@ The system SHALL open the collection list when a tile is tapped, with that tile'
 - **THEN** the list shows every card
 
 ### Requirement: The dashboard stays fast on a large collection
-The system SHALL compute all tile numbers in one pass over the cards, only when the list of cards it is given changes, and SHALL show the dashboard with its numbers within 1 second of launch for a collection of 5,000 cards on a mid-range Android phone.
+The system SHALL compute all tile numbers in one pass over the cards, only when the list of cards it is given changes, and SHALL show the dashboard with its numbers within 1 second of the page starting to load (navigation start to the Cards tile reading the full count, not the first render with zeros) for a collection of 5,000 cards on a mid-range Android phone.
 
 #### Scenario: Large collection
 - **GIVEN** a collection of 5,000 cards
 - **WHEN** the user opens the app with 4x CPU throttling in the performance test
-- **THEN** the dashboard appears within 1 second with the Cards tile reading 5,000 (one copy of each seeded card)
+- **THEN** within 1 second of navigation start the dashboard's Cards tile reads 5,000 (one copy of each seeded card)
 
 #### Scenario: No recount without a change
 - **WHEN** the dashboard re-renders for a sync state change while the cards list is unchanged
