@@ -1,8 +1,8 @@
 ## 1. Scanner photo source (TypeScript)
 
-- [ ] 1.1 Write the failing Vitest tests first for `ScannerPhotoSource`: a scan returns its image as a blob; cancel returns `null` and never calls the fallback; an `UNAVAILABLE` rejection calls the system-camera `capture` and returns its result; any other error is rethrown; `pick` goes straight to the existing source; verify they fail before the code exists
-- [ ] 1.2 Implement `src/adapters/document-scanner-photo-source.ts` (design D3) and its Capacitor binding `src/adapters/capacitor-scanner.ts`; verify the tests from 1.1 pass and `tsc -b` is clean
-- [ ] 1.3 Use `ScannerPhotoSource` in `src/main.tsx` on the native platform only, keeping the fake source on the web; verify `npm test` and the Playwright e2e suite still pass unchanged
+- [x] 1.1 Write the failing Vitest tests first for `ScannerPhotoSource`: a scan returns its image as a blob; cancel returns `null` and never calls the fallback; an `UNAVAILABLE` rejection calls the system-camera `capture` and returns its result; any other error is rethrown; `pick` goes straight to the existing source; verify they fail before the code exists
+- [x] 1.2 Implement `src/adapters/document-scanner-photo-source.ts` (design D3) and its Capacitor binding `src/adapters/capacitor-scanner.ts`; verify the tests from 1.1 pass and `tsc -b` is clean
+- [x] 1.3 Use `ScannerPhotoSource` in `src/main.tsx` on the native platform only, keeping the fake source on the web; verify `npm test` and the Playwright e2e suite still pass unchanged
 
 ## 2. Android plugin
 
