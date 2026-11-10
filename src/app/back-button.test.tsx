@@ -41,7 +41,11 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-const pressBack = () => act(async () => native.handlers.at(-1)?.());
+// The app registers its listener asynchronously; under load it may not be there yet.
+const pressBack = async () => {
+  await vi.waitFor(() => expect(native.handlers.length).toBeGreaterThan(0));
+  await act(async () => native.handlers.at(-1)?.());
+};
 
 async function renderSignedIn(cards = [makeCard()]) {
   const ports = { ...createFakePorts(), auth: new FakeAuthProvider({ email: "owner@example.test" }) };
