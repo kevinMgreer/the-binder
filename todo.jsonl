@@ -17,3 +17,14 @@
 {"v":1,"ts":"2026-11-10T00:51:59.043Z","from":"a1a8541a","id":"T-11","set":{"title":"App draws under the Android nav/status bars: buttons hidden, title under status bar","status":"open","area":"the-binder","size":"small","kind":"fix"}}
 {"v":1,"ts":"2026-11-10T00:51:59.208Z","from":"a1a8541a","id":"T-12","set":{"title":"Android back button does nothing; should go back one screen, exit only at the list","status":"open","area":"the-binder","size":"small","kind":"fix"}}
 {"v":1,"ts":"2026-11-10T00:51:59.359Z","from":"a1a8541a","id":"T-13","set":{"title":"Camera opens in selfie mode; should open the rear camera","status":"open","area":"the-binder","size":"small","kind":"fix"}}
+{"v":1,"ts":"2026-11-10T00:57:08.372Z","from":"a1a8541a","id":"T-11","set":{"note":"Fixed on agent/android-shell-fixes (insets on root + scrolling screens), verified on phone"}}
+{"v":1,"ts":"2026-11-10T00:57:08.537Z","from":"a1a8541a","id":"T-12","set":{"note":"Fixed on agent/android-shell-fixes (backButton listener), verified on phone: form->list, list->exit"}}
+{"v":1,"ts":"2026-11-10T00:57:08.683Z","from":"a1a8541a","id":"T-13","set":{"note":"Cannot fix small: @capacitor/camera direction is iOS/web only; system camera app picks the lens. Needs an in-app camera (CameraX), fold into T-10."}}
+{"v":1,"ts":"2026-11-10T01:02:36.016Z","from":"a1a8541a","id":"T-14","set":{"title":"fix-android-shell: 1.3, 2.1-2.4, 3.1-3.2","status":"open","area":"the-binder","size":"small","kind":"fix"}}
+{"v":1,"ts":"2026-11-10T01:02:36.168Z","from":"a1a8541a","id":"T-14","set":{"note":"openspec: fix-android-shell 1.3 2.1 2.2 2.3 2.4 3.1 3.2. Branch agent/android-shell-fixes (worktree ..\\worktrees\\the-binder-android-shell-fixes), commits fd8be30 (1.1, 1.2 done) and the proposal."}}
+{"v":1,"ts":"2026-11-10T01:02:36.302Z","from":"a1a8541a","id":"T-8","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T01:02:36.433Z","from":"a1a8541a","id":"T-11","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T01:02:36.564Z","from":"a1a8541a","id":"T-12","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T01:02:36.693Z","from":"a1a8541a","id":"T-13","set":{"note":"Folded into T-10 (in-app camera). Spec note: foundation scenario 'rear camera opens' is not guaranteed until then."}}
+{"v":1,"ts":"2026-11-10T01:02:36.816Z","from":"a1a8541a","id":"T-13","set":{"status":"dropped"}}
+{"v":1,"ts":"2026-11-10T01:14:19.423Z","from":"a1a8541a","id":"T-14","set":{"note":"fix-android-shell 8/9: only 3.2 (archive after merge) left. Branch agent/android-shell-fixes at f974953, not merged or pushed; waiting on the push OK."}}
