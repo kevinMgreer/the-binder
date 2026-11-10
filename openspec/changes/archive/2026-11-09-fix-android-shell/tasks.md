@@ -14,4 +14,4 @@
 ## 3. Spec corrections
 
 - [x] 3.1 Reword the foundation's `card-photos` scenario "Camera permission denied" to the cancel-from-camera case that can occur (design D4) and note the change on its task 3.2; verify `openspec validate add-collection-foundation` passes
-- [ ] 3.2 Run `openspec validate fix-android-shell`, then, once 1.3 and 2.4 are ticked and merged, archive the change with `/opsx:archive`; verify the two new capabilities appear under `openspec/specs/`
+- [x] 3.2 Run `openspec validate fix-android-shell`, then, once 1.3 and 2.4 are ticked and merged, archive the change with `/opsx:archive`; verify the two new capabilities appear under `openspec/specs/`
