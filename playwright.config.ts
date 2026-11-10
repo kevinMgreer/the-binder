@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "e2e",
   timeout: 15_000,
-  expect: { timeout: 2_000 },
+  // CI runners are slower: a 2 s wait on sync status flaked there (auth.spec.ts) while passing locally.
+  expect: { timeout: process.env.CI ? 6_000 : 2_000 },
   webServer: [
     { command: "npm run dev -- --port 5173", url: "http://localhost:5173", reuseExistingServer: true },
     // Production bundle with test hooks, used by the performance test.
