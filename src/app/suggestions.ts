@@ -23,7 +23,7 @@ export function suggestionPatch(s: Suggestion): SuggestionPatch {
   if (s.set) patch.set = s.set;
   if (s.cardNumber) patch.cardNumber = s.cardNumber;
   if (s.parallel) {
-    patch.parallel = s.parallel.name;
+    if (s.parallel.name) patch.parallel = s.parallel.name;
     if (s.parallel.serial !== null) patch.serial = String(s.parallel.serial);
     if (s.parallel.printRun !== null) patch.printRun = String(s.parallel.printRun);
     if (!s.parallel.serialLegible) patch.serialUnreadable = true;
