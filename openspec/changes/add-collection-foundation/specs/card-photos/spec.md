@@ -10,8 +10,8 @@ Lets the owner photograph the front and back of each card with the phone camera,
 The system SHALL let the user take a photo of a card's front and back with the device camera, or choose existing images from the device.
 
 #### Scenario: Camera capture on Android
-- **WHEN** the user taps "Scan card" on an Android phone
-- **THEN** the card scanner opens on the rear camera (see the `card-scanner` capability), takes the front photo, then prompts for the back photo, with an option to skip the back
+- **WHEN** the user taps "Scan front" on the add card form on an Android phone
+- **THEN** the card scanner opens on the rear camera (see the `card-scanner` capability), takes the front photo and returns to the form, where the back slot offers "Scan back" and "Pick back from photos"
 
 #### Scenario: Camera closed without a photo
 - **WHEN** the user backs out of the camera without taking a photo

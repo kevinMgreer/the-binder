@@ -36,6 +36,7 @@
   --type-text: Roboto, system-ui, sans-serif;
 
   --target-min: 48px;
+  --nav-height: 64px;
 }
 
 @media (prefers-color-scheme: dark) {

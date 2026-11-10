@@ -5,7 +5,7 @@ The first screen of the app: a summary of the collection as a fixed set of stat 
 ## ADDED Requirements
 
 ### Requirement: The app opens on the dashboard
-The system SHALL show the dashboard as the first screen after sign-in, with a header holding the title, the sync state and Settings, the stat tiles, a Browse collection button that opens the collection list with no filter applied, and the same single "Add card" button and sheet as the collection list.
+The system SHALL show the dashboard as the first screen after sign-in, with a header holding the title, the sync state and Settings, the stat tiles, a Browse collection button that opens the collection list with no filter applied, and the same single "Add card" button as the collection list.
 
 #### Scenario: Launch
 - **WHEN** the signed-in user opens the app

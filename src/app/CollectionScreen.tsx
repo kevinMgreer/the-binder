@@ -2,6 +2,8 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type Filters } from "../domain/query";
 import { AddCard } from "./AddCard";
+import { BottomNav, type Destination } from "./BottomNav";
+import { SettingsButton } from "./SettingsButton";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
 import { Sheet } from "./Sheet";
@@ -15,7 +17,7 @@ interface Props {
   onFiltersChange: (filters: Filters) => void;
   update: UpdateInfo | null;
   onAdd: () => void;
-  onScan: (mode: "camera" | "pick") => void;
+  onNavigate: (to: Destination) => void;
   onSettings: () => void;
   onOpen: (card: Card) => void;
 }
@@ -30,7 +32,7 @@ const FLAG_LABELS = {
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, update, onAdd, onScan, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
@@ -100,8 +102,8 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
     <section className="collection">
       <header>
         <div className="title-row">
-          <h1>The Binder</h1>
-          <button onClick={onSettings}>Settings</button>
+          <h1>Cards</h1>
+          <SettingsButton onClick={onSettings} />
         </div>
         <div className="meta">
           <p data-testid="summary">
@@ -149,11 +151,11 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
           No cards match. Clear the search or a filter.
         </p>
       )}
-      <AddCard onAdd={onAdd} onScan={onScan} />
+      <AddCard onAdd={onAdd} />
+      <BottomNav active="list" onNavigate={onNavigate} />
       {filterOpen && (
         <Sheet
           label="Filters"
-          full
           onClose={closeSheet}
           foot={
             <>

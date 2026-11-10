@@ -49,7 +49,6 @@ async function fillCard(page: Page, draft: Draft) {
 
 async function tryAddCard(page: Page, draft: Draft) {
   await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Enter by hand" }).click();
   await fillCard(page, draft);
   await page.getByRole("button", { name: "Save" }).click();
 }
@@ -109,7 +108,6 @@ test("Serial above print run: card is not saved and the serial field shows an er
 
 test("Graded card displays PSA 9 and hides raw condition", async ({ page }) => {
   await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Enter by hand" }).click();
   await fillCard(page, { ...base, graded: { company: "PSA", grade: "9" } });
   await expect(page.getByLabel("Condition", { exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Save" }).click();

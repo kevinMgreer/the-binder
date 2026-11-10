@@ -28,6 +28,12 @@ test("signed-in app shell renders against the fake ports", async () => {
   expect(screen.getByTestId("sync-status").textContent).toBe("Synced");
 });
 
+test("Dashboard title: the heading is Dashboard and the app name is not a heading", async () => {
+  renderApp("owner@example.test");
+  expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "The Binder" })).toBeNull();
+});
+
 test("a failing sign-in shows its message instead of doing nothing", async () => {
   const auth = new FakeAuthProvider(null);
   auth.signIn = () => Promise.reject(new Error("Google web client ID is not configured"));

@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { FakeAuthProvider, createFakePorts } from "../adapters/fakes";
 import type { Card } from "../domain/card";
@@ -70,9 +70,10 @@ const openList = async () => {
 };
 const openAddForm = () => {
   fireEvent.click(screen.getByRole("button", { name: "Add card" }));
-  fireEvent.click(screen.getByRole("button", { name: "Enter by hand" }));
   expect(screen.getByRole("heading", { name: "Add card" })).toBeTruthy();
 };
+const bar = () => within(screen.getByRole("navigation", { name: "Main" }));
+const tap = (name: "Dashboard" | "Cards") => fireEvent.click(bar().getByRole("button", { name }));
 
 test("back from the dashboard closes the app", async () => {
   await renderSignedIn();
@@ -115,11 +116,43 @@ test("back from the add form opened on the list shows the list", async () => {
 
 test("back closes an open sheet first and keeps the app open", async () => {
   await renderSignedIn();
-  fireEvent.click(screen.getByRole("button", { name: "Add card" }));
-  expect(screen.getByRole("dialog", { name: "Add a card" })).toBeTruthy();
+  await openList();
+  fireEvent.click(screen.getByRole("button", { name: "Filter" }));
+  expect(screen.getByRole("dialog", { name: "Filters" })).toBeTruthy();
   await pressBack();
-  expect(screen.queryByRole("dialog", { name: "Add a card" })).toBeNull();
+  expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
+  await onList();
   expect(native.exitApp).not.toHaveBeenCalled();
+});
+
+test("Back from Cards: the bar's Cards then back shows the dashboard", async () => {
+  await renderSignedIn();
+  tap("Cards");
+  await onList();
+  await pressBack();
+  await onDashboard();
+  expect(native.exitApp).not.toHaveBeenCalled();
+});
+
+test("Back from Dashboard after switching closes the app", async () => {
+  await renderSignedIn();
+  tap("Cards");
+  await onList();
+  tap("Dashboard");
+  await onDashboard();
+  await pressBack();
+  expect(native.exitApp).toHaveBeenCalledTimes(1);
+});
+
+test("Back from card detail shows the list with Cards active", async () => {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  tap("Cards");
+  fireEvent.click(await screen.findByRole("button", { name: /Hank Aaron/ }));
+  expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
+  expect(screen.queryByRole("navigation", { name: "Main" })).toBeNull();
+  await pressBack();
+  await onList();
+  expect(bar().getByRole("button", { name: "Cards" }).getAttribute("aria-current")).toBe("page");
 });
 
 test("back from a card's detail view shows the list, and the detail view has no Back button", async () => {

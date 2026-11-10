@@ -60,7 +60,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         {SIDES.map((side) => card.photos[side] && <PhotoThumb key={side} card={card} side={side} onOpen={() => setViewing(side)} />)}
       </div>
       {viewing && (
-        <Sheet label={`${viewing === "front" ? "Front" : "Back"} photo view`} full onClose={() => setViewing(null)}>
+        <Sheet label={`${viewing === "front" ? "Front" : "Back"} photo view`} onClose={() => setViewing(null)}>
           <PhotoView card={card} side={viewing} />
         </Sheet>
       )}

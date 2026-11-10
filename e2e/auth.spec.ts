@@ -49,6 +49,14 @@ test("First launch shows the sign-in screen and no collection", async ({ page })
   await expect(page.getByTestId("card-row")).toHaveCount(0);
 });
 
+test("App name on sign-in only: the sign-in heading is The Binder, the dashboard's is not", async ({ page }) => {
+  await page.goto("/?auth=signed-out");
+  await expect(page.getByRole("heading", { name: "The Binder" })).toBeVisible();
+  await signInButton(page).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The Binder" })).toHaveCount(0);
+});
+
 test("Successful sign-in shows the collection", async ({ page }) => {
   await page.goto("/?auth=signed-out");
   await signInButton(page).click();
@@ -75,7 +83,6 @@ test("When silent renewal is refused sync pauses, local changes stay, and Sign i
     w.__ports.remote.failures.push(new AuthExpiredError("Sign in again"));
   });
   await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Enter by hand" }).click();
   await page.getByLabel("Player", { exact: true }).fill("Ronald Acuña Jr.");
   await page.getByLabel("Year", { exact: true }).fill("2024");
   await page.getByLabel("Set", { exact: true }).fill("Series 1");

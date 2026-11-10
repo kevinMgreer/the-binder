@@ -25,9 +25,9 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 
 ## Camera and photos (card-photos)
 
-- [ ] **Scan card** opens the rear camera, takes the front, prompts for the back with a skip option.
-- [ ] Deny the camera permission: the app offers **Pick from photos** instead and it works.
-- [ ] **Pick from photos** uses the chosen image.
+- [ ] **Add card** opens the card form. **Scan front** opens the rear camera, takes the front and returns to the same form with the typed fields kept; the back slot offers **Scan back** and **Pick back from photos**.
+- [ ] Deny the camera permission: the app offers **Pick front from photos** (or back) instead and it works.
+- [ ] **Pick front from photos** uses the chosen image.
 - [ ] A 12 MP photo is stored at 500 KB or less and the serial number stamp is still readable when zoomed in.
 - [ ] Pinch-zoom and pan on the full photo are smooth.
 - [ ] The photos folder in Google Drive shows files named with year, manufacturer, card number, player and front/back.

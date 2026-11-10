@@ -10,9 +10,11 @@ interface Props {
   card?: Card;
   captured?: CapturedPhoto;
   onChange: (photo: CapturedPhoto) => void;
+  /** Lets the form hold Save while a photo is still being prepared. */
+  onBusy?: (busy: boolean) => void;
 }
 
-export function PhotoSlot({ side, card, captured, onChange }: Props) {
+export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
   const { photoSource } = usePorts();
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -25,6 +27,7 @@ export function PhotoSlot({ side, card, captured, onChange }: Props) {
   async function take(how: "camera" | "pick") {
     setMessage(undefined);
     setBusy(true);
+    onBusy?.(true);
     try {
       const photo = await acquirePhoto(photoSource, side, how);
       if (photo) onChange(photo);
@@ -36,6 +39,7 @@ export function PhotoSlot({ side, card, captured, onChange }: Props) {
       );
     } finally {
       setBusy(false);
+      onBusy?.(false);
     }
   }
 
@@ -44,12 +48,13 @@ export function PhotoSlot({ side, card, captured, onChange }: Props) {
       {url ? <img src={url} alt={`${label} photo`} /> : <span className="thumb" aria-hidden="true" />}
       <div className="actions">
         <button type="button" disabled={busy} onClick={() => take("camera")}>
-          Retake {side}
+          {captured || card?.photos[side] ? "Retake" : "Scan"} {side}
         </button>
         <button type="button" disabled={busy} onClick={() => take("pick")}>
           Pick {side} from photos
         </button>
       </div>
+      {busy && <p role="status">Processing photo…</p>}
       {message && <p role="alert">{message}</p>}
     </div>
   );

@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { openCollection } from "./helpers";
+import { hardwareBack, openCollection } from "./helpers";
 
 type Win = { __ports: any; __sync: any };
 type Seed = Record<string, unknown>;
@@ -98,39 +98,53 @@ for (const size of PHONES) {
       await showUpdateBanner(page);
     });
 
-    test("First screen: count, sync state, search and Filter, then at least three rows", async ({ page }) => {
+    test("First screen with the bar: count, sync state, gear, search, Filter and Showing N, then three rows above the scroller's end", async ({ page }) => {
+      await page.evaluate(() => {
+        document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
+        document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
+      });
       const summary = page.getByTestId("summary");
+      const gear = page.getByRole("button", { name: "Settings", exact: true });
+      const shown = page.getByTestId("shown");
+      const scroller = page.locator(".list-scroller");
       const status = page.locator("header").getByTestId("sync-status");
       const search = page.getByLabel("Search", { exact: true });
       const filter = page.getByRole("button", { name: /^Filter/ });
       const add = page.getByRole("button", { name: "Add card", exact: true });
-      for (const el of [summary, status, search, filter, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      for (const el of [summary, status, gear, search, filter, shown, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
       const ys = await Promise.all([summary, search].map(async (l) => (await l.boundingBox())!.y));
       expect(ys[0]).toBeLessThan(ys[1]);
       expect(Math.abs((await search.boundingBox())!.y - (await filter.boundingBox())!.y)).toBeLessThan(24);
-      const addTop = (await add.boundingBox())!.y;
+      const scrollerBottom = await bottom(scroller);
+      expect((await add.boundingBox())!.y - scrollerBottom).toBeGreaterThanOrEqual(7.5);
       const rows = await page.getByTestId("card-row").all();
       let clear = 0;
       for (const r of rows) {
         const box = await r.boundingBox();
-        if (box && box.y + box.height <= addTop) clear++;
+        if (box && box.y + box.height <= scrollerBottom) clear++;
       }
       expect(clear).toBeGreaterThanOrEqual(3);
     });
 
-    test("One add action: a single button opens Scan card, Pick from photos and Enter by hand", async ({ page }) => {
-      await expect(page.getByRole("button", { name: "Add card", exact: true })).toHaveCount(1);
-      for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(page.getByRole("button", { name })).toHaveCount(0);
+    test("One tap to the form: Add card opens the add form with no sheet", async ({ page }) => {
       await page.getByRole("button", { name: "Add card", exact: true }).click();
-      const sheet = page.getByRole("dialog", { name: "Add a card" });
-      for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(sheet.getByRole("button", { name })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Add card" })).toBeVisible();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(page.getByRole("button", { name })).toHaveCount(0);
+    });
+
+    test("One add button per screen, at least 8 dp above the bar", async ({ page }) => {
+      const add = page.getByRole("button", { name: "Add card", exact: true });
+      await expect(add).toHaveCount(1);
+      const nav = page.getByRole("navigation", { name: "Main" });
+      expect((await nav.boundingBox())!.y - (await bottom(add))).toBeGreaterThanOrEqual(7.5);
     });
 
     test("A sheet takes focus when it opens and closes on Escape", async ({ page }) => {
-      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      await page.getByRole("button", { name: /^Filter/ }).click();
       await expect(page.getByRole("button", { name: "Close" })).toBeFocused();
       await page.keyboard.press("Escape");
-      await expect(page.getByRole("dialog", { name: "Add a card" })).toHaveCount(0);
+      await expect(page.getByRole("dialog", { name: "Filters" })).toHaveCount(0);
     });
 
     test("Filter and chip names say what they do", async ({ page }) => {
@@ -339,20 +353,15 @@ test.describe("polish after the second phone review", () => {
     expect(await num.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   });
 
-  for (const [name, open, last] of [
-    ["Add card", (p: Page) => p.getByRole("button", { name: "Add card", exact: true }).click(), "Enter by hand"],
-    ["Filters", (p: Page) => p.getByRole("button", { name: /^Filter/ }).click(), "Clear all"],
-  ] as const) {
-    test(`${name} sheet sits above a bottom system bar`, async ({ page }) => {
-      await page.goto("/");
-      await openCollection(page);
-      await page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
-      await open(page);
-      const button = page.getByRole("dialog").getByRole("button", { name: last, exact: true });
-      await expect(button).toBeVisible();
-      expect(await bottom(button)).toBeLessThanOrEqual(800 - 48 - 16);
-    });
-  }
+  test("Filters sheet sits above a bottom system bar", async ({ page }) => {
+    await page.goto("/");
+    await openCollection(page);
+    await page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    const button = page.getByRole("dialog").getByRole("button", { name: "Clear all", exact: true });
+    await expect(button).toBeVisible();
+    expect(await bottom(button)).toBeLessThanOrEqual(800 - 48 - 16);
+  });
 
   test("Card detail: title with a serial badge, quiet subtitle, a ruled list of facts, last edited, then Edit", async ({ page }) => {
     await page.goto("/");
@@ -433,9 +442,6 @@ test.describe("Touch targets", () => {
     await page.goto("/");
     await seed(page, CARDS);
     await expectTouchable(page, "list");
-    await page.getByRole("button", { name: "Add card", exact: true }).click();
-    await expectTouchable(page, "add sheet");
-    await page.getByRole("button", { name: "Close" }).click();
     await page.getByRole("button", { name: /^Filter/ }).click();
     await expectTouchable(page, "filter sheet");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
@@ -597,5 +603,141 @@ test.describe("States at phone size", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
     // The fixed Add card button must not cover Browse collection.
     expect((await page.getByRole("button", { name: "Browse collection" }).boundingBox())!.y + 48).toBeLessThanOrEqual((await add.boundingBox())!.y + 1);
+  });
+});
+
+test.describe("Bottom navigation and header", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  const nav = (page: Page) => page.getByRole("navigation", { name: "Main" });
+  const item = (page: Page, name: "Dashboard" | "Cards") => nav(page).getByRole("button", { name, exact: true });
+  const insets = (page: Page) =>
+    page.evaluate(() => {
+      document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
+      document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
+    });
+
+  test("Shown on the top-level screens", async ({ page }) => {
+    await page.goto("/");
+    await expect(nav(page).getByRole("button")).toHaveText(["Dashboard", "Cards"]);
+    await expect(item(page, "Dashboard")).toHaveAttribute("aria-current", "page");
+    await expect(item(page, "Cards")).not.toHaveAttribute("aria-current", "page");
+    await item(page, "Cards").click();
+    await expect(page.getByTestId("summary")).toBeVisible();
+    await expect(item(page, "Cards")).toHaveAttribute("aria-current", "page");
+    await expect(item(page, "Dashboard")).not.toHaveAttribute("aria-current", "page");
+  });
+
+  test("Hidden elsewhere", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    await page.getByTestId("card-row").first().click();
+    await expect(nav(page)).toHaveCount(0);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await expect(nav(page)).toHaveCount(0);
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await hardwareBack(page);
+    await page.getByRole("button", { name: "Add card", exact: true }).click();
+    await expect(nav(page)).toHaveCount(0);
+    await hardwareBack(page);
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await expect(nav(page)).toHaveCount(0);
+  });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Active destination is not colour alone in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      const fill = (name: "Dashboard" | "Cards") => css(item(page, name).locator(".nav-indicator"), "background-color");
+      expect(await fill("Dashboard")).not.toBe("rgba(0, 0, 0, 0)");
+      expect(await fill("Cards")).toBe("rgba(0, 0, 0, 0)");
+      await expect(item(page, "Dashboard")).toContainText("Dashboard");
+      await expect(item(page, "Dashboard").locator("svg[aria-hidden=true]")).toHaveCount(1);
+      expect(await css(item(page, "Dashboard"), "font-weight")).toBe("500");
+    });
+  }
+
+  test("Above the gesture bar: items 48 dp, 8 dp apart, 48 dp above the bottom edge", async ({ page }) => {
+    await page.goto("/");
+    await insets(page);
+    const [a, b] = await Promise.all([item(page, "Dashboard"), item(page, "Cards")].map((l) => l.boundingBox()));
+    for (const box of [a!, b!]) {
+      expect(box.width).toBeGreaterThanOrEqual(47.5);
+      expect(box.height).toBeGreaterThanOrEqual(47.5);
+      expect(box.y + box.height).toBeLessThanOrEqual(800 - 48 + 0.5);
+    }
+    expect(b!.x - (a!.x + a!.width)).toBeGreaterThanOrEqual(7.5);
+  });
+
+  test("Gear in the header: an icon-only Settings button at the top right of the dashboard and the list", async ({ page }) => {
+    await page.goto("/");
+    for (const screen of ["dashboard", "list"]) {
+      if (screen === "list") await item(page, "Cards").click();
+      const gear = page.getByRole("button", { name: "Settings", exact: true });
+      await expect(gear).toHaveCount(1);
+      await expect(gear).toHaveText("");
+      await expect(gear.locator("svg")).toHaveCount(1);
+      const box = (await gear.boundingBox())!;
+      expect(box.width).toBeGreaterThanOrEqual(47.5);
+      expect(box.height).toBeGreaterThanOrEqual(47.5);
+      expect(360 - (box.x + box.width)).toBeLessThanOrEqual(12.5);
+      await expect(page.locator("header").getByRole("button", { name: "Settings", exact: true })).toHaveCount(1);
+    }
+  });
+
+  test("Gear opens Settings, and back returns to the list", async ({ page }) => {
+    await page.goto("/");
+    await item(page, "Cards").click();
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+    await hardwareBack(page);
+    await expect(page.getByTestId("summary")).toBeVisible();
+  });
+
+  test("Cards title: the list is titled Cards with the count and sync beneath", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "The Binder" })).toHaveCount(0);
+    await item(page, "Cards").click();
+    const title = page.getByRole("heading", { level: 1, name: "Cards", exact: true });
+    await expect(title).toBeVisible();
+    await expect(page.getByRole("heading", { name: "The Binder" })).toHaveCount(0);
+    expect((await title.boundingBox())!.y).toBeLessThan((await page.getByTestId("summary").boundingBox())!.y);
+    await expect(page.locator("header").getByTestId("sync-status")).toBeVisible();
+  });
+
+  test("Switch to Cards keeps the list as it was", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ ...CARDS[0], flags: { rookie: false, autograph: true, relic: false } }, CARDS[3]]);
+    await item(page, "Dashboard").click();
+    await page.getByRole("button", { name: "Autos, 1", exact: true }).click();
+    await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
+    await item(page, "Dashboard").click();
+    await expect(page.getByRole("button", { name: "Browse collection" })).toBeVisible();
+    await item(page, "Cards").click();
+    await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
+  });
+
+  test("Last row reachable: 20 cards scroll clear of Add card and the bar", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, Array.from({ length: 20 }, (_, i) => ({ player: `Player ${String(i).padStart(2, "0")}`, cardNumber: String(i + 1) })));
+    await insets(page);
+    await page.locator(".list-scroller").evaluate((el) => el.scrollTo(0, el.scrollHeight));
+    const last = page.getByTestId("card-row").last();
+    const scrollerBottom = await bottom(page.locator(".list-scroller"));
+    await expect(last).toBeInViewport();
+    expect(await bottom(last)).toBeLessThanOrEqual(scrollerBottom + 1);
+    expect(scrollerBottom).toBeLessThanOrEqual((await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!.y - 7.5);
+    await last.click();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+  });
+
+  test("Add card clears the last dashboard tile at the end of the scroll", async ({ page }) => {
+    await page.goto("/");
+    await insets(page);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
+    expect((await page.getByRole("button", { name: "Browse collection" }).boundingBox())!.y + 48).toBeLessThanOrEqual(add.y + 1);
+    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual(add.y);
   });
 });

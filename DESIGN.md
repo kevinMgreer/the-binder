@@ -77,6 +77,18 @@ components:
     textColor: "{colors.on-accent}"
     rounded: "{rounded.l}"
     height: "48px"
+  bottom-nav:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text-muted}"
+    activeTextColor: "{colors.accent-text}"
+    indicatorRounded: "{rounded.l}"
+    height: "64px"
+    gap: "8px"
+  icon-button:
+    backgroundColor: "{colors.pocket}"
+    rounded: "{rounded.m}"
+    width: "48px"
+    height: "48px"
   tag:
     textColor: "{colors.accent-text}"
     rounded: "{rounded.s}"
@@ -104,12 +116,12 @@ Recorded from `src/app/tokens.css` and `src/app/app.css` as shipped. The frontma
 
 A card binder page: a flat, quiet page with see-through pockets holding things. Every interactive surface (button, input, select, summary, dialog, banner, zoom frame) is a pocket: a translucent gradient, a hairline edge and a lit top edge. Nothing floats on shadows or blurs. The one loud voice is a warm card-sleeve yellow accent, used for the primary action, filter chips and counts.
 
-The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 12px page gutters, one bottom-anchored add button on each screen that adds cards (the dashboard and the list).
+The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 12px page gutters, one Add card button on each top-level screen (the dashboard and the list), just above the bottom navigation, opening the add form.
 
 **Key Characteristics:**
 - Pocket treatment on all controls, flat page behind them.
 - One accent (yellow), one text-safe accent variant for small text.
-- Bottom sheets (not centered modals) for add and filter flows.
+- Bottom sheets (not centered modals) for the filter flow.
 - Roboto/system sans, with mono reserved for data (counts, numbers, tags, sync line).
 - Every value is a token in `tokens.css`.
 
@@ -160,7 +172,7 @@ A cool grey-blue neutral page with translucent pockets and a single warm yellow 
 
 Single column, full-bleed phone layout. Page gutter is 12px (space-3); the list screen uses 8px vertical, 12px horizontal. Rhythm runs on the 4px scale (space-1 4, 2 8, 3 12, 4 16, 5 24, 6 32, 7 40, 8 48). Gaps between related controls are 8px; between groups 12px; danger zone separated by 32px.
 
-The app draws under the system bars: `#root` and scrolling screens add safe-area insets (Capacitor `--safe-area-*` vars, `env()` fallback). A fixed add button spans the width at the bottom (inset + 16px) and the list scroller reserves target-min + 16px beneath it. The list is virtualised with absolutely positioned rows; each row is a full-width pocket button with a 48x67px thumbnail (card ratio), text column and optional tag.
+The app draws under the system bars: `#root` and scrolling screens add safe-area insets (Capacitor `--safe-area-*` vars, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). The fixed add button spans the width just above it (inset + 64px + 8px) and the list scroller reserves target-min + 64px + 8px + 8px beneath it, so its end clears the add button by at least 8px (16px with the list's own bottom padding); the dashboard reserves the same at the end of its scroll. Headers carry the screen title ("Dashboard", "Cards") at the left and the Settings gear at the right; the app name "The Binder" appears only on the sign-in screen. The list is virtualised with absolutely positioned rows; each row is a full-width pocket button with a 48x67px thumbnail (card ratio), text column and optional tag.
 
 Hit targets: `--target-min` is 48px; every button, summary, banner link, input and checkbox row meets it (checkbox glyph itself is 24px inside a 48px row).
 
@@ -186,7 +198,13 @@ Three radii: small 4px (thumbnails, tags), medium 10px (the pocket: buttons, inp
 - **Primary:** flat Sleeve Yellow fill and border, Ink on Yellow text, weight 500, no inset highlight. One per sheet/screen footer; in a row it takes the remaining width.
 - **Danger:** default pocket with Danger text.
 - **States:** active drops opacity to 0.8; disabled 0.5; focus-visible 2px Deep Amber outline, 2px offset.
-- **Add button:** primary, fixed to the bottom with 12px side margins; the one entry point for adding on its screen. The dashboard and the list each have exactly one, the same component and sheet.
+- **Add button:** primary, fixed just above the bottom navigation with 12px side margins and an 8px gap; the one entry point for adding on its screen, and it opens the add form directly. The dashboard and the list each have exactly one, the same component.
+
+### Bottom navigation
+A bar fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px high plus the bottom inset, Sheet Paper background with a 1px pocket-edge top border. Two destinations, Dashboard and Cards, share the width with an 8px gap; each is a button of at least 48x48 with a 24px icon above a label-size label. The active destination is marked three ways so colour is not alone: a pill indicator behind the icon (large radius, pocket fill and edge), Deep Amber text and icon, and weight 500; it has `aria-current="page"`. Inactive items use Muted Ink. Two destinations is a deliberate deviation from Material's three-to-five guidance: top tabs would crowd the header and a drawer hides the dashboard, and Settings stays a header action. Tapping the active item does nothing.
+
+### Icon button
+An icon-only pocket button, 48x48, 10px radius, for header actions (the Settings gear). Its name comes from `aria-label`. Icons are inline SVG, `currentColor`, `aria-hidden`, defined in `src/app/Icon.tsx` (gear, dashboard, cards); there is no icon font or package.
 
 ### Stat tile
 A pocket button on the dashboard, in a two-column grid with 8px gaps, at least 48px high (80px). The label sits on top in muted label-size text, the number below it in the mono face at title size in Ink; both are readable text, not an icon. Never accent-filled (the accent stays on the one primary action and on chips). Tapping opens the list filtered to what the tile counts. The accessible name is "label, number".
@@ -198,7 +216,7 @@ Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 4
 Mono label-size, weight 500, Deep Amber text with a 1px Deep Amber outline, 4px radius, 4px horizontal padding, sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled.
 
 ### Sheets
-Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below (same clearance as the add button), 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). `.sheet.full` takes full height (filter sheet); the add sheet is content height. Group headings inside are muted label-size, weight 500.
+Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below, 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). Every sheet takes the full height (filter sheet and photo view). Group headings inside are muted label-size, weight 500.
 
 ### Inputs / Fields
 Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textarea min 96px. Placeholder in Muted Ink. Invalid input shows a Danger border with a Danger label-size message. Required note is muted label. Checkbox is 24px with accent colour in a 48px row. Search label is visually hidden but present.
@@ -213,7 +231,7 @@ Detail screen, top to bottom: the player as a large title (title size, weight 50
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.
 
 ### Navigation
-The dashboard is home: Android's back button closes the app from there. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to list, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
+The dashboard is the start destination: Android's back button closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to list, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.
@@ -236,5 +254,5 @@ Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb b
 - **Don't** add a second add button to a screen, or a centered modal where a sheet fits.
 
 ### Not canonized (defects the build carries)
-- The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`), a glyph icon; future surfaces should use a proper icon, not copy it.
+- The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`), a glyph icon; future surfaces should use an inline SVG from `src/app/Icon.tsx`, not copy it.
 - Sizes outside the token scales (thumbnails 48x67 / 56x78, 96px thumb and textarea, 60vh zoom, 1.3 and 1.2 line-heights) are one-off literals in `app.css`, not system tokens.

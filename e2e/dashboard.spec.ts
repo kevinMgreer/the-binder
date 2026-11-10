@@ -80,7 +80,6 @@ test("Add from the dashboard returns to the dashboard with the count up by the q
   await seed(page, [{ cardNumber: "1" }]);
   await expect(tile(page, "Cards")).toHaveAccessibleName("Cards, 1");
   await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Enter by hand" }).click();
   await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
   await page.getByLabel("Year", { exact: true }).fill("1957");
   await page.getByLabel("Set", { exact: true }).fill("Topps");

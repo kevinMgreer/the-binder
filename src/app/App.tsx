@@ -1,13 +1,11 @@
 import { App as CapacitorApp } from "@capacitor/app";
 import { useEffect, useState } from "react";
 import type { Card } from "../domain/card";
-import type { Photos } from "../ports";
 import { CardDetail } from "./CardDetail";
 import { CardForm } from "./CardForm";
 import { emptyFilters, type Filters } from "../domain/query";
 import { CollectionScreen } from "./CollectionScreen";
 import { Dashboard } from "./Dashboard";
-import { ScanFlow } from "./ScanFlow";
 import { openSheets } from "./Sheet";
 import { SettingsScreen } from "./SettingsScreen";
 import { useCards } from "./useCards";
@@ -15,8 +13,7 @@ import { useUpdates } from "./useUpdates";
 
 type View =
   | { name: Screen }
-  | { name: "scan"; mode: "camera" | "pick"; from: Screen }
-  | { name: "form"; card?: Card; photos?: Photos; from: Screen }
+  | { name: "form"; card?: Card; from: Screen }
   | { name: "detail"; id: string }
   | { name: "settings"; from: Screen };
 
@@ -59,23 +56,12 @@ export function App() {
     );
   }
 
-  if (view.name === "scan") {
-    return (
-      <ScanFlow
-        mode={view.mode}
-        onDone={(photos) => setView({ name: "form", photos, from: view.from })}
-        onCancel={() => setView({ name: view.from })}
-      />
-    );
-  }
-
   if (view.name === "form") {
     const { card } = view;
     return (
       <CardForm
         card={card}
         cards={cards}
-        initialPhotos={view.photos}
         onSave={async (saved, photos) => {
           await save(saved, photos);
           setView(card ? { name: "detail", id: saved.id } : { name: view.from });
@@ -105,7 +91,7 @@ export function App() {
     cards,
     update: updates.available,
     onAdd: () => setView({ name: "form", from }),
-    onScan: (mode: "camera" | "pick") => setView({ name: "scan", mode, from }),
+    onNavigate: (to: Screen) => setView({ name: to }),
     onSettings: () => setView({ name: "settings", from }),
   });
 

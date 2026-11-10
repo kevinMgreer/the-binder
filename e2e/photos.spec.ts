@@ -42,13 +42,17 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("Scan card takes the front photo, then offers the back with a skip option", async ({ page }) => {
+test("Front then back: Scan front and Scan back on the form attach both photos", async ({ page }) => {
   await setNextPhoto(page);
-  await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Scan card" }).click();
-  await expect(page.getByText("Back of card")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Skip back" })).toBeVisible();
-  await page.getByRole("button", { name: "Capture back" }).click();
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Scan front" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pick front from photos" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Scan back" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pick back from photos" })).toBeVisible();
+  await page.getByRole("button", { name: "Scan front" }).click();
+  await expect(page.getByAltText("Front photo")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Retake front" })).toBeVisible();
+  await page.getByRole("button", { name: "Scan back" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
   await expect(page.getByAltText("Back photo")).toBeVisible();
   await fillRequired(page);
@@ -57,22 +61,41 @@ test("Scan card takes the front photo, then offers the back with a skip option",
   await expect(page.getByTestId("card-row").first().locator("img")).toBeVisible();
 });
 
-test("Skipping the back keeps only the front photo", async ({ page }) => {
+test("Fields kept after a scan: the typed player and the back slot survive", async ({ page }) => {
   await setNextPhoto(page);
-  await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Scan card" }).click();
-  await page.getByRole("button", { name: "Skip back" }).click();
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
+  await page.getByRole("button", { name: "Scan front" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
+  await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
   await expect(page.getByAltText("Back photo")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Scan back" })).toBeVisible();
 });
 
-test("Camera closed without a photo returns to the list and adds nothing", async ({ page }) => {
+test("Scanner closed without a photo leaves the form as it was and adds nothing", async ({ page }) => {
   await page.evaluate(() => {
     (window as unknown as Win).__ports.photoSource.next = null;
   });
-  await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Scan card" }).click();
-  await expect(page.getByRole("button", { name: "Add card" })).toBeVisible();
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByLabel("Year", { exact: true }).fill("2024");
+  await page.getByRole("button", { name: "Scan back" }).click();
+  await expect(page.getByRole("button", { name: "Scan back" })).toBeEnabled();
+  await expect(page.getByAltText("Back photo")).toHaveCount(0);
+  await expect(page.getByLabel("Year", { exact: true })).toHaveValue("2024");
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await openCollection(page);
+  await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
+});
+
+test("Cancel discards: a scanned front stores nothing and returns to the dashboard", async ({ page }) => {
+  await setNextPhoto(page);
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByRole("button", { name: "Scan front" }).click();
+  await expect(page.getByAltText("Front photo")).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByRole("button", { name: "Browse collection" })).toBeVisible();
+  const pending = await page.evaluate(async () => (await (window as unknown as Win).__ports.photos.pendingUploads()).length);
+  expect(pending).toBe(0);
   await openCollection(page);
   await expect(page.getByTestId("summary")).toHaveText("0 cards, 0 distinct");
 });
@@ -83,22 +106,23 @@ test("A denied-permission error from the photo source offers to pick from photos
     const { PermissionDeniedError } = await import("/src/ports/index.ts");
     (window as unknown as Win).__ports.photoSource.error = new PermissionDeniedError();
   });
-  await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Scan card" }).click();
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByRole("button", { name: "Scan front" }).click();
   await expect(page.getByText("Camera permission denied")).toBeVisible();
   await page.evaluate(() => {
     (window as unknown as Win).__ports.photoSource.error = null;
   });
   await setNextPhoto(page);
-  await page.getByRole("button", { name: "Pick from photos" }).click();
+  await page.getByRole("button", { name: "Pick front from photos" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
 });
 
-test("Pick from photos uses the chosen image as the card photo", async ({ page }) => {
+test("Pick from photos: the chosen image becomes the back photo", async ({ page }) => {
   await setNextPhoto(page, "#36c");
-  await page.getByRole("button", { name: "Add card" }).click();
-  await page.getByRole("button", { name: "Pick from photos" }).click();
-  await expect(page.getByAltText("Front photo")).toBeVisible();
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByRole("button", { name: "Pick back from photos" }).click();
+  await expect(page.getByAltText("Back photo")).toBeVisible();
+  await expect(page.getByAltText("Front photo")).toHaveCount(0);
 });
 
 test("12 MP photo is stored at most 500 KB with a 320 px thumbnail", async ({ page }) => {
