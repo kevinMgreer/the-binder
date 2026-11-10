@@ -45,3 +45,4 @@
 {"v":1,"ts":"2026-11-10T03:28:29.001Z","from":"owner","id":"T-17","set":{"status":"done","note":"ruled: Use the code-only check"}}
 {"v":1,"ts":"2026-11-10T13:13:25.085Z","from":"a1a8541a","id":"T-18","set":{"title":"redesign-ui-binder-pockets: 3.9-3.11 owner feedback (row clutter, sheets over nav bar, detail layout)","status":"open","area":"the-binder","size":"small"}}
 {"v":1,"ts":"2026-11-10T13:13:25.327Z","from":"a1a8541a","id":"T-19","set":{"title":"add-dashboard-and-card-fields: propose condition picklist, subset/insert field, dashboard landing","status":"open","area":"the-binder","size":"small"}}
+{"v":1,"ts":"2026-11-10T14:12:46.980Z","from":"a1a8541a","id":"T-20","set":{"title":"Fix Android back gesture (swipe) not working; nav button works","status":"open","area":"the-binder","size":"small"}}
