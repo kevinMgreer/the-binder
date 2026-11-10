@@ -20,6 +20,19 @@ describe("MlKitRecognizer", () => {
     expect(await readText.mock.results[0].value).toContain("No. 27");
   });
 
+  test("judges plausible years by the date of each call, not of construction", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-06-01T00:00:00Z"));
+      const ml = new MlKitRecognizer(async () => "© 2035 Topps");
+      expect((await ml.recognize({ back: blob("b") })).year).toBeUndefined();
+      vi.setSystemTime(new Date("2040-01-01T00:00:00Z"));
+      expect((await ml.recognize({ back: blob("b") })).year).toBe(2035);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test("reads only the photos it is given", async () => {
     const { ml, readText } = recognizer({ front: "© 2022 Bowman" });
     expect(await ml.recognize({ front: blob("front") })).toEqual({ year: 2022, manufacturer: "Bowman" });
