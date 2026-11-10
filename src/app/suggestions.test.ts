@@ -17,6 +17,11 @@ test("an unreadable serial ticks the unreadable box and keeps the print run", ()
   expect(patch).toEqual({ parallel: "Blue", printRun: "99", serialUnreadable: true });
 });
 
+test("a serial found without a parallel name suggests the numbers only", () => {
+  const patch = suggestionPatch({ parallel: { name: "", serial: 23, serialLegible: true, printRun: 99 } });
+  expect(patch).toEqual({ serial: "23", printRun: "99" });
+});
+
 test("an empty suggestion changes nothing", () => {
   expect(suggestionPatch({})).toEqual({});
 });
