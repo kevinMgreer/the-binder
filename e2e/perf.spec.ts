@@ -40,7 +40,7 @@ test("Large collection: the list shows its first rows within 1 s of tapping the 
     document.addEventListener(
       "click",
       (e) => {
-        if ((e.target as Element).closest("nav button")?.textContent === "Cards") performance.mark("browse-tap");
+        if ((e.target as Element).closest("nav button")?.textContent === "Cards") performance.mark("cards-tap");
       },
       true,
     ),
@@ -48,7 +48,7 @@ test("Large collection: the list shows its first rows within 1 s of tapping the 
   await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Cards", exact: true }).click();
   await expect(rows(page).first()).toBeVisible();
   const ms = await page.evaluate(
-    () => performance.getEntriesByName("collection-first-render")[0].startTime - performance.getEntriesByName("browse-tap")[0].startTime,
+    () => performance.getEntriesByName("collection-first-render")[0].startTime - performance.getEntriesByName("cards-tap")[0].startTime,
   );
   test.info().annotations.push({ type: "list-ms", description: String(Math.round(ms)) });
   expect(ms).toBeLessThan(1000);
