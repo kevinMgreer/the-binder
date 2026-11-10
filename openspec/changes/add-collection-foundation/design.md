@@ -124,6 +124,7 @@ The Binder/                    (appProperties: { thebinder: "root" })
 - **$0:** Drive API usage is free and one user is far below per-user quotas.
 
 ### D7. Photo capture and pipeline: native camera plugin
+- *Superseded for "Scan card" by `scan-card-with-document-scanner`: capture now goes through the ML Kit Document Scanner, with `@capacitor/camera` kept as the fallback and for "Pick from photos".*
 - **Capture:** `@capacitor/camera` with the camera source for the front and then the back (with "skip back"), using Android's camera at full resolution with orientation corrected, and the photos source for "Pick from photos". The plugin asks for camera permission; if it is denied, the app offers "Pick from photos" instead (card-photos spec).
 - **Processing** in a Web Worker in the WebView with `OffscreenCanvas`: resize the full photo to 1600 px on the long edge as WebP at about quality 0.82 (target under 400 KB), and a 320 px thumbnail (about 20 KB).
 - Thumbnails are stored in IndexedDB. Full photos are cached in IndexedDB after first view, with a size-capped least-recently-used cache. New photos stay in the outbox until uploaded.

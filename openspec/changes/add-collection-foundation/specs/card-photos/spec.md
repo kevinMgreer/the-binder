@@ -11,7 +11,7 @@ The system SHALL let the user take a photo of a card's front and back with the d
 
 #### Scenario: Camera capture on Android
 - **WHEN** the user taps "Scan card" on an Android phone
-- **THEN** the rear camera opens, takes the front photo, then prompts for the back photo, with an option to skip the back
+- **THEN** the card scanner opens on the rear camera (see the `card-scanner` capability), takes the front photo, then prompts for the back photo, with an option to skip the back
 
 #### Scenario: Camera closed without a photo
 - **WHEN** the user backs out of the camera without taking a photo

@@ -18,5 +18,5 @@
 
 ## 4. Specs
 
-- [ ] 4.1 Reword the foundation's `card-photos` scenario "Camera capture on Android" to refer to the scanner and close the rear-lens note on its task 3.2, and add a one-line "superseded by scan-card-with-document-scanner" note to the foundation design D7, which still describes capture through `@capacitor/camera` (design D5); verify `openspec validate add-collection-foundation --strict` passes
+- [x] 4.1 Reword the foundation's `card-photos` scenario "Camera capture on Android" to refer to the scanner and close the rear-lens note on its task 3.2, and add a one-line "superseded by scan-card-with-document-scanner" note to the foundation design D7, which still describes capture through `@capacitor/camera` (design D5); verify `openspec validate add-collection-foundation --strict` passes
 - [ ] 4.2 Run `openspec validate scan-card-with-document-scanner --strict`, then, once 3.1 to 3.4 are ticked and merged, archive the change with `/opsx:archive`; verify `card-scanner` appears under `openspec/specs/`
