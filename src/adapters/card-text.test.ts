@@ -39,6 +39,11 @@ describe("parseCardText", () => {
     expect(parse(`NAME\n${line}\n© 2022 Bowman`).cardNumber).toBe(expected);
   });
 
+  test("a label inside a sentence is not the card number", () => {
+    expect(parse("Drafted No. 1 overall\nNo. 27").cardNumber).toBe("27");
+    expect(parse("#1 prospect in baseball\n© 2024 Topps").cardNumber).toBeUndefined();
+  });
+
   test("a stat row is not a card number", () => {
     expect(parse("YEAR AVG HR\n2023 .337 41").cardNumber).toBeUndefined();
   });
