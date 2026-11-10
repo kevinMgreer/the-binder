@@ -37,6 +37,12 @@ const bottom = async (loc: Locator) => {
   return box.y + box.height;
 };
 
+async function applyYearFrom(page: Page, year: string) {
+  await page.getByRole("button", { name: /^Filter/ }).click();
+  await page.getByLabel("Year from", { exact: true }).fill(year);
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+}
+
 const CARDS: Seed[] = [
   { player: "Ronald Acuña Jr.", cardNumber: "27", parallel: SERIAL },
   { player: "Mookie Betts", cardNumber: "50", parallel: UNREADABLE },
@@ -69,13 +75,12 @@ test.describe("theme", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
     await seed(page, CARDS);
-    const chip = page.getByRole("button", { name: /^Year/ });
-    await chip.click();
-    await page.getByLabel("Year from", { exact: true }).fill("2000");
-    const scan = page.getByRole("button", { name: "Scan card" });
+    await applyYearFrom(page, "2000");
+    const chip = page.getByRole("button", { name: "Remove Year filter" });
+    const add = page.getByRole("button", { name: "Add card", exact: true });
     const tag = page.getByTestId("card-row").filter({ hasText: "Acuña" }).getByText("13/150");
     await page.evaluate(() => document.documentElement.style.setProperty("--color-accent", "rgb(1, 2, 3)"));
-    expect(await css(scan, "background-color")).toBe("rgb(1, 2, 3)");
+    expect(await css(add, "background-color")).toBe("rgb(1, 2, 3)");
     expect(await css(chip, "background-color")).toBe("rgb(1, 2, 3)");
     expect(await css(tag, "color")).toBe("rgb(1, 2, 3)");
   });
@@ -91,30 +96,49 @@ for (const size of PHONES) {
       await showUpdateBanner(page);
     });
 
-    test("First screen: count, sync state, search, chips, then rows", async ({ page }) => {
+    test("First screen: count, sync state, search and Filter, then at least three rows", async ({ page }) => {
       const summary = page.getByTestId("summary");
       const status = page.locator("header").getByTestId("sync-status");
       const search = page.getByLabel("Search", { exact: true });
-      const chip = page.getByRole("button", { name: /^Year/ });
-      const row = page.getByTestId("card-row").first();
-      for (const el of [summary, status, search, chip, row]) await expect(el).toBeInViewport();
-      const ys = await Promise.all([summary, search, chip, row].map(async (l) => (await l.boundingBox())!.y));
-      expect(ys).toEqual([...ys].sort((a, b) => a - b));
-      expect((await status.boundingBox())!.y).toBeLessThan(ys[1]);
-      for (const group of ["Year", "Team", "Set", "Parallel", "Serial", "Traits", "Graded"]) {
-        await expect(page.getByRole("button", { name: group, exact: true })).toBeVisible();
+      const filter = page.getByRole("button", { name: /^Filter/ });
+      const add = page.getByRole("button", { name: "Add card", exact: true });
+      for (const el of [summary, status, search, filter, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      const ys = await Promise.all([summary, search].map(async (l) => (await l.boundingBox())!.y));
+      expect(ys[0]).toBeLessThan(ys[1]);
+      expect(Math.abs((await search.boundingBox())!.y - (await filter.boundingBox())!.y)).toBeLessThan(24);
+      const addTop = (await add.boundingBox())!.y;
+      const rows = await page.getByTestId("card-row").all();
+      let clear = 0;
+      for (const r of rows) {
+        const box = await r.boundingBox();
+        if (box && box.y + box.height <= addTop) clear++;
       }
+      expect(clear).toBeGreaterThanOrEqual(3);
     });
 
-    test("Secondary actions stay reachable and only Scan card is primary", async ({ page }) => {
-      const bg = (name: string) => css(page.getByRole("button", { name, exact: true }), "background-color");
-      const [scan, add, pick, settings] = await Promise.all([bg("Scan card"), bg("Add card"), bg("Pick from photos"), bg("Settings")]);
-      expect(add).toBe(pick);
-      expect(add).toBe(settings);
-      expect(scan).not.toBe(add);
+    test("One add action: a single button opens Scan card, Pick from photos and Enter by hand", async ({ page }) => {
+      await expect(page.getByRole("button", { name: "Add card", exact: true })).toHaveCount(1);
+      for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(page.getByRole("button", { name })).toHaveCount(0);
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      const sheet = page.getByRole("dialog", { name: "Add a card" });
+      for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(sheet.getByRole("button", { name })).toBeVisible();
+    });
+
+    test("Sign in again stays reachable in the header", async ({ page }) => {
       await setStatus(page, { state: "paused", pending: 0 });
-      await expect(page.getByRole("button", { name: "Sign in again" })).toBeVisible();
-      expect(await css(page.getByRole("button", { name: "Sign in again" }), "background-color")).toBe(add);
+      await expect(page.locator("header").getByRole("button", { name: "Sign in again" })).toBeVisible();
+    });
+
+    test("The count reads 1 card or N cards", async ({ page }) => {
+      await expect(page.getByTestId("summary")).toHaveText(/^5 cards, 4 distinct$/);
+      await page.evaluate(async () => {
+        const ports = (window as unknown as Win).__ports;
+        const cards = await ports.collection.list();
+        await ports.collection.clear();
+        await ports.collection.putMany(cards.slice(0, 1).map((c: any) => ({ ...c, quantity: 1 })));
+      });
+      await page.reload();
+      await expect(page.getByTestId("summary")).toHaveText("1 card, 1 distinct");
     });
 
     test("Each sync state shows its wording in the header", async ({ page }) => {
@@ -150,20 +174,35 @@ for (const size of PHONES) {
       expect(await css(tag, "color")).not.toBe(await css(plain.getByText("Plain Card"), "color"));
     });
 
-    test("Filter applied: the Year chip turns on and the count shows; a chip opens its field", async ({ page }) => {
-      const chip = page.getByRole("button", { name: /^Year/ });
-      await expect(chip).toHaveAttribute("aria-pressed", "false");
-      const idle = await css(chip, "background-color");
-      await chip.click();
-      const from = page.getByLabel("Year from", { exact: true });
-      await expect(from).toBeVisible();
-      await expect(from).toBeFocused();
-      await from.fill("2024");
-      await expect(chip).toHaveAttribute("aria-pressed", "true");
-      expect(await css(chip, "background-color")).not.toBe(idle);
+    test("Nothing applied: no chips and no badge", async ({ page }) => {
+      await expect(page.locator(".chip")).toHaveCount(0);
+      await expect(page.getByRole("button", { name: /^Filter/ })).toHaveText("Filter");
+    });
+
+    test("Filter applied: the sheet closes, a chip and a badge appear, the count shows", async ({ page }) => {
+      await page.getByRole("button", { name: /^Filter/ }).click();
+      const sheet = page.getByRole("dialog", { name: "Filters" });
+      await sheet.getByLabel("Year from", { exact: true }).fill("2030");
+      await expect(sheet.getByRole("button", { name: "Show 0 cards" })).toBeVisible();
+      await sheet.getByLabel("Year from", { exact: true }).fill("2024");
+      await sheet.getByRole("button", { name: "Show 4 cards" }).click();
+      await expect(sheet).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Remove Year filter" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Filter/ })).toHaveText("Filter1");
       await expect(page.getByTestId("shown")).toHaveText("Showing 4");
-      await from.fill("2030");
+    });
+
+    test("Remove a filter: the chip clears that filter; Clear all clears the rest", async ({ page }) => {
+      await applyYearFrom(page, "2030");
       await expect(page.getByTestId("shown")).toHaveText("Showing 0");
+      await page.getByRole("button", { name: "Remove Year filter" }).click();
+      await expect(page.getByRole("button", { name: "Remove Year filter" })).toHaveCount(0);
+      await expect(page.getByTestId("shown")).toHaveText("Showing 4");
+      await applyYearFrom(page, "2030");
+      await page.getByRole("button", { name: /^Filter/ }).click();
+      await page.getByRole("button", { name: "Clear all" }).click();
+      await expect(page.getByLabel("Year from", { exact: true })).toHaveValue("");
+      await expect(page.locator(".chip")).toHaveCount(0);
     });
   });
 }
@@ -190,6 +229,37 @@ test.describe("destructive actions stay apart", () => {
     expect(await gap(page.getByRole("button", { name: "Edit", exact: true }), del)).toBeGreaterThanOrEqual(24);
     await notAccent(page, del);
     await expect(page.getByText("13/150")).toBeVisible();
+  });
+
+  test("Detail photos are thumbnails: Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(async () => {
+      const ports = (window as unknown as Win).__ports;
+      const { makeCard } = await import("/src/domain/fixtures.ts");
+      const card = makeCard({ photos: { front: { fileId: "f", thumbId: "ft" }, back: { fileId: "b", thumbId: "bt" } } });
+      const canvas = new OffscreenCanvas(320, 448);
+      canvas.getContext("2d")!.fillRect(0, 0, 320, 448);
+      const blob = await canvas.convertToBlob({ type: "image/webp" });
+      await ports.collection.putSynced([card]);
+      for (const side of ["front", "back"]) {
+        await ports.photos.cacheThumb(card.id, side, blob);
+        await ports.photos.cacheFull(card.id, side, blob);
+      }
+    });
+    await page.reload();
+    await page.getByTestId("card-row").first().click();
+    const thumb = page.getByRole("button", { name: "View front photo" });
+    await expect(thumb).toBeVisible();
+    const box = (await thumb.boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(90);
+    expect(box.height).toBeLessThanOrEqual(104);
+    await expect(page.getByRole("button", { name: "View back photo" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeInViewport();
+    await expect(page.getByRole("button", { name: "Delete", exact: true })).toBeInViewport();
+    await thumb.click();
+    await expect(page.getByTestId("zoom-front")).toBeVisible();
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(page.getByTestId("zoom-front")).toHaveCount(0);
   });
 
   test("Sign out is apart in settings", async ({ page }) => {
@@ -247,8 +317,14 @@ test.describe("Touch targets", () => {
     await page.goto("/");
     await seed(page, CARDS);
     await expectTouchable(page, "list");
-    await page.getByRole("button", { name: /^Year/ }).click();
-    await expectTouchable(page, "filters");
+    await page.getByRole("button", { name: "Add card", exact: true }).click();
+    await expectTouchable(page, "add sheet");
+    await page.getByRole("button", { name: "Close" }).click();
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    await expectTouchable(page, "filter sheet");
+    await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+    await applyYearFrom(page, "2000");
+    await expectTouchable(page, "applied chip");
     await page.getByTestId("card-row").first().click();
     await expectTouchable(page, "detail");
     await page.getByRole("button", { name: "Edit", exact: true }).click();
@@ -344,6 +420,7 @@ test.describe("States at phone size", () => {
         await page.reload();
         await page.context().setOffline(true);
         await page.getByTestId("card-row").first().click();
+        await page.getByRole("button", { name: "View front photo" }).click();
         return page.getByText("Full photo will load when online");
       },
     ],
