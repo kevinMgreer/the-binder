@@ -5,7 +5,7 @@ Defines what the collection list screen shows so a card can be found and a new o
 ## ADDED Requirements
 
 ### Requirement: The list leads with finding a card
-The system SHALL show, on the collection screen, a header with the title, the collection count, the sync state and Settings, then one row holding the search field and a Filter button, then the card list. It SHALL offer exactly one add action, a primary "Add card" button fixed above the system bars, which opens a sheet with Scan card, Pick from photos and Enter by hand.
+The system SHALL show, on the collection screen, a header with the title, the collection count, the sync state and Settings, then one row holding the search field and a Filter button, then the card list. It SHALL offer exactly one add action, a primary "Add card" button fixed above the system bars, which opens the add form.
 
 #### Scenario: First screen
 - **WHEN** the collection screen opens on a 360 by 800 phone, with the update banner showing
@@ -13,7 +13,7 @@ The system SHALL show, on the collection screen, a header with the title, the co
 
 #### Scenario: One add action
 - **WHEN** the collection screen is shown
-- **THEN** exactly one add button is visible, and tapping it shows Scan card, Pick from photos and Enter by hand, each reachable in one more tap
+- **THEN** exactly one Add card button is visible, and tapping it opens the add form
 
 #### Scenario: Sign in again stays reachable
 - **WHEN** the session needs a new sign-in
@@ -75,7 +75,7 @@ The system SHALL put all filters behind one Filter button that opens a full-heig
 The system SHALL keep every sheet and its pinned buttons above the system navigation or gesture bar, using the bottom safe-area inset (the Capacitor `--safe-area-inset-bottom` variable or `env(safe-area-inset-bottom)`, whichever is larger, the same inset `#root` uses) plus a 16 dp gap.
 
 #### Scenario: Sheet above a bottom bar
-- **WHEN** the Add card or Filter sheet is open and the bottom inset is 48 dp
+- **WHEN** the Filter sheet is open and the bottom inset is 48 dp
 - **THEN** the sheet's last button ends at least 64 dp above the bottom edge of the screen
 
 ### Requirement: The card detail screen is a tidy fact sheet
