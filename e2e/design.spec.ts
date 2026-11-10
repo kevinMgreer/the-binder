@@ -268,6 +268,10 @@ test.describe("destructive actions stay apart", () => {
     expect(box.height).toBeGreaterThanOrEqual(90);
     expect(box.height).toBeLessThanOrEqual(104);
     await expect(page.getByRole("button", { name: "View back photo" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
+    const y = async (l: Locator) => (await l.boundingBox())!.y;
+    expect(await y(page.getByTestId("facts"))).toBeLessThan(await y(thumb));
+    expect(await y(thumb)).toBeLessThan(await y(page.getByTestId("updated")));
     await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeInViewport();
     await expect(page.getByRole("button", { name: "Delete", exact: true })).toBeInViewport();
     await thumb.click();
@@ -279,10 +283,101 @@ test.describe("destructive actions stay apart", () => {
   test("Sign out is apart in settings", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Settings" }).click();
+    await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
     const out = page.getByRole("button", { name: "Sign out", exact: true });
     const others = [page.getByRole("button", { name: "Check for updates" }), page.getByTestId("version")];
     for (const other of others) expect(await gap(other, out)).toBeGreaterThanOrEqual(24);
     await notAccent(page, out);
+  });
+});
+
+test.describe("polish after the second phone review", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test("Row is the player with the tag badge at the right, then one quiet line", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const row = page.getByTestId("card-row").filter({ hasText: "Acuña" });
+    const player = row.locator(".player");
+    const quiet = row.locator(".quiet");
+    const tag = row.locator(".tag");
+    await expect(player).toHaveText("Ronald Acuña Jr.");
+    await expect(quiet).toHaveText("2024 Series 1 · #27 · Gold");
+    await expect(tag).toHaveText("13/150");
+    await expect(row.locator(".extra")).toHaveCount(0);
+    expect(await css(player, "font-weight")).toBe("500");
+    const [p, q, t, r] = await Promise.all([player, quiet, tag, row].map((l) => l.boundingBox()));
+    expect(Math.abs(t!.y + t!.height / 2 - (p!.y + p!.height / 2))).toBeLessThan(8);
+    expect(t!.x).toBeGreaterThan(p!.x);
+    expect(r!.x + r!.width - (t!.x + t!.width)).toBeLessThan(24);
+    expect(q!.y).toBeGreaterThanOrEqual(p!.y + p!.height - 1);
+    await expect(page.getByTestId("card-row").filter({ hasText: "Plain Card" }).locator(".tag")).toHaveCount(0);
+  });
+
+  test("A long parallel and a grade stay on the quiet line and the number stays visible", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [
+      {
+        player: "Ronald Acuña Jr.",
+        cardNumber: "27",
+        parallel: { name: "Refractor Sapphire Edition Gold Shimmer Superfractor", serial: 13, serialLegible: true, printRun: 150 },
+        grading: { kind: "graded", company: "PSA", grade: "10" },
+        quantity: 12,
+      },
+    ]);
+    const row = page.getByTestId("card-row").first();
+    const quiet = row.locator(".quiet");
+    expect((await quiet.boundingBox())!.height).toBeLessThan(24);
+    expect((await row.boundingBox())!.height).toBeLessThanOrEqual(100);
+    const num = row.locator(".num");
+    expect((await num.boundingBox())!.x + (await num.boundingBox())!.width).toBeLessThanOrEqual((await row.boundingBox())!.x + (await row.boundingBox())!.width);
+    await expect(num).toBeVisible();
+    expect(await num.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  });
+
+  for (const [name, open, last] of [
+    ["Add card", (p: Page) => p.getByRole("button", { name: "Add card", exact: true }).click(), "Enter by hand"],
+    ["Filters", (p: Page) => p.getByRole("button", { name: /^Filter/ }).click(), "Clear all"],
+  ] as const) {
+    test(`${name} sheet sits above a bottom system bar`, async ({ page }) => {
+      await page.goto("/");
+      await page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
+      await open(page);
+      const button = page.getByRole("dialog").getByRole("button", { name: last, exact: true });
+      await expect(button).toBeVisible();
+      expect(await bottom(button)).toBeLessThanOrEqual(800 - 48 - 16);
+    });
+  }
+
+  test("Card detail: title with a serial badge, quiet subtitle, a ruled list of facts, last edited, then Edit", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ ...CARDS[0], grading: { kind: "graded", company: "PSA", grade: "9" }, quantity: 3 }]);
+    await page.getByTestId("card-row").first().click();
+    const title = page.getByRole("heading", { name: "Ronald Acuña Jr." });
+    const subtitle = page.getByTestId("subtitle");
+    const badge = page.locator("section .tag");
+    const facts = page.getByTestId("facts");
+    const edited = page.getByTestId("updated");
+    const edit = page.getByRole("button", { name: "Edit", exact: true });
+    await expect(subtitle).toHaveText("2024 Series 1 · #27");
+    await expect(badge).toHaveText("13/150");
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel", "Condition", "Quantity"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold", "PSA 9", "3"]);
+    const [t, b, f] = await Promise.all([title, badge, facts].map((l) => l.boundingBox()));
+    expect(Math.abs(b!.y + b!.height / 2 - (t!.y + t!.height / 2))).toBeLessThan(16);
+    const dd = (await facts.locator("dd").first().boundingBox())!;
+    expect(f!.x + f!.width - (dd.x + dd.width)).toBeLessThan(4);
+    expect(await css(facts.locator("div").nth(1), "border-top-width")).toBe("1px");
+    expect(await css(facts, "background-image")).toBe("none");
+    const y = async (l: Locator) => (await l.boundingBox())!.y;
+    expect(await y(title)).toBeLessThan(await y(subtitle));
+    expect(await y(subtitle)).toBeLessThan(await y(facts));
+    expect(await y(facts)).toBeLessThan(await y(edited));
+    expect(await y(edited)).toBeLessThan(await y(edit));
+    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 12 - 1);
+    expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-accent-text", "rgb(1, 2, 3)"));
+    expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
   });
 });
 
@@ -346,7 +441,7 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await expectTouchable(page, "form");
     await page.getByRole("button", { name: "Cancel" }).click();
-    await page.getByRole("button", { name: "Back" }).click();
+    await page.reload();
     await page.getByRole("button", { name: "Settings" }).click();
     await expectTouchable(page, "settings");
     await page.goto("/?auth=signed-out");
@@ -451,6 +546,7 @@ test.describe("States at phone size", () => {
           document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
           document.documentElement.style.setProperty("--safe-area-inset-bottom", "24px");
         });
+        await expect(page.getByTestId("summary")).toBeVisible();
         const target = await show(page);
         await expect(target).toBeVisible();
         expect(await legible(target)).toBeGreaterThanOrEqual(4.5);

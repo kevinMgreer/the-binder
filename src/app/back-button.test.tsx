@@ -41,7 +41,11 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-const pressBack = () => act(async () => native.handlers.at(-1)?.());
+// The app registers its listener asynchronously; under load it may not be there yet.
+const pressBack = async () => {
+  await vi.waitFor(() => expect(native.handlers.length).toBeGreaterThan(0));
+  await act(async () => native.handlers.at(-1)?.());
+};
 
 async function renderSignedIn(cards = [makeCard()]) {
   const ports = { ...createFakePorts(), auth: new FakeAuthProvider({ email: "owner@example.test" }) };
@@ -81,6 +85,26 @@ test("back from the list closes the app", async () => {
   await renderSignedIn();
   await pressBack();
   expect(native.exitApp).toHaveBeenCalledTimes(1);
+});
+
+test("back from a card's detail view shows the list, which has no Back button", async () => {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  fireEvent.click(await screen.findByRole("button", { name: /Hank Aaron/ }));
+  expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+  await pressBack();
+  expect(await screen.findByTestId("summary")).toBeTruthy();
+  expect(native.exitApp).not.toHaveBeenCalled();
+});
+
+test("back from settings shows the list, which has no Back button", async () => {
+  await renderSignedIn();
+  fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+  expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+  await pressBack();
+  expect(await screen.findByTestId("summary")).toBeTruthy();
+  expect(native.exitApp).not.toHaveBeenCalled();
 });
 
 test("back from the edit form shows that card's detail view", async () => {

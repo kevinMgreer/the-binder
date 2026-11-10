@@ -28,6 +28,19 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+test("a pending-count refresh that resolves late keeps the state a sync set meanwhile", async () => {
+  const { collection, engine } = install(new InMemoryRemoteStore());
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  const count = collection.pendingChanges.bind(collection);
+  collection.pendingChanges = async () => (await gate, count());
+  const refresh = engine.refreshStatus();
+  (engine as unknown as { setStatus(s: object): void }).setStatus({ state: "paused", pending: 0 });
+  release();
+  await refresh;
+  expect(engine.getStatus().state).toBe("paused");
+});
+
 describe("collection folder in Drive", () => {
   test("first sign-in creates an empty data file", async () => {
     const remote = new InMemoryRemoteStore();

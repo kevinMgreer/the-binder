@@ -27,15 +27,19 @@ The system SHALL show the sync state in words in the header, covering every stat
 - **THEN** the header shows its wording (for example "Synced" or "Unsynced: 3"), not colour alone
 
 ### Requirement: Each card is a pocket row
-The system SHALL show each card as one row with its photo thumbnail, player name, "year set #number", and the parallel, grade and quantity where present, and SHALL NOT truncate the player name or the card number while the text size is at its default.
+The system SHALL show each card as one fixed-height row with its photo thumbnail and two lines: the player name in bold with the serial tag as a small badge at the right end of the same line, and one quiet line "year set · #number" that continues with the parallel, grade and quantity as plain text where present. The quiet line SHALL stay on one line; when it does not fit, the parallel, grade and quantity are cut with an ellipsis first, then the set, and the card number SHALL NOT be truncated while the text size is at its default.
 
 #### Scenario: Row content
 - **WHEN** a card is listed
-- **THEN** the row shows the thumbnail, the player, "year set #number", and its parallel, grade and quantity when it has them
+- **THEN** the row shows the thumbnail, the player in bold with the tag badge at the right, and one quiet line with "year set · #number" followed by its parallel, grade and quantity when it has them
+
+#### Scenario: Long extras
+- **WHEN** a card has a long parallel name, a grade and a quantity above one
+- **THEN** the quiet line stays one line high, the extras are cut with an ellipsis, and the card number stays visible
 
 #### Scenario: Long names
 - **WHEN** a card's set name is longer than the row width
-- **THEN** the set name wraps to a second line and the card number stays visible
+- **THEN** the set name is cut with an ellipsis on its one line and the card number stays visible
 
 ### Requirement: Serial-numbered cards stand out
 The system SHALL mark a serial-numbered card with its existing serial label (for example 13/150, or ?/99 when the serial is unreadable) in the accent colour, on the list row and on the card detail screen, and SHALL NOT show a tag on a card without a serial number.
@@ -66,3 +70,17 @@ The system SHALL put all filters behind one Filter button that opens a full-heig
 #### Scenario: Nothing applied
 - **WHEN** no filter is applied
 - **THEN** no chip row is shown and the Filter button has no badge
+
+### Requirement: Sheets clear the system bars
+The system SHALL keep every sheet and its pinned buttons above the system navigation or gesture bar, using the bottom safe-area inset (the Capacitor `--safe-area-inset-bottom` variable or `env(safe-area-inset-bottom)`, whichever is larger, the same inset `#root` uses) plus a 16 dp gap.
+
+#### Scenario: Sheet above a bottom bar
+- **WHEN** the Add card or Filter sheet is open and the bottom inset is 48 dp
+- **THEN** the sheet's last button ends at least 64 dp above the bottom edge of the screen
+
+### Requirement: The card detail screen is a tidy fact sheet
+The system SHALL lay the card detail screen out, top to bottom, as: the player as a large title with the serial tag as a badge beside it in the accent text colour, a quiet subtitle "year set · #number", a plain list of facts separated by hairline dividers with the label muted at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a strip of pocket photo thumbnails, a muted last-edited line, Edit as a full-width primary button, and Delete set apart below a divider. The list SHALL NOT sit in a box.
+
+#### Scenario: Fact list
+- **WHEN** a card with a team, a serial-numbered parallel, a grade and quantity 3 is opened
+- **THEN** the title has the tag beside it, the subtitle follows, then the ruled facts, then the photo strip, then the last-edited line, and Edit is below that at the full width, with Edit and Delete still visible at 360 by 800 on a card with two photos

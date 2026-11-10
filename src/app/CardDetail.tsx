@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { useThumbUrl } from "./hooks";
@@ -9,7 +9,6 @@ interface Props {
   card: Card;
   onEdit: () => void;
   onDelete: () => Promise<void>;
-  onBack: () => void;
 }
 
 const SIDES: CardSide[] = ["front", "back"];
@@ -23,15 +22,38 @@ function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen
   );
 }
 
-export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
+export function CardDetail({ card, onEdit, onDelete }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [viewing, setViewing] = useState<CardSide | null>(null);
   const serial = serialLabel(card.parallel);
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
+  const facts: Array<[string, ReactNode]> = [
+    ["Manufacturer", card.manufacturer],
+    ["Team", card.team],
+    ["Parallel", card.parallel?.name],
+    ["Condition", gradeLabel(card.grading)],
+    ["Quantity", card.quantity],
+    ["Traits", flags.join(", ")],
+  ].filter(([, v]) => v) as Array<[string, ReactNode]>;
 
   return (
     <section>
-      <button onClick={onBack}>Back</button>
+      <div className="title-row">
+        <h2>{card.player}</h2>
+        {serial && <span className="tag">{serial}</span>}
+      </div>
+      <p className="subtitle" data-testid="subtitle">
+        {card.year} {card.set} · #{card.cardNumber}
+      </p>
+      <dl className="facts" data-testid="facts">
+        {facts.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      {card.notes && <p>{card.notes}</p>}
       <div className="photo-row">
         {SIDES.map((side) => card.photos[side] && <PhotoThumb key={side} card={card} side={side} onOpen={() => setViewing(side)} />)}
       </div>
@@ -40,20 +62,6 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
           <PhotoView card={card} side={viewing} />
         </Sheet>
       )}
-      <h2>{card.player}</h2>
-      <p>
-        {card.year} {card.manufacturer} {card.set} #{card.cardNumber}
-      </p>
-      {card.team && <p>{card.team}</p>}
-      {card.parallel && (
-        <p>
-          {card.parallel.name} {serial && <span className="tag">{serial}</span>}
-        </p>
-      )}
-      {gradeLabel(card.grading) && <p>{gradeLabel(card.grading)}</p>}
-      {flags.length > 0 && <p>{flags.join(", ")}</p>}
-      <p>Quantity: {card.quantity}</p>
-      {card.notes && <p>{card.notes}</p>}
       <p>
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>
       </p>

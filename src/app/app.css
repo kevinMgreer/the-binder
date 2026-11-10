@@ -57,7 +57,6 @@ input[type="checkbox"] { width: var(--space-5); height: var(--space-5); margin: 
 
 /* #root's padding does not extend the scroll area, so scrolling screens carry the bottom inset themselves. */
 form, section, main { padding: var(--space-3) var(--space-3) calc(var(--space-3) + max(var(--safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))); }
-section > button:first-child { margin-bottom: var(--space-3); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
 .danger-zone { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-pocket-edge); }
 .hint { color: var(--color-text-muted); font-size: var(--type-label); }
@@ -83,7 +82,7 @@ section > button:first-child { margin-bottom: var(--space-3); }
 .chip::after { content: "\00d7"; margin-left: var(--space-2); font-size: var(--type-title); line-height: 1; }
 .add-button { position: fixed; left: var(--space-3); right: var(--space-3); bottom: calc(var(--inset-bottom) + var(--space-4)); }
 .backdrop { position: fixed; inset: 0; z-index: 10; display: flex; align-items: flex-end; box-sizing: border-box; padding-top: var(--inset-top); background: var(--color-scrim); }
-.sheet { display: flex; flex-direction: column; gap: var(--space-2); box-sizing: border-box; width: 100%; max-height: 100%; overflow: hidden; margin: 0; padding: var(--space-3) var(--space-3) calc(var(--space-3) + var(--inset-bottom)); border-radius: var(--radius-l) var(--radius-l) 0 0; background: var(--color-surface); }
+.sheet { display: flex; flex-direction: column; gap: var(--space-2); box-sizing: border-box; width: 100%; max-height: 100%; overflow: hidden; margin: 0; padding: var(--space-3) var(--space-3) calc(var(--space-4) + var(--inset-bottom)); border-radius: var(--radius-l) var(--radius-l) 0 0; background: var(--color-surface); }
 .sheet.full { height: 100%; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .sheet-head h2 { margin: 0; }
@@ -103,11 +102,15 @@ section > button:first-child { margin-bottom: var(--space-3); }
 .list li button { justify-content: flex-start; gap: var(--space-3); width: 100%; height: 100%; padding: var(--space-3); text-align: left; }
 .thumb { width: 48px; height: 67px; background: var(--color-pocket); border-radius: var(--radius-s); flex: none; }
 img.thumb { object-fit: cover; }
-.text { display: flex; flex-direction: column; flex: 1; min-width: 0; font-size: var(--type-label); color: var(--color-text-muted); }
+.text { display: flex; flex-direction: column; justify-content: center; gap: var(--space-1); flex: 1; min-width: 0; font-size: var(--type-label); color: var(--color-text-muted); }
 .text .player { font-size: var(--type-body); font-weight: 500; color: var(--color-text); }
-.line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); min-width: 0; }
-.player { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.set { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; }
+.player { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* One line: the extras (large shrink factor) give way first, then the set, never the number. */
+.quiet { display: flex; gap: var(--space-1); min-width: 0; white-space: nowrap; }
+.set, .rest { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.set { flex: 0 1 auto; }
+.rest { flex: 0 100 auto; }
 .num { flex: none; font-family: var(--type-mono); }
 .tag { flex: none; font-family: var(--type-mono); font-size: var(--type-label); font-weight: 500; color: var(--color-accent-text); border: 1px solid var(--color-accent-text); border-radius: var(--radius-s); padding: 0 var(--space-1); }
 
@@ -120,8 +123,15 @@ img.thumb { object-fit: cover; }
 [role="alert"][data-testid="save-blocked"], p[role="alert"] { color: var(--color-danger); }
 form > button { margin-bottom: var(--space-3); }
 form > [role="status"] { margin: 0 0 var(--space-3); }
-section > p:has(> time) { color: var(--color-text-muted); font-size: var(--type-label); }
 section > h2 { margin-top: var(--space-2); }
+.title-row h2 { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.subtitle, section > p:has(> time) { color: var(--color-text-muted); font-size: var(--type-label); }
+.subtitle { margin: var(--space-1) 0 var(--space-4); }
+.facts { margin: 0 0 var(--space-3); }
+.facts div { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); padding: var(--space-3) 0; }
+.facts div + div { border-top: 1px solid var(--color-pocket-edge); }
+.facts dt { flex: none; color: var(--color-text-muted); font-size: var(--type-label); }
+.facts dd { margin: 0; min-width: 0; text-align: right; overflow-wrap: anywhere; }
 .actions .primary { flex: 1; }
 .sheet { border-width: 1px 0 0; }
 [role="dialog"]:not(.sheet), [role="alertdialog"] { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); margin: var(--space-3) 0; background-color: var(--color-surface); }

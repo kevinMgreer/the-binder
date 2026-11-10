@@ -6,12 +6,11 @@ import { UpdateLink } from "./UpdateLink";
 import type { CheckResult, UpdateInfo } from "./useUpdates";
 
 interface Props {
-  onBack: () => void;
   update: UpdateInfo | null;
   onCheckForUpdates: () => Promise<CheckResult>;
 }
 
-export function SettingsScreen({ onBack, update, onCheckForUpdates }: Props) {
+export function SettingsScreen({ update, onCheckForUpdates }: Props) {
   const session = useSession();
   const { appInfo } = usePorts();
   const { pending } = useSyncStatus();
@@ -30,7 +29,6 @@ export function SettingsScreen({ onBack, update, onCheckForUpdates }: Props) {
 
   return (
     <section>
-      <button onClick={onBack}>Back</button>
       <h2>Settings</h2>
       <p>Signed in as {session.email}</p>
 

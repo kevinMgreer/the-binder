@@ -187,19 +187,25 @@ Three radii: small 4px (thumbnails, tags), medium 10px (the pocket: buttons, inp
 Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 48px min height. A trailing close mark follows the label (see Do's and Don'ts). One chip per active filter, wrapping with 8px gaps. Tapping removes the filter.
 
 ### Tag
-Mono label-size, weight 500, Deep Amber text with a 1px Deep Amber outline, 4px radius, 4px horizontal padding, sits at the end of a list row. Outline only, never filled.
+Mono label-size, weight 500, Deep Amber text with a 1px Deep Amber outline, 4px radius, 4px horizontal padding, sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled.
 
 ### Sheets
-Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px padding plus bottom inset, 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). `.sheet.full` takes full height (add sheet); filter sheet is content height. Group headings inside are muted label-size, weight 500.
+Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below (same clearance as the add button), 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). `.sheet.full` takes full height (filter sheet); the add sheet is content height. Group headings inside are muted label-size, weight 500.
 
 ### Inputs / Fields
 Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textarea min 96px. Placeholder in Muted Ink. Invalid input shows a Danger border with a Danger label-size message. Required note is muted label. Checkbox is 24px with accent colour in a 48px row. Search label is visually hidden but present.
 
 ### List row
-Full-width pocket button, 12px padding and gap, 48x67 thumbnail (4px radius, pocket placeholder, cover fit). Player name body size, weight 500, single-line ellipsis; set name label-size muted, two-line clamp; card number mono.
+Full-width pocket button, 12px padding and gap, 48x67 thumbnail (4px radius, pocket placeholder, cover fit). Two lines, row height 100px: the player name (body size, weight 500, single-line ellipsis) with the Tag as a badge at the right end of the same line, and one quiet muted label-size line "year set · #number" (number mono) continuing with parallel, grade and quantity as plain text. The line never wraps: the extras shrink first, then the set, never the number.
+
+### Card facts
+Detail screen, top to bottom: the player as a large title (title size, weight 500) with the Tag badge beside it, a muted label-size subtitle "year set · #number", `dl.facts`, a plain list with 1px pocket-edge dividers (no box): muted label-size label at the left, body-size value right-aligned, 12px row padding, rows only for what the card has; then a strip of pocket photo thumbnails. Last edited is a muted line below that, Edit is the full-width primary button, Delete sits apart below a divider in the danger zone.
 
 ### Banner and status
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.
+
+### Navigation
+The detail and settings screens have no on-screen Back button: Android's back button and gesture return to the list. Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.

@@ -4,8 +4,8 @@ import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { useThumbUrl } from "./hooks";
 
-// Fits the player, a two-line set and the parallel line, plus the 8 dp gap to the next row (the li's bottom padding).
-const ROW_HEIGHT = 108;
+// Fits the 67 dp thumbnail, the button's 12 dp padding and the 8 dp gap to the next row (the li's bottom padding).
+const ROW_HEIGHT = 100;
 
 function Thumb({ card }: { card: Card }) {
   const url = useThumbUrl(card.id, "front", !!card.photos.front, card.updatedAt);
@@ -32,6 +32,7 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
           const c = cards[item.index];
           const serial = serialLabel(c.parallel);
           const grade = c.grading.kind === "graded" ? gradeLabel(c.grading) : "";
+          const rest = [c.parallel?.name, grade, c.quantity > 1 && `×${c.quantity}`].filter(Boolean).join(" ");
           return (
             <li
               key={c.id}
@@ -41,17 +42,22 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
               <button onClick={() => onOpen(c)}>
                 <Thumb card={c} />
                 <span className="text">
-                  <span className="line">
+                  <span className="head">
                     <strong className="player">{c.player}</strong>
                     {serial && <span className="tag">{serial}</span>}
                   </span>
-                  <span className="line">
+                  <span className="quiet">
                     <span className="set">
                       {c.year} {c.set}
                     </span>{" "}
-                    <span className="num">#{c.cardNumber}</span>
+                    <span className="num">· #{c.cardNumber}</span>
+                    {rest && (
+                      <>
+                        {" "}
+                        <span className="rest">· {rest}</span>
+                      </>
+                    )}
                   </span>
-                  <span>{[c.parallel?.name, grade, c.quantity > 1 && `×${c.quantity}`].filter(Boolean).join(" ")}</span>
                 </span>
               </button>
             </li>
