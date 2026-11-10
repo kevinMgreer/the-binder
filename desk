@@ -1,0 +1,3 @@
+#!/bin/sh
+# written by desk sync
+DESK_HOME='C:/repos/the-binder' exec node 'C:/repos/the-binder/node_modules/agent-desk/bin/desk.mjs' "$@"

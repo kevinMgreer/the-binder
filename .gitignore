@@ -42,6 +42,16 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+.claude/synced-permissions.json
+
+# Local tooling: editor files and desk's generated, per-machine files (the workflow files themselves are committed)
+.vscode/
+*.code-workspace
+board.jsonl
+.github/agents/
+.github/skills/
+.github/agent-desk-manifest.json
+PRODUCT.md
 
 # Playwright
 test-results/

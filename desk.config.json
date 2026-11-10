@@ -1,0 +1,25 @@
+{
+  "kitVersion": "0.11.1",
+  "worktreesDir": "../worktrees",
+  "scratchDir": "scratch",
+  "repos": [
+    {
+      "id": "the-binder",
+      "path": "C:\\repos\\the-binder",
+      "gh": "kevinMgreer/the-binder",
+      "install": "npm ci",
+      "check": "npm run build && npm test"
+    }
+  ],
+  "harnesses": [
+    "claude",
+    "copilot"
+  ],
+  "profile": "developer",
+  "addons": [],
+  "roles": {},
+  "permissions": {
+    "deny": [],
+    "additionalDirectories": []
+  }
+}
