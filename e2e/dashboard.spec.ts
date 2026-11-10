@@ -108,6 +108,23 @@ test("Deleting an autographed card lowers Autos by one", async ({ page }) => {
   await expect(tile(page, "Autos")).toHaveAccessibleName("Autos, 1");
 });
 
+test("Back to the dashboard from the list", async ({ page }) => {
+  await browse(page).click();
+  await back(page).click();
+  await expect(browse(page)).toBeVisible();
+});
+
+test("Filters survive opening a card and going back", async ({ page }) => {
+  // The browser has no hardware back; deleting a card is the other way from its detail view to the list.
+  await seed(page, [{ cardNumber: "1", flags: AUTO }, { cardNumber: "2", flags: AUTO }, { cardNumber: "3" }]);
+  await tile(page, "Autos").click();
+  await page.getByTestId("card-row").first().click();
+  await page.getByRole("button", { name: "Delete" }).click();
+  await page.getByRole("button", { name: "Confirm delete" }).click();
+  await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
+  await expect(page.getByTestId("shown")).toHaveText("Showing 1");
+});
+
 test("Screen reader name holds the label and the number", async ({ page }) => {
   await seed(page, [{ cardNumber: "1", flags: AUTO }]);
   await expect(page.getByRole("button", { name: "Autos, 1" })).toBeVisible();
