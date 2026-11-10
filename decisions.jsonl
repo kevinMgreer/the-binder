@@ -1,0 +1,1 @@
+{"v":1,"ts":"2026-11-10T03:28:29.000Z","from":"owner","date":"2026-11-10","todo":"T-17","title":"Narrow the desk check command so it stops running the 5,000-card timing test on every push (desk.config.json, Claude cannot edit it)","text":"Use the code-only check"}
