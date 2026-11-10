@@ -3,6 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
 import type { CapturedPhoto } from "../ports";
+import { CardForm } from "./CardForm";
 import { PhotoSlot } from "./PhotoSlot";
 import { PortsProvider } from "./ports-context";
 
@@ -47,6 +48,23 @@ test("while a photo is being prepared a status line shows and the buttons are di
   expect((await screen.findByRole("status")).textContent).toBe("Processing photo…");
   expect((screen.getByRole("button", { name: "Scan front" }) as HTMLButtonElement).disabled).toBe(true);
   expect((screen.getByRole("button", { name: "Pick front from photos" }) as HTMLButtonElement).disabled).toBe(true);
+});
+
+test("Save is disabled while either slot is preparing a photo, and enabled again after", async () => {
+  let finish: (photo: CapturedPhoto | null) => void = () => {};
+  acquire.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+  render(
+    <PortsProvider ports={createFakePorts()}>
+      <CardForm cards={[]} onSave={async () => {}} onCancel={() => {}} />
+    </PortsProvider>,
+  );
+  const save = () => screen.getByRole("button", { name: "Save" }) as HTMLButtonElement;
+  expect(save().disabled).toBe(false);
+  fireEvent.click(screen.getByRole("button", { name: "Scan back" }));
+  await vi.waitFor(() => expect(save().disabled).toBe(true));
+  expect(screen.getByRole("status").textContent).toBe("Processing photo…");
+  finish(null);
+  await vi.waitFor(() => expect(save().disabled).toBe(false));
 });
 
 test("closing the scanner without a photo changes nothing and clears the status", async () => {
