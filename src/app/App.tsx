@@ -99,10 +99,6 @@ export function App() {
     return (
       <Dashboard
         {...shared("dashboard")}
-        onBrowse={() => {
-          setFilters(emptyFilters);
-          setView({ name: "list" });
-        }}
         onTile={(tile) => {
           setFilters({ ...emptyFilters, ...tile.filters });
           setView({ name: "list" });

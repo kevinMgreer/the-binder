@@ -5,16 +5,15 @@ The first screen of the app: a summary of the collection as a fixed set of stat 
 ## ADDED Requirements
 
 ### Requirement: The app opens on the dashboard
-The system SHALL show the dashboard as the first screen after sign-in, with a header holding the title, the sync state and Settings, the stat tiles, a Browse collection button that opens the collection list with no filter applied, and the same single "Add card" button as the collection list.
+The system SHALL show the dashboard as the first screen after sign-in, with a header holding the title, the sync state and Settings, the stat tiles, and the same single "Add card" button as the collection list. It SHALL NOT have a Browse collection button: the bottom navigation's Cards destination opens the list.
 
 #### Scenario: Launch
 - **WHEN** the signed-in user opens the app
 - **THEN** the dashboard is shown, with the sync state in words and the stat tiles
 
-#### Scenario: Browse the whole collection
-- **GIVEN** the list was last filtered to Relic
-- **WHEN** the user taps Browse collection on the dashboard
-- **THEN** the collection list is shown with no filter and no search applied
+#### Scenario: No Browse collection button
+- **WHEN** the dashboard is shown
+- **THEN** no button named "Browse collection" exists, and tapping a tile or the Cards destination of the bottom navigation shows the collection list
 
 #### Scenario: Add from the dashboard
 - **WHEN** the user taps Add card on the dashboard and saves a card entered by hand
@@ -75,7 +74,7 @@ The system SHALL draw the dashboard only from the existing design tokens, in bot
 
 #### Scenario: Tiles at phone size
 - **WHEN** the dashboard is shown on a 360 by 800 phone
-- **THEN** every tile and the Browse collection button are at least 48 dp in each direction, all seven tiles are visible without horizontal scrolling, and nothing sits under the system bars
+- **THEN** every tile is at least 48 dp in each direction, all seven tiles are visible without horizontal scrolling, and nothing sits under the system bars
 
 #### Scenario: Screen reader
 - **WHEN** a screen reader focuses the Autos tile reading 12

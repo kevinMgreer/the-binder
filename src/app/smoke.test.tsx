@@ -45,5 +45,5 @@ test("a failing sign-in shows its message instead of doing nothing", async () =>
 test("signed-out app shows only the sign-in screen", async () => {
   renderApp(null);
   expect(await screen.findByRole("button", { name: "Sign in with Google" })).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Browse collection" })).toBeNull();
+  expect(screen.queryByRole("heading", { name: "Dashboard" })).toBeNull();
 });

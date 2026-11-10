@@ -1,8 +1,8 @@
 import { expect, type Page } from "@playwright/test";
 
-/** The app opens on the dashboard; most specs exercise the collection list behind Browse collection. */
+/** The app opens on the dashboard; most specs exercise the collection list behind the Cards tab. */
 export async function openCollection(page: Page) {
-  await page.getByRole("button", { name: "Browse collection" }).click();
+  await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Cards", exact: true }).click();
   await expect(page.getByTestId("summary")).toBeVisible();
 }
 

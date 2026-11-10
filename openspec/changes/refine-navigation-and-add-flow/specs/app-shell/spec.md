@@ -78,4 +78,4 @@ The system SHALL show exactly one Add card button on the dashboard and on the co
 
 #### Scenario: One add button per screen
 - **WHEN** the dashboard or the list is showing
-- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the Browse collection button or the last stat tile once scrolled to the end
+- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the last stat tile once scrolled to the end

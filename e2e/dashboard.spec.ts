@@ -16,7 +16,8 @@ async function seed(page: Page, cards: Seed[]) {
 
 const tile = (page: Page, label: string) => page.getByRole("button", { name: new RegExp(`^${label}, \\d`) });
 const back = hardwareBack;
-const browse = (page: Page) => page.getByRole("button", { name: "Browse collection" });
+const cardsTab = (page: Page) => page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Cards", exact: true });
+const onDashboard = (page: Page) => expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 const chips = (page: Page) => page.locator(".chip");
 
 test.beforeEach(async ({ page }) => {
@@ -65,15 +66,14 @@ test("Remove the tile's filter shows every card", async ({ page }) => {
   await expect(page.getByTestId("shown")).toHaveText("Showing 2");
 });
 
-test("Browse the whole collection clears filters and search", async ({ page }) => {
+test("No Browse collection button; a tile and the Cards tab both reach the list", async ({ page }) => {
   await seed(page, [{ cardNumber: "1", flags: { rookie: false, autograph: false, relic: true } }, { cardNumber: "2" }]);
+  await expect(page.getByRole("button", { name: "Browse collection" })).toHaveCount(0);
   await tile(page, "Relics").click();
-  await page.getByLabel("Search", { exact: true }).fill("Acu");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 1");
   await back(page);
-  await browse(page).click();
-  await expect(chips(page)).toHaveCount(0);
-  await expect(page.getByLabel("Search", { exact: true })).toHaveValue("");
-  await expect(page.getByTestId("shown")).toHaveText("Showing 2");
+  await cardsTab(page).click();
+  await expect(page.getByTestId("summary")).toBeVisible();
 });
 
 test("Add from the dashboard returns to the dashboard with the count up by the quantity", async ({ page }) => {
@@ -100,7 +100,7 @@ test("Empty collection and a zero tile open the no-match list", async ({ page })
 test("Deleting an autographed card lowers Autos by one", async ({ page }) => {
   await seed(page, [{ cardNumber: "1", flags: AUTO }, { cardNumber: "2", flags: AUTO }]);
   await expect(tile(page, "Autos")).toHaveAccessibleName("Autos, 2");
-  await browse(page).click();
+  await cardsTab(page).click();
   await page.getByTestId("card-row").first().click();
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Confirm delete" }).click();
@@ -110,10 +110,10 @@ test("Deleting an autographed card lowers Autos by one", async ({ page }) => {
 });
 
 test("Back to the dashboard from the list, which has no Back button", async ({ page }) => {
-  await browse(page).click();
+  await cardsTab(page).click();
   await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
   await back(page);
-  await expect(browse(page)).toBeVisible();
+  await onDashboard(page);
 });
 
 test("Filters survive opening a card and going back", async ({ page }) => {
