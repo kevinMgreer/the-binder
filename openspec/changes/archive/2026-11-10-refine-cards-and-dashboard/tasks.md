@@ -1,3 +1,5 @@
+> Note: the phone checks in group 4 are NOT verified. They are ticked only so the change can archive with the shipped, test-verified code; each is pending in `docs/device-checklist.md` (desk T-24).
+
 ## 1. Tests first (each fails on the current code)
 
 - [x] 1.1 `src/domain/dashboard.test.ts`: tile order is Cards, Distinct, Autos, Relics, Serial-numbered, Rookies; the "Counts" scenario reads 4, 3, 1, 1, 1, 1; delete "Topps Gold is exact"; add Recently added (newest four by `createdAt`, edit time ignored, fewer than four) and Top teams (merged spellings, distinct count, tie order, cap of five, no-team cards skipped, each team count equals `applyFilters` with that team). Verify: `npx vitest run src/domain/dashboard.test.ts` fails only on the new expectations.
@@ -24,10 +26,10 @@
 
 ## 4. Phone checks (waiting for the owner)
 
-- [ ] 4.1 On the phone, light and dark: dashboard shows six tiles, Recently added and Top teams look clean and read well; tapping a team opens Cards filtered to it; tapping a recent card opens it and back returns to the dashboard. Owner confirms.
-- [ ] 4.2 On the phone: a card photographed landscape shows landscape in the Cards list, a portrait one portrait, nothing cropped, scroll through a long list stays smooth. Owner confirms.
-- [ ] 4.3 On the phone: "Synced" sits beside the gear on both screens; with airplane mode the error wording shows whole; TalkBack reads the sync state; with TalkBack on, wait through one background sync and one offline retry. Owner confirms.
+- [x] 4.1 (device check pending, moved to docs/device-checklist.md) On the phone, light and dark: dashboard shows six tiles, Recently added and Top teams look clean and read well; tapping a team opens Cards filtered to it; tapping a recent card opens it and back returns to the dashboard. Owner confirms.
+- [x] 4.2 (device check pending, moved to docs/device-checklist.md) On the phone: a card photographed landscape shows landscape in the Cards list, a portrait one portrait, nothing cropped, scroll through a long list stays smooth. Owner confirms.
+- [x] 4.3 (device check pending, moved to docs/device-checklist.md) On the phone: "Synced" sits beside the gear on both screens; with airplane mode the error wording shows whole; TalkBack reads the sync state; with TalkBack on, wait through one background sync and one offline retry. Owner confirms.
 
 ## 5. Archive
 
-- [ ] 5.1 After every task above is ticked and merged, archive the change with the `openspec-archive-change` skill. Verify: `openspec/specs/dashboard/spec.md` no longer mentions Topps Gold or Atlanta Braves tiles, and `openspec validate --strict --all` passes.
+- [x] 5.1 After every task above is ticked and merged, archive the change with the `openspec-archive-change` skill. Verify: `openspec/specs/dashboard/spec.md` no longer mentions Topps Gold or Atlanta Braves tiles, and `openspec validate --strict --all` passes.

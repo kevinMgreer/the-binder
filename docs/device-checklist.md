@@ -40,3 +40,41 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 ## Performance
 
 - [ ] A seeded 5,000-card collection shows its first screen in about a second on the phone and scrolls smoothly.
+
+## By when (archived task ids and desk todos)
+
+Old OpenSpec task ids are in brackets. Items above that already say the same are not repeated; these lines tie each moved task to a time and a desk todo.
+
+### Before the first release
+
+- [ ] Setup doc works on a clean Google Cloud project. [add-collection-foundation 1.5, T-5]
+- [ ] Repo safeguards: secret scanning and push protection on; `git log --format='%ae' | sort -u` shows only the noreply address; no other email in the tree. [1.6, T-5]
+- [ ] Worker deployed with secrets and KV, Anthropic spend limit set, both written in `docs/setup.md`. [6.7, T-6]
+- [ ] Real "Identify with Claude" from the phone works. [6.7, T-6]
+- [ ] Seeded 5,000-card list: first screen about 1 s, scrolls smoothly. [2.5, T-26]
+- [ ] Compressed 12 MP photo: ML Kit still reads the serial stamp. [3.3, T-26]
+- [ ] Capture ML Kit text from 20 real card backs as JSON fixtures; the parser tests pass on them. [6.2, T-26]
+- [ ] ML Kit recognition works in airplane mode on a fresh install. [6.3, T-26]
+- [ ] Sign-in works on debug and release; consent lists only the app's own files. [4.2, T-26]
+- [ ] Real Drive: "Browse photos in Google Drive" holds; debug build uses only "The Binder (dev)". [5.3, T-26]
+- [ ] Card with front and back photos stays in budget; reinstall and sign in restores everything. [5.6, T-26]
+
+### On the release APK
+
+- [ ] Test tag `v*` builds a Release with an APK; `apksigner verify --print-certs` shows the release key; `git ls-files` lists no `.jks` or `.keystore`. [7.4, T-5]
+- [ ] Install over ADB, install from a downloaded APK, update with the same key, refuse a different key (items above). [7.6, T-26]
+- [ ] Settings version name and code match the installed release. [7.3, T-26]
+- [ ] Update check against real GitHub Releases reports a newer release. [7.5, T-26]
+- [ ] Unzip the release APK and search for `sk-ant-`: nothing. [6.7, T-6]
+
+### Free tier and retire the old app
+
+- [ ] Full run on the latest release: sign in, add three cards (manual, ML Kit, Claude), go offline, add a fourth, come back online; a reinstall shows all four and the photos are in "The Binder" in Drive. [8.1, T-26]
+- [ ] Google Cloud project has no billing account; Cloudflare shows free-plan usage only; GitHub Actions within the free allowance. [8.2, owner]
+- [ ] Old the-binder hosting shut down and resources deleted; the old URL no longer serves the app. [8.3, owner]
+
+### Per UI change on the phone
+
+- [ ] Dashboard, light and dark: six tiles; Recently added and Top teams read well; a team tap opens Cards filtered to it; a recent card opens and back returns to the dashboard. [refine-cards-and-dashboard 4.1, T-24]
+- [ ] Landscape photo shows landscape in the Cards list, portrait shows portrait, nothing cropped, long list scrolls smoothly. [refine 4.2, T-24]
+- [ ] "Synced" sits beside the gear on both screens; airplane-mode error wording shows whole; TalkBack reads the sync state through one background sync and one offline retry. [refine 4.3, T-24]
