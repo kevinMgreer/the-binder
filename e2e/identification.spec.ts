@@ -20,6 +20,7 @@ async function configure(page: Page, which: "ocr" | "claude", result: object) {
 
 async function scanFront(page: Page) {
   await setNextPhoto(page);
+  await page.getByRole("button", { name: "Add card" }).click();
   await page.getByRole("button", { name: "Scan card" }).click();
   await page.getByRole("button", { name: "Skip back" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
@@ -144,6 +145,7 @@ test("Cards record on-device recognition or manual entry as their source", async
   await expect(page.getByTestId("card-row")).toHaveCount(1);
 
   await page.getByRole("button", { name: "Add card" }).click();
+  await page.getByRole("button", { name: "Enter by hand" }).click();
   await field(page, "Player").fill("Mookie Betts");
   await field(page, "Year").fill("2023");
   await field(page, "Set").fill("Series 2");

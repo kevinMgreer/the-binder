@@ -36,11 +36,11 @@ The system SHALL let the user retake or replace a card's front or back photo, an
 - **THEN** the card shows the new photo and the old photo is no longer in the Drive photos folder
 
 ### Requirement: View photos
-The system SHALL show thumbnails in the collection list and a full-size, zoomable front and back view on the card detail screen.
+The system SHALL show thumbnails in the collection list and thumbnails of the front and back photos on the card detail screen, and SHALL open a full-size, zoomable view of a photo when its thumbnail is tapped, fetching and caching the full photo when it is not on the device.
 
 #### Scenario: View full photo offline
 - **GIVEN** the device is offline and the full photo was not opened on this device before
-- **WHEN** the user opens the card detail
+- **WHEN** the user taps a photo thumbnail on the card detail
 - **THEN** the thumbnail is shown with a note that the full photo will load when online
 
 #### Scenario: Zoom to read serial

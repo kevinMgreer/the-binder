@@ -281,7 +281,9 @@ export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props
         </p>
       )}
       <div className="actions">
-        <button type="submit">Save</button>
+        <button type="submit" className="primary">
+          Save
+        </button>
         <button type="button" onClick={onCancel}>
           Cancel
         </button>

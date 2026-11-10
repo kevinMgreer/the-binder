@@ -73,6 +73,7 @@ test("When silent renewal is refused sync pauses, local changes stay, and Sign i
     w.__ports.remote.failures.push(new AuthExpiredError("Sign in again"));
   });
   await page.getByRole("button", { name: "Add card" }).click();
+  await page.getByRole("button", { name: "Enter by hand" }).click();
   await page.getByLabel("Player", { exact: true }).fill("Ronald Acuña Jr.");
   await page.getByLabel("Year", { exact: true }).fill("2024");
   await page.getByLabel("Set", { exact: true }).fill("Series 1");

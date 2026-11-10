@@ -6,6 +6,7 @@ import { CardDetail } from "./CardDetail";
 import { CardForm } from "./CardForm";
 import { CollectionScreen } from "./CollectionScreen";
 import { ScanFlow } from "./ScanFlow";
+import { openSheets } from "./Sheet";
 import { SettingsScreen } from "./SettingsScreen";
 import { useCards } from "./useCards";
 import { useUpdates } from "./useUpdates";
@@ -25,7 +26,9 @@ export function App() {
   // Android back: one screen up, and leave the app only from the list.
   useEffect(() => {
     const handle = CapacitorApp.addListener("backButton", () => {
-      if (view.name === "list") void CapacitorApp.exitApp();
+      const sheet = openSheets.at(-1);
+      if (sheet) sheet();
+      else if (view.name === "list") void CapacitorApp.exitApp();
       else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id });
       else setView({ name: "list" });
     });

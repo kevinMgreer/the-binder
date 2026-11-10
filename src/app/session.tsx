@@ -78,7 +78,9 @@ export function AuthGate({ autoSync, children }: { autoSync: boolean; children: 
     return (
       <main>
         <h1>The Binder</h1>
-        <button onClick={signIn}>Sign in with Google</button>
+        <button className="primary" onClick={signIn}>
+          Sign in with Google
+        </button>
         {declined && <p role="alert">Drive access is required to store your collection.</p>}
         {failure && <p role="alert">{failure}</p>}
       </main>

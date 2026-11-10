@@ -16,7 +16,9 @@ export function SyncIndicator() {
 
   return (
     <>
-      <span data-testid="sync-status">{label}</span>
+      <span className="sync" data-state={state} data-testid="sync-status">
+        {label}
+      </span>
       {state === "paused" && <button onClick={session.signInAgain}>Sign in again</button>}
       {state === "needs-decision" && (
         <div role="dialog" aria-modal="true" aria-label="Data file missing">

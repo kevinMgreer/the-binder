@@ -61,9 +61,19 @@ async function renderSignedIn(cards = [makeCard()]) {
 test("back from the add form shows the list and keeps the app open", async () => {
   await renderSignedIn();
   fireEvent.click(screen.getByRole("button", { name: "Add card" }));
+  fireEvent.click(screen.getByRole("button", { name: "Enter by hand" }));
   expect(screen.getByRole("heading", { name: "Add card" })).toBeTruthy();
   await pressBack();
   expect(await screen.findByTestId("summary")).toBeTruthy();
+  expect(native.exitApp).not.toHaveBeenCalled();
+});
+
+test("back closes an open sheet first and keeps the app open", async () => {
+  await renderSignedIn();
+  fireEvent.click(screen.getByRole("button", { name: "Add card" }));
+  expect(screen.getByRole("dialog", { name: "Add a card" })).toBeTruthy();
+  await pressBack();
+  expect(screen.queryByRole("dialog", { name: "Add a card" })).toBeNull();
   expect(native.exitApp).not.toHaveBeenCalled();
 });
 
