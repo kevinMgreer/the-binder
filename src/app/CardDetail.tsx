@@ -27,7 +27,7 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
       {card.team && <p>{card.team}</p>}
       {card.parallel && (
         <p>
-          {card.parallel.name} {serial}
+          {card.parallel.name} {serial && <span className="tag">{serial}</span>}
         </p>
       )}
       {gradeLabel(card.grading) && <p>{gradeLabel(card.grading)}</p>}
@@ -38,13 +38,21 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>
       </p>
       <div className="actions">
-        <button onClick={onEdit}>Edit</button>
-        <button onClick={() => setConfirming(true)}>Delete</button>
+        <button className="primary" onClick={onEdit}>
+          Edit
+        </button>
+      </div>
+      <div className="danger-zone">
+        <button className="danger" onClick={() => setConfirming(true)}>
+          Delete
+        </button>
       </div>
       {confirming && (
         <div role="alertdialog" aria-label="Delete card">
           <p>Delete this card?</p>
-          <button onClick={onDelete}>Confirm delete</button>
+          <button className="danger" onClick={onDelete}>
+            Confirm delete
+          </button>
           <button onClick={() => setConfirming(false)}>Keep</button>
         </div>
       )}

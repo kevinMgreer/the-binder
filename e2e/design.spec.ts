@@ -101,8 +101,8 @@ for (const size of PHONES) {
       const ys = await Promise.all([summary, search, chip, row].map(async (l) => (await l.boundingBox())!.y));
       expect(ys).toEqual([...ys].sort((a, b) => a - b));
       expect((await status.boundingBox())!.y).toBeLessThan(ys[1]);
-      for (const group of ["Year", "Team", "Set", "Parallel", "Serial", "Graded"]) {
-        await expect(page.getByRole("button", { name: new RegExp(`^${group}`) })).toBeVisible();
+      for (const group of ["Year", "Team", "Set", "Parallel", "Serial", "Traits", "Graded"]) {
+        await expect(page.getByRole("button", { name: group, exact: true })).toBeVisible();
       }
     });
 
@@ -211,9 +211,16 @@ async function controls(page: Page) {
       .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden")
       .map((el) => {
         const r = el.getBoundingClientRect();
-        return { name: (el.textContent || el.getAttribute("aria-label") || el.tagName).trim().slice(0, 24), x: r.x, y: r.y, width: r.width, height: r.height };
+        // A control scrolled out of its panel or chip row is not under a finger, so it takes no part in the spacing check.
+        let clipped = false;
+        for (let p = el.parentElement; p; p = p.parentElement) {
+          if (getComputedStyle(p).overflow === "visible") continue;
+          const c = p.getBoundingClientRect();
+          clipped ||= r.top < c.top - 0.5 || r.bottom > c.bottom + 0.5 || r.left < c.left - 0.5 || r.right > c.right + 0.5;
+        }
+        return { name: (el.textContent || el.getAttribute("aria-label") || el.tagName).trim().slice(0, 24), x: r.x, y: r.y, width: r.width, height: r.height, clipped };
       });
-  }, CONTROLS) as Promise<(Box & { name: string })[]>;
+  }, CONTROLS) as Promise<(Box & { name: string; clipped: boolean })[]>;
 }
 
 async function expectTouchable(page: Page, label: string) {
@@ -223,8 +230,9 @@ async function expectTouchable(page: Page, label: string) {
     expect(c.height, `${label}: ${c.name} height`).toBeGreaterThanOrEqual(47.5);
     expect(c.width, `${label}: ${c.name} width`).toBeGreaterThanOrEqual(47.5);
   }
-  for (const [i, a] of list.entries()) {
-    for (const b of list.slice(i + 1)) {
+  const reachable = list.filter((c) => !c.clipped);
+  for (const [i, a] of reachable.entries()) {
+    for (const b of reachable.slice(i + 1)) {
       const dx = Math.max(0, a.x - (b.x + b.width), b.x - (a.x + a.width));
       const dy = Math.max(0, a.y - (b.y + b.height), b.y - (a.y + a.height));
       expect(Math.hypot(dx, dy), `${label}: ${a.name} to ${b.name}`).toBeGreaterThanOrEqual(7.5);

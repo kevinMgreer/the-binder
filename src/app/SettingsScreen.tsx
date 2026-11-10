@@ -40,7 +40,11 @@ export function SettingsScreen({ onBack, update, onCheckForUpdates }: Props) {
       {checkResult === "failed" && <p role="status">Could not check for updates.</p>}
       {update && <UpdateLink update={update} />}
 
-      <button onClick={() => setConfirming(true)}>Sign out</button>
+      <div className="danger-zone">
+        <button className="danger" onClick={() => setConfirming(true)}>
+          Sign out
+        </button>
+      </div>
       {confirming && (
         <div role="alertdialog" aria-label="Sign out">
           <p>Sign out removes the local copy of your collection from this device. It stays in your Google Drive.</p>
@@ -49,7 +53,9 @@ export function SettingsScreen({ onBack, update, onCheckForUpdates }: Props) {
               {pending} unsynced {pending === 1 ? "change is" : "changes are"} not yet saved to Drive. Any unsynced changes will be lost.
             </p>
           )}
-          <button onClick={session.signOut}>Confirm sign out</button>
+          <button className="danger" onClick={session.signOut}>
+            Confirm sign out
+          </button>
           <button onClick={() => setConfirming(false)}>Cancel</button>
         </div>
       )}

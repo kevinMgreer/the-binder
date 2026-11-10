@@ -4,7 +4,8 @@ import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { useThumbUrl } from "./hooks";
 
-const ROW_HEIGHT = 72;
+// Fits the player, a two-line set and the parallel line, plus the 8 dp gap to the next row (the li's bottom padding).
+const ROW_HEIGHT = 108;
 
 function Thumb({ card }: { card: Card }) {
   const url = useThumbUrl(card.id, "front", !!card.photos.front, card.updatedAt);
@@ -40,13 +41,17 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
               <button onClick={() => onOpen(c)}>
                 <Thumb card={c} />
                 <span className="text">
-                  <strong>{c.player}</strong>
-                  <span>
-                    {c.year} {c.set} #{c.cardNumber}
+                  <span className="line">
+                    <strong className="player">{c.player}</strong>
+                    {serial && <span className="tag">{serial}</span>}
                   </span>
-                  <span>
-                    {[c.parallel?.name, serial, grade, c.quantity > 1 && `×${c.quantity}`].filter(Boolean).join(" ")}
+                  <span className="line">
+                    <span className="set">
+                      {c.year} {c.set}
+                    </span>{" "}
+                    <span className="num">#{c.cardNumber}</span>
                   </span>
+                  <span>{[c.parallel?.name, grade, c.quantity > 1 && `×${c.quantity}`].filter(Boolean).join(" ")}</span>
                 </span>
               </button>
             </li>

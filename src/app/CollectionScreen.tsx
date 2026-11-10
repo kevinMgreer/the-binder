@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type Filters } from "../domain/query";
 import { CardList } from "./CardList";
@@ -20,6 +21,7 @@ const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
 export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onOpen }: Props) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [panelOpen, setPanelOpen] = useState(false);
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters)), [cards, filters]);
@@ -52,34 +54,67 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
 
   const check = (key: "serialNumbered" | "rookie" | "autograph" | "relic" | "graded", label: string): ReactNode => (
     <label className="check">
-      <input type="checkbox" checked={filters[key]} onChange={(e) => set(key, e.target.checked)} />
+      <input id={fieldId(label)} type="checkbox" checked={filters[key]} onChange={(e) => set(key, e.target.checked)} />
       {label}
     </label>
   );
 
+  const f = filters;
+  const groups = [
+    { label: "Year", first: "Year from", active: f.yearFrom !== null || f.yearTo !== null },
+    { label: "Team", first: "Team", active: f.team !== "" },
+    { label: "Set", first: "Set", active: f.set !== "" },
+    { label: "Parallel", first: "Parallel", active: f.parallel !== "" },
+    { label: "Serial", first: "Print run", active: f.printRun !== null || f.serialNumbered },
+    { label: "Traits", first: "Rookie", active: f.rookie || f.autograph || f.relic },
+    { label: "Graded", first: "Graded", active: f.graded },
+  ];
+
+  // The panel must be open before its field can take focus.
+  const openPanel = (first: string) => {
+    flushSync(() => setPanelOpen(true));
+    document.getElementById(fieldId(first))?.focus();
+  };
+
   return (
     <section className="collection">
       <header>
-        <h1>The Binder</h1>
-        <p data-testid="summary">
-          {total} cards, {distinct} distinct
-        </p>
-        <button onClick={onAdd}>Add card</button>
-        <button onClick={() => onScan("camera")}>Scan card</button>
-        <button onClick={() => onScan("pick")}>Pick from photos</button>
-        <button onClick={onSettings}>Settings</button>
-        <SyncIndicator />
+        <div className="title-row">
+          <h1>The Binder</h1>
+          <button onClick={onSettings}>Settings</button>
+        </div>
+        <div className="meta">
+          <p data-testid="summary">
+            {total} cards, {distinct} distinct
+          </p>
+          <SyncIndicator />
+        </div>
+        <div className="actions">
+          <button className="primary" onClick={() => onScan("camera")}>
+            Scan card
+          </button>
+          <button onClick={onAdd}>Add card</button>
+          <button onClick={() => onScan("pick")}>Pick from photos</button>
+        </div>
       </header>
       {update && <UpdateLink update={update} />}
       <Field label="Search">
         <input
           id={fieldId("Search")}
           type="search"
+          placeholder="Search"
           value={filters.search}
           onChange={(e) => set("search", e.target.value)}
         />
       </Field>
-      <details>
+      <div className="chips">
+        {groups.map((g) => (
+          <button key={g.label} type="button" className="chip" aria-pressed={g.active} onClick={() => openPanel(g.first)}>
+            {g.label}
+          </button>
+        ))}
+      </div>
+      <details open={panelOpen} onToggle={(e) => setPanelOpen(e.currentTarget.open)}>
         <summary>Filters</summary>
         {number("yearFrom", "Year from")}
         {number("yearTo", "Year to")}
@@ -93,8 +128,20 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
         {check("relic", "Relic")}
         {check("graded", "Graded")}
       </details>
-      <p data-testid="shown">Showing {shown.length}</p>
-      {shown.length > 0 ? <CardList cards={shown} onOpen={onOpen} /> : <p>No cards to show.</p>}
+      <p className="shown" data-testid="shown">
+        Showing {shown.length}
+      </p>
+      {shown.length > 0 ? (
+        <CardList cards={shown} onOpen={onOpen} />
+      ) : cards.length === 0 ? (
+        <p className="empty" data-testid="empty-state">
+          Your binder is empty. Scan a card or add one by hand.
+        </p>
+      ) : (
+        <p className="empty" data-testid="no-match">
+          No cards match. Clear the search or a filter.
+        </p>
+      )}
     </section>
   );
 }
