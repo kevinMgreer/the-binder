@@ -35,3 +35,9 @@
 {"v":1,"ts":"2026-11-10T03:07:26.738Z","from":"a1a8541a","id":"T-15","set":{"title":"Sign-in after sign-out gets a revoked cached token (Drive 401, sync paused): clear the token from the Play services cache on sign-out and when sync reports auth","status":"open","area":"the-binder","size":"small","kind":"fix"}}
 {"v":1,"ts":"2026-11-10T03:12:21.895Z","from":"a1a8541a","id":"T-15","set":{"note":"Fixed on agent/fix-token-cache: sign-out/sign-in clear the issued token from the Play services cache (GoogleAuthUtil.invalidateToken); phone: Drive 200, Synced, card restored."}}
 {"v":1,"ts":"2026-11-10T03:12:22.020Z","from":"a1a8541a","id":"T-16","set":{"title":"Phone: leave the app idle over an hour, then confirm a change still syncs (token renewal, foundation 4.3)","status":"open","area":"watch","size":"small"}}
+{"v":1,"ts":"2026-11-10T03:21:30.172Z","from":"a1a8541a","id":"T-7","set":{"note":"docs/setup.md scope wording fixed on agent/housekeeping. The check command's timing test (desk.config.json) is not editable by Claude: owner to narrow it if wanted."}}
+{"v":1,"ts":"2026-11-10T03:21:30.332Z","from":"a1a8541a","id":"T-4","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T03:21:30.477Z","from":"a1a8541a","id":"T-7","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T03:21:30.607Z","from":"a1a8541a","id":"T-10","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T03:21:30.763Z","from":"a1a8541a","id":"T-14","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T03:21:30.922Z","from":"a1a8541a","id":"T-15","set":{"status":"done"}}
