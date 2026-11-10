@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type Filters } from "../domain/query";
+import { AddCard } from "./AddCard";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
 import { Sheet } from "./Sheet";
@@ -10,9 +11,12 @@ import type { UpdateInfo } from "./useUpdates";
 
 interface Props {
   cards: Card[];
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
   update: UpdateInfo | null;
   onAdd: () => void;
   onScan: (mode: "camera" | "pick") => void;
+  onBack: () => void;
   onSettings: () => void;
   onOpen: (card: Card) => void;
 }
@@ -27,10 +31,10 @@ const FLAG_LABELS = {
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onOpen }: Props) {
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const [sheet, setSheet] = useState<"add" | "filter" | null>(null);
-  const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
+export function CollectionScreen({ cards, filters, onFiltersChange, update, onAdd, onScan, onBack, onSettings, onOpen }: Props) {
+  const [filterOpen, setFilterOpen] = useState(false);
+  const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
+  const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters)), [cards, filters]);
   const { total, distinct } = summarize(cards);
@@ -89,14 +93,15 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
       .filter((key) => f[key])
       .map((key) => ({ name: FLAG_LABELS[key], text: FLAG_LABELS[key], clear: { [key]: false } })),
   ];
-  const clearAll = () => setFilters((cur) => ({ ...emptyFilters, search: cur.search }));
-  const closeSheet = useCallback(() => setSheet(null), []);
+  const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
+  const closeSheet = useCallback(() => setFilterOpen(false), []);
   const countLabel = `${shown.length} ${shown.length === 1 ? "card" : "cards"}`;
 
   return (
     <section className="collection">
       <header>
         <div className="title-row">
+          <button onClick={onBack}>Back</button>
           <h1>The Binder</h1>
           <button onClick={onSettings}>Settings</button>
         </div>
@@ -118,7 +123,7 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
             onChange={(e) => set("search", e.target.value)}
           />
         </Field>
-        <button aria-label={applied.length > 0 ? `Filter, ${applied.length} applied` : undefined} onClick={() => setSheet("filter")}>
+        <button aria-label={applied.length > 0 ? `Filter, ${applied.length} applied` : undefined} onClick={() => setFilterOpen(true)}>
           Filter
           {applied.length > 0 && <span className="badge">{applied.length}</span>}
         </button>
@@ -126,7 +131,7 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
       {applied.length > 0 && (
         <div className="chips">
           {applied.map((a) => (
-            <button key={a.name} className="chip" aria-label={`Remove ${a.name} filter${a.text === a.name ? "" : `: ${a.text.replace(`${a.name} `, "")}`}`} onClick={() => setFilters((cur) => ({ ...cur, ...a.clear }))}>
+            <button key={a.name} className="chip" aria-label={`Remove ${a.name} filter${a.text === a.name ? "" : `: ${a.text.replace(`${a.name} `, "")}`}`} onClick={() => patch(a.clear)}>
               {a.text}
             </button>
           ))}
@@ -146,19 +151,8 @@ export function CollectionScreen({ cards, update, onAdd, onScan, onSettings, onO
           No cards match. Clear the search or a filter.
         </p>
       )}
-      <button className="primary add-button" onClick={() => setSheet("add")}>
-        Add card
-      </button>
-      {sheet === "add" && (
-        <Sheet label="Add a card" onClose={closeSheet}>
-          <button className="primary" onClick={() => onScan("camera")}>
-            Scan card
-          </button>
-          <button onClick={() => onScan("pick")}>Pick from photos</button>
-          <button onClick={onAdd}>Enter by hand</button>
-        </Sheet>
-      )}
-      {sheet === "filter" && (
+      <AddCard onAdd={onAdd} onScan={onScan} />
+      {filterOpen && (
         <Sheet
           label="Filters"
           full
