@@ -289,22 +289,45 @@ test.describe("destructive actions stay apart", () => {
 test.describe("polish after the second phone review", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
-  test("Row is player, one muted set line, and one compact tag and parallel line", async ({ page }) => {
+  test("Row is the player with the tag badge at the right, then one quiet line", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
     const row = page.getByTestId("card-row").filter({ hasText: "Acuña" });
     const player = row.locator(".player");
-    const set = row.locator(".set-line");
-    const extra = row.locator(".extra");
+    const quiet = row.locator(".quiet");
+    const tag = row.locator(".tag");
     await expect(player).toHaveText("Ronald Acuña Jr.");
-    await expect(set).toHaveText("2024 Series 1 #27");
-    await expect(extra).toHaveText("13/150 Gold");
-    await expect(extra.locator(".tag")).toHaveText("13/150");
+    await expect(quiet).toHaveText("2024 Series 1 · #27 · Gold");
+    await expect(tag).toHaveText("13/150");
+    await expect(row.locator(".extra")).toHaveCount(0);
     expect(await css(player, "font-weight")).toBe("500");
-    const [p, s, x] = await Promise.all([player, set, extra].map((l) => l.boundingBox()));
-    expect(s!.y).toBeGreaterThanOrEqual(p!.y + p!.height - 1);
-    expect(x!.y).toBeGreaterThanOrEqual(s!.y + s!.height - 1);
-    await expect(page.getByTestId("card-row").filter({ hasText: "Plain Card" }).locator(".extra")).toHaveCount(0);
+    const [p, q, t, r] = await Promise.all([player, quiet, tag, row].map((l) => l.boundingBox()));
+    expect(Math.abs(t!.y + t!.height / 2 - (p!.y + p!.height / 2))).toBeLessThan(8);
+    expect(t!.x).toBeGreaterThan(p!.x);
+    expect(r!.x + r!.width - (t!.x + t!.width)).toBeLessThan(24);
+    expect(q!.y).toBeGreaterThanOrEqual(p!.y + p!.height - 1);
+    await expect(page.getByTestId("card-row").filter({ hasText: "Plain Card" }).locator(".tag")).toHaveCount(0);
+  });
+
+  test("A long parallel and a grade stay on the quiet line and the number stays visible", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [
+      {
+        player: "Ronald Acuña Jr.",
+        cardNumber: "27",
+        parallel: { name: "Refractor Sapphire Edition Gold Shimmer Superfractor", serial: 13, serialLegible: true, printRun: 150 },
+        grading: { kind: "graded", company: "PSA", grade: "10" },
+        quantity: 12,
+      },
+    ]);
+    const row = page.getByTestId("card-row").first();
+    const quiet = row.locator(".quiet");
+    expect((await quiet.boundingBox())!.height).toBeLessThan(24);
+    expect((await row.boundingBox())!.height).toBeLessThanOrEqual(100);
+    const num = row.locator(".num");
+    expect((await num.boundingBox())!.x + (await num.boundingBox())!.width).toBeLessThanOrEqual((await row.boundingBox())!.x + (await row.boundingBox())!.width);
+    await expect(num).toBeVisible();
+    expect(await num.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   });
 
   for (const [name, open, last] of [
@@ -321,19 +344,35 @@ test.describe("polish after the second phone review", () => {
     });
   }
 
-  test("Card detail is a thumbnails row, a title, a labelled grid and a muted last-edited", async ({ page }) => {
+  test("Card detail: title with a serial badge, quiet subtitle, a ruled list of facts, last edited, then Edit", async ({ page }) => {
     await page.goto("/");
     await seed(page, [{ ...CARDS[0], grading: { kind: "graded", company: "PSA", grade: "9" }, quantity: 3 }]);
     await page.getByTestId("card-row").first().click();
-    const grid = page.getByTestId("facts");
-    expect(await grid.locator("dt").allTextContents()).toEqual(["Year", "Set", "Number", "Team", "Parallel", "Serial tag", "Condition", "Quantity"]);
-    expect(await grid.locator("dd").allTextContents()).toEqual(["2024", "Topps Series 1", "27", "Atlanta Braves", "Gold", "13/150", "PSA 9", "3"]);
+    const title = page.getByRole("heading", { name: "Ronald Acuña Jr." });
+    const subtitle = page.getByTestId("subtitle");
+    const badge = page.locator("section .tag");
+    const facts = page.getByTestId("facts");
     const edited = page.getByTestId("updated");
+    const edit = page.getByRole("button", { name: "Edit", exact: true });
+    await expect(subtitle).toHaveText("2024 Series 1 · #27");
+    await expect(badge).toHaveText("13/150");
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel", "Condition", "Quantity"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold", "PSA 9", "3"]);
+    const [t, b, f] = await Promise.all([title, badge, facts].map((l) => l.boundingBox()));
+    expect(Math.abs(b!.y + b!.height / 2 - (t!.y + t!.height / 2))).toBeLessThan(16);
+    const dd = (await facts.locator("dd").first().boundingBox())!;
+    expect(f!.x + f!.width - (dd.x + dd.width)).toBeLessThan(4);
+    expect(await css(facts.locator("div").nth(1), "border-top-width")).toBe("1px");
+    expect(await css(facts, "background-image")).toBe("none");
     const y = async (l: Locator) => (await l.boundingBox())!.y;
-    expect(await y(page.getByRole("heading", { name: "Ronald Acuña Jr." }))).toBeLessThan(await y(grid));
-    expect(await y(grid)).toBeLessThan(await y(edited));
-    expect(await y(edited)).toBeLessThan(await y(page.getByRole("button", { name: "Edit", exact: true })));
-    expect(await css(edited, "color")).toBe(await css(page.getByTestId("facts").locator("dt").first(), "color"));
+    expect(await y(title)).toBeLessThan(await y(subtitle));
+    expect(await y(subtitle)).toBeLessThan(await y(facts));
+    expect(await y(facts)).toBeLessThan(await y(edited));
+    expect(await y(edited)).toBeLessThan(await y(edit));
+    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 12 - 1);
+    expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-accent-text", "rgb(1, 2, 3)"));
+    expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
   });
 });
 

@@ -103,12 +103,15 @@ section > button:first-child { margin-bottom: var(--space-3); }
 .list li button { justify-content: flex-start; gap: var(--space-3); width: 100%; height: 100%; padding: var(--space-3); text-align: left; }
 .thumb { width: 48px; height: 67px; background: var(--color-pocket); border-radius: var(--radius-s); flex: none; }
 img.thumb { object-fit: cover; }
-.text { display: flex; flex-direction: column; flex: 1; min-width: 0; font-size: var(--type-label); color: var(--color-text-muted); }
+.text { display: flex; flex-direction: column; justify-content: center; gap: var(--space-1); flex: 1; min-width: 0; font-size: var(--type-label); color: var(--color-text-muted); }
 .text .player { font-size: var(--type-body); font-weight: 500; color: var(--color-text); }
-.set-line { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
-.extra { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
-.player { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.set { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; }
+.player { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* One line: the extras (large shrink factor) give way first, then the set, never the number. */
+.quiet { display: flex; gap: var(--space-1); min-width: 0; white-space: nowrap; }
+.set, .rest { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.set { flex: 0 1 auto; }
+.rest { flex: 0 100 auto; }
 .num { flex: none; font-family: var(--type-mono); }
 .tag { flex: none; font-family: var(--type-mono); font-size: var(--type-label); font-weight: 500; color: var(--color-accent-text); border: 1px solid var(--color-accent-text); border-radius: var(--radius-s); padding: 0 var(--space-1); }
 
@@ -121,12 +124,15 @@ img.thumb { object-fit: cover; }
 [role="alert"][data-testid="save-blocked"], p[role="alert"] { color: var(--color-danger); }
 form > button { margin-bottom: var(--space-3); }
 form > [role="status"] { margin: 0 0 var(--space-3); }
-section > p:has(> time) { color: var(--color-text-muted); font-size: var(--type-label); }
 section > h2 { margin-top: var(--space-2); }
-.facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3) var(--space-4); margin: 0 0 var(--space-3); padding: var(--space-3); background: var(--color-surface); border-radius: var(--radius-m); }
-.facts div { min-width: 0; }
-.facts dt { color: var(--color-text-muted); font-size: var(--type-label); }
-.facts dd { margin: 0; overflow-wrap: anywhere; }
+.title-row h2 { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.subtitle, section > p:has(> time) { color: var(--color-text-muted); font-size: var(--type-label); }
+.subtitle { margin: var(--space-1) 0 var(--space-4); }
+.facts { margin: 0 0 var(--space-3); }
+.facts div { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); padding: var(--space-3) 0; }
+.facts div + div { border-top: 1px solid var(--color-pocket-edge); }
+.facts dt { flex: none; color: var(--color-text-muted); font-size: var(--type-label); }
+.facts dd { margin: 0; min-width: 0; text-align: right; overflow-wrap: anywhere; }
 .actions .primary { flex: 1; }
 .sheet { border-width: 1px 0 0; }
 [role="dialog"]:not(.sheet), [role="alertdialog"] { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); margin: var(--space-3) 0; background-color: var(--color-surface); }

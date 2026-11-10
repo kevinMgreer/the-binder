@@ -30,6 +30,8 @@
 - [x] 3.10 Write the failing e2e test first (a 48 dp bottom inset, the last button of the Add card and Filter sheets at least 64 dp above the bottom), then give `.sheet` the same inset as `#root` plus a 16 dp gap; the inset is already the larger of the Capacitor var and `env()`, so no new approach is needed ("Sheet above a bottom bar")
 - [x] 3.11 Write the failing e2e test first, then restructure the card detail into thumbnails, title, a labelled fact grid, a muted last-edited line, Edit primary and Delete apart, on tokens in both themes ("Fact grid")
 
+- [x] 3.12 Second polish pass after the owner saw 3.9 to 3.11 on the phone: write the failing e2e tests first, then make the row the thumbnail, the player with the tag badge at the right and one quiet "year set · #number" line (parallel, grade and quantity as plain ellipsised text, row height 100), and the detail a large title with a tag badge, a quiet subtitle, a photo strip, a ruled list of facts, a muted last-edited line, a full-width Edit and Delete apart; verify a long parallel keeps the quiet line to one line and the badge uses the accent text token ("Long extras", "Fact list")
+
 ## 4. On the phone
 
 - [ ] 4.1 Install the debug build, switch Android between dark and light with `adb shell cmd uimode night yes` and `no`, and screenshot the list, detail, form, scan and settings screens in each; verify both themes render with legible text and the pocket look, nothing sits under the system bars, and there is no white flash at launch in dark mode

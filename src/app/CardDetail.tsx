@@ -29,12 +29,9 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
   const serial = serialLabel(card.parallel);
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
   const facts: Array<[string, ReactNode]> = [
-    ["Year", card.year],
-    ["Set", `${card.manufacturer} ${card.set}`.trim()],
-    ["Number", card.cardNumber],
+    ["Manufacturer", card.manufacturer],
     ["Team", card.team],
     ["Parallel", card.parallel?.name],
-    ["Serial tag", serial && <span className="tag">{serial}</span>],
     ["Condition", gradeLabel(card.grading)],
     ["Quantity", card.quantity],
     ["Traits", flags.join(", ")],
@@ -51,7 +48,13 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
           <PhotoView card={card} side={viewing} />
         </Sheet>
       )}
-      <h2>{card.player}</h2>
+      <div className="title-row">
+        <h2>{card.player}</h2>
+        {serial && <span className="tag">{serial}</span>}
+      </div>
+      <p className="subtitle" data-testid="subtitle">
+        {card.year} {card.set} · #{card.cardNumber}
+      </p>
       <dl className="facts" data-testid="facts">
         {facts.map(([label, value]) => (
           <div key={label}>
