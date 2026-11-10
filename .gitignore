@@ -53,6 +53,9 @@ board.jsonl
 .github/agent-desk-manifest.json
 PRODUCT.md
 
+# Local scratch: phone screenshots (they can show personal photos), logs and temp files
+scratch/
+
 # Playwright
 test-results/
 playwright-report/
