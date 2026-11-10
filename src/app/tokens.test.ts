@@ -57,7 +57,8 @@ describe("tokens.css", () => {
   for (const theme of ["light", "dark"] as const) {
     it(`meets contrast in the ${theme} theme, with the pocket blended over the page`, () => {
       const t = themes()[theme];
-      const c = (role: string) => rgba(t[role]);
+      const resolve = (v: string): string => (v.startsWith("var(") ? resolve(t[v.slice(4, -1)]) : v);
+      const c = (role: string) => rgba(resolve(t[role]));
       const page = c("--color-page");
       const backgrounds = {
         page,
