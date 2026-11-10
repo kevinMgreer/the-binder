@@ -29,3 +29,9 @@
 {"v":1,"ts":"2026-11-10T01:02:36.816Z","from":"a1a8541a","id":"T-13","set":{"status":"dropped"}}
 {"v":1,"ts":"2026-11-10T01:14:19.423Z","from":"a1a8541a","id":"T-14","set":{"note":"fix-android-shell 8/9: only 3.2 (archive after merge) left. Branch agent/android-shell-fixes at f974953, not merged or pushed; waiting on the push OK."}}
 {"v":1,"ts":"2026-11-10T01:37:27.515Z","from":"a1a8541a","id":"T-14","set":{"note":"Merged and pushed: main = origin/main @234162e. Left: 3.2 (validate + archive fix-android-shell)."}}
+{"v":1,"ts":"2026-11-10T02:01:03.730Z","from":"a1a8541a","id":"T-10","set":{"status":"active","owner":"a1a8541a"}}
+{"v":1,"ts":"2026-11-10T03:04:07.304Z","from":"a1a8541a","id":"T-3","set":{"note":"Phone 2026-11-09: double-tap zoom reads the serial stamp (013/150); pinch-zoom and pan smooth (owner); full photos shown offline in airplane mode; stored WebP 121,634 B and 125,746 B. Foundation 3.5 verified. 3.3's ML Kit-reads-compressed-photo part belongs to task 6.3 (not built)."}}
+{"v":1,"ts":"2026-11-10T03:04:07.434Z","from":"a1a8541a","id":"T-3","set":{"status":"done"}}
+{"v":1,"ts":"2026-11-10T03:07:26.738Z","from":"a1a8541a","id":"T-15","set":{"title":"Sign-in after sign-out gets a revoked cached token (Drive 401, sync paused): clear the token from the Play services cache on sign-out and when sync reports auth","status":"open","area":"the-binder","size":"small","kind":"fix"}}
+{"v":1,"ts":"2026-11-10T03:12:21.895Z","from":"a1a8541a","id":"T-15","set":{"note":"Fixed on agent/fix-token-cache: sign-out/sign-in clear the issued token from the Play services cache (GoogleAuthUtil.invalidateToken); phone: Drive 200, Synced, card restored."}}
+{"v":1,"ts":"2026-11-10T03:12:22.020Z","from":"a1a8541a","id":"T-16","set":{"title":"Phone: leave the app idle over an hour, then confirm a change still syncs (token renewal, foundation 4.3)","status":"open","area":"watch","size":"small"}}
