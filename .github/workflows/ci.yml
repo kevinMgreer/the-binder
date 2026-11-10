@@ -1,0 +1,38 @@
+name: CI
+
+# Read-only: no signing secrets, no repository variables, so it is safe on branches and pull requests.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test
+
+      - name: End-to-end tests
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
