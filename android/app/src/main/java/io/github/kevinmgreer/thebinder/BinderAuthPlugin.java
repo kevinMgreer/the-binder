@@ -24,6 +24,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.api.identity.AuthorizationRequest;
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
 import com.google.android.gms.auth.api.identity.Identity;
@@ -132,6 +133,21 @@ public class BinderAuthPlugin extends Plugin {
                     }
                 }
             );
+    }
+
+    /**
+     * Drops a token from Play services' cache. After sign-out revokes a token over HTTP the cache still holds it, and the next
+     * authorize() hands the revoked token back, so Drive answers 401 and sync pauses.
+     */
+    @PluginMethod
+    public void clearToken(PluginCall call) {
+        String token = call.getString("token");
+        if (token == null || token.isEmpty()) {
+            call.reject("No token to clear");
+            return;
+        }
+        GoogleAuthUtil.invalidateToken(getContext(), token);
+        call.resolve();
     }
 
     private void getAccount(PluginCall call, GetCredentialRequest request) {

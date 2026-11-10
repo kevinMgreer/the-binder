@@ -13,6 +13,8 @@ export interface NativeAuthPlugin {
   /** Drive authorization. `interactive` may show the consent screen. Null when refused. */
   authorize(opts: { scopes: string[]; interactive: boolean }): Promise<{ accessToken: string; expiresInSeconds: number } | null>;
   clearCredentialState(): Promise<void>;
+  /** Drops an access token from the Play services cache, which otherwise hands a revoked token back on the next authorize. */
+  clearToken(opts: { token: string }): Promise<void>;
 }
 
 interface Options {
@@ -41,6 +43,8 @@ export class NativeGoogleAuthProvider implements AuthProvider {
   private idToken?: Token;
   private accessToken?: Token;
   private renewing?: Promise<string>;
+  /** The last access token the platform gave us, so it can be dropped from its cache when it is revoked or rejected. */
+  private issued?: string;
   private now: () => number;
   private fetch: typeof fetch;
 
@@ -55,6 +59,8 @@ export class NativeGoogleAuthProvider implements AuthProvider {
   async signIn() {
     const account = await this.plugin.signIn({ serverClientId: this.options.webClientId });
     if (!account) return null;
+    // After "Sign in again" the old token was rejected; without this the platform cache returns it again.
+    await this.dropIssued();
     const access = await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: true });
     if (!access) return null;
     return this.startSession(account, access);
@@ -101,7 +107,18 @@ export class NativeGoogleAuthProvider implements AuthProvider {
         // Offline: the token expires on its own within the hour, and sign-out must still finish.
       }
     }
+    await this.dropIssued(token);
     await this.plugin.clearCredentialState();
+  }
+
+  private async dropIssued(token = this.issued) {
+    this.issued = undefined;
+    if (!token) return;
+    try {
+      await this.plugin.clearToken({ token });
+    } catch {
+      // A cache miss must not block sign-in or sign-out; the token is revoked or expires on its own.
+    }
   }
 
   private valid(token: Token | undefined): token is Token {
@@ -112,6 +129,7 @@ export class NativeGoogleAuthProvider implements AuthProvider {
     this.user = { email: account.email };
     this.idToken = { value: account.idToken, expiresAt: jwtExpiry(account.idToken) };
     this.accessToken = { value: access.accessToken, expiresAt: this.now() + access.expiresInSeconds * 1000 };
+    this.issued = access.accessToken;
     return this.user;
   }
 
@@ -119,6 +137,7 @@ export class NativeGoogleAuthProvider implements AuthProvider {
     const access = this.user && (await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: false }));
     if (!access) throw new AuthExpiredError("Sign in again");
     this.accessToken = { value: access.accessToken, expiresAt: this.now() + access.expiresInSeconds * 1000 };
+    this.issued = access.accessToken;
     return access.accessToken;
   }
 }
