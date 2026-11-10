@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Bottom navigation between Dashboard and Cards
-The system SHALL show a bottom navigation bar with two destinations, Dashboard and Cards in that order, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms, Settings or the photo processing step); an open sheet covers it with its scrim. Each destination SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The active destination SHALL be marked by an indicator shape behind its icon, the accent colour and `aria-current="page"`, so it does not rely on colour alone. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
+The system SHALL show a bottom navigation bar with two destinations, Dashboard and Cards in that order, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Each destination SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The active destination SHALL be marked by an indicator shape behind its icon, the accent colour and `aria-current="page"`, so it does not rely on colour alone. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
 
 #### Scenario: Shown on the top-level screens
 - **WHEN** the dashboard or the collection list is showing
@@ -42,6 +42,21 @@ The system SHALL treat Dashboard as the start destination: pressing the Android 
 #### Scenario: Back from the add form
 - **WHEN** the user taps Add card on the list, then presses back
 - **THEN** the list is shown with the bar; when Add card was tapped on the dashboard, the dashboard is shown
+
+### Requirement: Top-level screens are titled by the screen, not the app
+The system SHALL title the dashboard "Dashboard" and the collection list "Cards", as the level-one heading at the left of the header with the Settings gear on the same row at the right, and SHALL NOT show the app name "The Binder" as a heading on any signed-in screen. The list SHALL keep its count and sync state on the line beneath its title; the dashboard SHALL keep its sync state beneath its title. The app name SHALL stay as the heading of the signed-out sign-in screen only.
+
+#### Scenario: Dashboard title
+- **WHEN** the signed-in user opens the app
+- **THEN** the level-one heading reads "Dashboard", the gear is on its row at the right, and no heading reads "The Binder"
+
+#### Scenario: Cards title
+- **WHEN** the user taps Cards in the bar
+- **THEN** the level-one heading reads "Cards", with the count (for example "12 cards, 10 distinct") and the sync state on the line beneath it
+
+#### Scenario: App name on sign-in only
+- **WHEN** the app opens signed out
+- **THEN** the sign-in screen's heading reads "The Binder"
 
 ### Requirement: Settings opens from a gear icon
 The system SHALL offer Settings on the dashboard and the collection list as an icon-only gear button at the top right of the header, with the accessible name "Settings" and a tap target at least 48 by 48 dp, drawn from the design tokens, and SHALL NOT show a text Settings button there.
