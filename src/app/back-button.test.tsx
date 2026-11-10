@@ -133,6 +133,20 @@ test("back from a card's detail view shows the list, and the detail view has no 
   expect(native.exitApp).not.toHaveBeenCalled();
 });
 
+test("a filter survives opening a card and going back", async () => {
+  const cards = [makeCard({ player: "Hank Aaron", flags: { rookie: false, autograph: true, relic: false } }), makeCard({ player: "Plain Joe", cardNumber: "2" })];
+  await renderSignedIn(cards);
+  fireEvent.click(screen.getByRole("button", { name: "Autos, 1" }));
+  await onList();
+  expect(screen.queryByRole("button", { name: "Plain Joe" })).toBeNull();
+  fireEvent.click(await screen.findByRole("button", { name: /Hank Aaron/ }));
+  expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
+  await pressBack();
+  await onList();
+  expect(screen.getByRole("button", { name: /^Remove Autograph filter/ })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Plain Joe" })).toBeNull();
+});
+
 test("back from settings opened on the dashboard shows the dashboard", async () => {
   await renderSignedIn();
   fireEvent.click(screen.getByRole("button", { name: "Settings" }));

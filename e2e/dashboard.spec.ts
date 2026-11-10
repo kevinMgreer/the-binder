@@ -118,14 +118,13 @@ test("Back to the dashboard from the list, which has no Back button", async ({ p
 });
 
 test("Filters survive opening a card and going back", async ({ page }) => {
-  // The browser has no hardware back; deleting a card is the other way from its detail view to the list.
   await seed(page, [{ cardNumber: "1", flags: AUTO }, { cardNumber: "2", flags: AUTO }, { cardNumber: "3" }]);
   await tile(page, "Autos").click();
   await page.getByTestId("card-row").first().click();
-  await page.getByRole("button", { name: "Delete" }).click();
-  await page.getByRole("button", { name: "Confirm delete" }).click();
+  await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+  await back(page);
   await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
-  await expect(page.getByTestId("shown")).toHaveText("Showing 1");
+  await expect(page.getByTestId("shown")).toHaveText("Showing 2");
 });
 
 test("Screen reader name holds the label and the number", async ({ page }) => {
