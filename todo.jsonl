@@ -50,3 +50,4 @@
 {"v":1,"ts":"2026-11-10T14:47:17.788Z","from":"a1a8541a","id":"T-20","set":{"status":"done","note":"Not a bug: phone uses three-button navigation (navigation_mode 0), which has no edge-swipe back; nav button back works."}}
 {"v":1,"ts":"2026-11-10T14:49:26.500Z","from":"a1a8541a","id":"T-18","set":{"status":"done","note":"Merged in PR #11 (3.9-3.13 incl. back-button removal, sync status race fix)."}}
 {"v":1,"ts":"2026-11-10T14:49:26.620Z","from":"a1a8541a","id":"T-19","set":{"status":"done","note":"Proposal merged in PR #10."}}
+{"v":1,"ts":"2026-11-10T14:49:28.249Z","from":"a1a8541a","id":"T-9","set":{"note":"Redesign merged (PRs #7, #8, #11). Left: 4.1 remaining phone screens, 4.2 owner review of both themes, 5.2 archive redesign-ui-binder-pockets."}}
