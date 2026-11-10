@@ -25,14 +25,14 @@
 - [x] 3.2 Build capture (front then back, skip back) with `CapacitorCameraPhotoSource` over `@capacitor/camera` and the "Pick from photos" fallback (design D7); verify "Camera capture on Android", "Camera closed without a photo" and "Choose existing image" pass, and manually verify all three on the phone (phone 2026-11-09: capture, cancel and pick work; capture now runs through the card scanner on the rear camera, added by `scan-card-with-document-scanner`)
 - [ ] 3.3 Implement the worker-based resize/WebP pipeline and thumbnails (design D7); verify a 12 MP fixture compresses to ≤ 500 KB in a Vitest test, and on the phone ML Kit still reads the serial stamp from the compressed fixture
 - [x] 3.4 Store photos and thumbnails in the local `PhotoStore` (IndexedDB, size-capped full-photo cache), with retake/replace; verify "Replace front photo" passes against the fake remote
-- [ ] 3.5 Build the zoomable detail view and offline thumbnail fallback; verify "View full photo offline" and "Zoom to read serial" pass, and pinch-zoom is smooth on the phone
+- [x] 3.5 (Phone 2026-11-09: double-tap zoom reads the serial stamp, owner confirmed pinch-zoom and pan smooth, full photos display offline in airplane mode.) Build the zoomable detail view and offline thumbnail fallback; verify "View full photo offline" and "Zoom to read serial" pass, and pinch-zoom is smooth on the phone
 
 ## 4. Google sign-in
 
 - [x] 4.1 Write acceptance tests for every scenario in `specs/google-sign-in/spec.md` using `FakeAuthProvider`; verify they fail for the right reason
 - [ ] 4.2 Implement `NativeGoogleAuthProvider` through a Capacitor plugin: Credential Manager sign-in with the web client ID as `serverClientId`, plus Drive authorization for `drive.file`, with in-memory tokens (design D3); verify the sign-in, decline and consent-scope scenarios pass against the fake, and on the phone confirm sign-in works on both the debug and the release build and the consent screen lists only access to the app's own files
 - [ ] 4.3 Implement silent renewal of the access and ID tokens and the "Sign in again" fallback; verify both renewal scenarios pass, and on the phone that Drive calls still succeed after the app sits idle for over an hour
-- [ ] 4.4 Implement sign out with unsynced-changes warning, token revocation, Credential Manager state clearing and local data wipe; verify both sign-out scenarios pass, and on the phone that IndexedDB is empty after sign out (checked with Chrome remote debugging)
+- [x] 4.4 (Phone 2026-11-09: after Confirm sign out every IndexedDB store held 0 records, checked through the WebView debugger; sign-in afterwards restored the card from Drive once the revoked-token cache bug was fixed, see fix-token-cache.) Implement sign out with unsynced-changes warning, token revocation, Credential Manager state clearing and local data wipe; verify both sign-out scenarios pass, and on the phone that IndexedDB is empty after sign out (checked with Chrome remote debugging)
 
 ## 5. Drive storage and sync
 

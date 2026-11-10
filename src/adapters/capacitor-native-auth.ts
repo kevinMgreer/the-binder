@@ -9,6 +9,7 @@ interface BinderAuthPlugin {
   silentSignIn(options: { serverClientId: string }): Promise<{ account: Account | null }>;
   authorize(options: { scopes: string[]; interactive: boolean }): Promise<{ authorization: Authorization | null }>;
   clearCredentialState(): Promise<void>;
+  clearToken(options: { token: string }): Promise<void>;
 }
 
 const plugin = registerPlugin<BinderAuthPlugin>("BinderAuth");
@@ -18,4 +19,5 @@ export const capacitorNativeAuth: NativeAuthPlugin = {
   silentSignIn: async (options) => (await plugin.silentSignIn(options)).account,
   authorize: async (options) => (await plugin.authorize(options)).authorization,
   clearCredentialState: () => plugin.clearCredentialState(),
+  clearToken: (options) => plugin.clearToken(options),
 };

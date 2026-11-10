@@ -14,7 +14,13 @@ class FakePlugin implements NativeAuthPlugin {
   authorizeCalls: { scopes: string[]; interactive: boolean }[] = [];
   serverClientIds: string[] = [];
   cleared = false;
+  clearedTokens: string[] = [];
+  order: string[] = [];
 
+  async clearToken(opts: { token: string }) {
+    this.order.push(`clearToken:${opts.token}`);
+    this.clearedTokens.push(opts.token);
+  }
   async signIn(opts: { serverClientId: string }) {
     this.serverClientIds.push(opts.serverClientId);
     return this.signInResult;
@@ -24,6 +30,7 @@ class FakePlugin implements NativeAuthPlugin {
     return this.silentResult;
   }
   async authorize(opts: { scopes: string[]; interactive: boolean }) {
+    this.order.push("authorize");
     this.authorizeCalls.push(opts);
     await Promise.resolve();
     return this.authorizeResults.shift() ?? null;
@@ -146,11 +153,28 @@ describe("sign out", () => {
     expect(await auth.currentUser()).toBeNull();
   });
 
-  test("still signs out when the revoke request fails", async () => {
+  test("drops the revoked token from the Play services cache so the next sign-in cannot get it back", async () => {
+    await signedIn();
+    await auth.signOut();
+    expect(plugin.clearedTokens).toEqual(["access-1"]);
+  });
+
+  test("signing in again drops the previously issued token before asking for a new one", async () => {
+    await signedIn();
+    plugin.order.length = 0;
+    plugin.signInResult = { idToken: idToken(), email: "owner@example.test" };
+    plugin.authorizeResults.push({ accessToken: "access-2", expiresInSeconds: 3600 });
+    await auth.signIn();
+    expect(plugin.order).toEqual(["clearToken:access-1", "authorize"]);
+    expect(await auth.getAccessToken()).toBe("access-2");
+  });
+
+  test("still signs out and drops the token when the revoke request fails", async () => {
     await signedIn();
     fetchMock.mockRejectedValueOnce(new Error("offline"));
     await auth.signOut();
     expect(plugin.cleared).toBe(true);
+    expect(plugin.clearedTokens).toEqual(["access-1"]);
     await expect(auth.getAccessToken()).rejects.toBeInstanceOf(AuthExpiredError);
   });
 });
