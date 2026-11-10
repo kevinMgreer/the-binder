@@ -1,7 +1,7 @@
 # app-shell Specification
 
 ## Purpose
-Defines how the app sits inside Android's system bars and answers the hardware back button, so every control is reachable and navigation behaves like an Android app.
+Defines how the app sits inside Android's system bars and answers the hardware back button, and the shared chrome: the bottom navigation, screen titles, the settings gear and the Add card button, so every control is reachable and navigation behaves like an Android app.
 
 ## Requirements
 
@@ -44,11 +44,11 @@ The system SHALL handle the Android back button by returning to the previous scr
 - **THEN** the dashboard is shown; when Settings was opened from the list, the list is shown
 
 ### Requirement: Screens that the back button handles show no Back button
-The system SHALL NOT show an on-screen Back button on the card detail and settings screens, because the Android back button and gesture already return to the previous screen there (the list for card detail, the screen Settings was opened from for Settings). It SHALL keep Cancel on the add and edit forms and Close on sheets.
+The system SHALL NOT show an on-screen Back button on the card detail and settings screens, because the Android back button and gesture already return to the previous screen there (the screen each was opened from: the list or the dashboard). It SHALL keep Cancel on the add and edit forms and Close on sheets.
 
 #### Scenario: Detail and settings have no Back button
 - **WHEN** the card detail or settings screen is showing
-- **THEN** no button named Back is shown, and pressing the Android back button shows the screen it was opened from (the list for card detail) and keeps the app open
+- **THEN** no button named Back is shown, and pressing the Android back button shows the screen it was opened from and keeps the app open
 
 ### Requirement: Bottom navigation between Dashboard and Cards
 The system SHALL show a bottom navigation bar with two destinations, Dashboard and Cards in that order, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Each destination SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The active destination SHALL be marked by an indicator shape behind its icon, the accent colour and `aria-current="page"`, so it does not rely on colour alone. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
@@ -89,20 +89,28 @@ The system SHALL treat Dashboard as the start destination: pressing the Android 
 - **WHEN** the user opens a card from the list and presses back
 - **THEN** the list is shown with the bar and Cards active
 
+#### Scenario: Back from a card opened on the dashboard
+- **WHEN** the user opens a card from the dashboard's Recently added and presses back
+- **THEN** the dashboard is shown with the bar and Dashboard active
+
+#### Scenario: Delete a card opened on the dashboard
+- **WHEN** the user opens a card from the dashboard's Recently added and deletes it
+- **THEN** the dashboard is shown without that card
+
 #### Scenario: Back from the add form
 - **WHEN** the user taps Add card on the list, then presses back
 - **THEN** the list is shown with the bar; when Add card was tapped on the dashboard, the dashboard is shown
 
 ### Requirement: Top-level screens are titled by the screen, not the app
-The system SHALL title the dashboard "Dashboard" and the collection list "Cards", as the level-one heading at the left of the header with the Settings gear on the same row at the right, and SHALL NOT show the app name "The Binder" as a heading on any signed-in screen. The list SHALL keep its count and sync state on the line beneath its title; the dashboard SHALL keep its sync state beneath its title. The app name SHALL stay as the heading of the signed-out sign-in screen only.
+The system SHALL title the dashboard "Dashboard" and the collection list "Cards", as the level-one heading at the left of the header, with the sync state and then the Settings gear on the same row at the right, and SHALL NOT show the app name "The Binder" as a heading on any signed-in screen. Neither screen SHALL have a count or sync line beneath its title. The app name SHALL stay as the heading of the signed-out sign-in screen only.
 
 #### Scenario: Dashboard title
 - **WHEN** the signed-in user opens the app
-- **THEN** the level-one heading reads "Dashboard", the gear is on its row at the right, and no heading reads "The Binder"
+- **THEN** the level-one heading reads "Dashboard", the sync state and the gear are on its row at the right, and no heading reads "The Binder"
 
 #### Scenario: Cards title
 - **WHEN** the user taps Cards in the bar
-- **THEN** the level-one heading reads "Cards", with the count (for example "12 cards, 10 distinct") and the sync state on the line beneath it
+- **THEN** the level-one heading reads "Cards", the sync state and the gear are on its row, and no "N cards, N distinct" line is shown beneath it
 
 #### Scenario: App name on sign-in only
 - **WHEN** the app opens signed out
@@ -128,4 +136,4 @@ The system SHALL show exactly one Add card button on the dashboard and on the co
 
 #### Scenario: One add button per screen
 - **WHEN** the dashboard or the list is showing
-- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the last stat tile once scrolled to the end
+- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the dashboard's last item (the last entry of the last group shown) once scrolled to the end
