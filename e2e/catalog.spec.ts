@@ -200,6 +200,31 @@ test("Old local card edited after the update", async ({ page }) => {
   await expect(page.getByTestId("facts")).toContainText("Stars of MLB");
 });
 
+test("Filter by insert", async ({ page }) => {
+  await addCard(page, { ...base, insert: "Stars of MLB" });
+  await addCard(page, { ...base, cardNumber: "28", insert: "Other" });
+  await addCard(page, { ...base, cardNumber: "29" });
+  await openFilters(page);
+  await page.getByLabel("Insert", { exact: true }).selectOption({ label: "Stars of MLB" });
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Insert filter/ })).toBeVisible();
+});
+
+test("Filter by manufacturer", async ({ page }) => {
+  await page.evaluate(async () => {
+    const { makeCard } = await import("/src/domain/fixtures.ts");
+    const cards = [makeCard({ manufacturer: "Topps" }), makeCard({ manufacturer: "Bowman", cardNumber: "2" })];
+    await (window as unknown as { __ports: any }).__ports.collection.putMany(cards);
+  });
+  await page.reload();
+  await openFilters(page);
+  await page.getByLabel("Manufacturer", { exact: true }).selectOption({ label: "Topps" });
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Manufacturer filter/ })).toBeVisible();
+});
+
 test("Totals count quantity and distinct cards", async ({ page }) => {
   await addCard(page, { ...base, quantity: "3" });
   await addCard(page, { ...base, cardNumber: "28" });
