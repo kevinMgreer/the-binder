@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import type { Card } from "../domain/card";
 import { collectionStats, type Tile } from "../domain/dashboard";
 import { AddCard } from "./AddCard";
+import { BottomNav, type Destination } from "./BottomNav";
+import { SettingsButton } from "./SettingsButton";
 import { SyncIndicator } from "./SyncIndicator";
 import { UpdateLink } from "./UpdateLink";
 import type { UpdateInfo } from "./useUpdates";
@@ -10,20 +12,20 @@ interface Props {
   cards: Card[];
   update: UpdateInfo | null;
   onAdd: () => void;
-  onScan: (mode: "camera" | "pick") => void;
+  onNavigate: (to: Destination) => void;
   onSettings: () => void;
   onBrowse: () => void;
   onTile: (tile: Tile) => void;
 }
 
-export function Dashboard({ cards, update, onAdd, onScan, onSettings, onBrowse, onTile }: Props) {
+export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onBrowse, onTile }: Props) {
   const stats = useMemo(() => collectionStats(cards), [cards]);
   return (
     <section className="dashboard">
       <header>
         <div className="title-row">
-          <h1>The Binder</h1>
-          <button onClick={onSettings}>Settings</button>
+          <h1>Dashboard</h1>
+          <SettingsButton onClick={onSettings} />
         </div>
         <div className="meta">
           <SyncIndicator />
@@ -42,7 +44,8 @@ export function Dashboard({ cards, update, onAdd, onScan, onSettings, onBrowse, 
         })}
       </div>
       <button onClick={onBrowse}>Browse collection</button>
-      <AddCard onAdd={onAdd} onScan={onScan} />
+      <AddCard onAdd={onAdd} />
+      <BottomNav active="dashboard" onNavigate={onNavigate} />
     </section>
   );
 }

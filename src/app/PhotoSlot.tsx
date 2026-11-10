@@ -44,12 +44,13 @@ export function PhotoSlot({ side, card, captured, onChange }: Props) {
       {url ? <img src={url} alt={`${label} photo`} /> : <span className="thumb" aria-hidden="true" />}
       <div className="actions">
         <button type="button" disabled={busy} onClick={() => take("camera")}>
-          Retake {side}
+          {captured || card?.photos[side] ? "Retake" : "Scan"} {side}
         </button>
         <button type="button" disabled={busy} onClick={() => take("pick")}>
           Pick {side} from photos
         </button>
       </div>
+      {busy && <p role="status">Processing photo…</p>}
       {message && <p role="alert">{message}</p>}
     </div>
   );

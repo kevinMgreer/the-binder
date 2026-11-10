@@ -103,7 +103,6 @@ function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): C
 interface Props {
   card?: Card;
   cards: Card[];
-  initialPhotos?: Photos;
   onSave: (card: Card, photos?: Photos) => Promise<void>;
   onCancel: () => void;
 }
@@ -118,9 +117,9 @@ function labelFor(key: FieldKey, draft: Draft): string {
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
-export function CardForm({ card, cards, initialPhotos, onSave, onCancel }: Props) {
+export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => toDraft(card));
-  const [photos, setPhotos] = useState<Photos>(initialPhotos ?? {});
+  const [photos, setPhotos] = useState<Photos>({});
   const [errors, setErrors] = useState<FieldErrors>({});
   const [blocked, setBlocked] = useState<string[]>([]);
   const [duplicate, setDuplicate] = useState<{ existing: Card; added: Card }>();
