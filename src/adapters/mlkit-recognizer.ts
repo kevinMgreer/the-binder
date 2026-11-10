@@ -9,7 +9,7 @@ export type TextReader = (photo: Blob) => Promise<string>;
 export class MlKitRecognizer implements Recognizer {
   constructor(
     private readText: TextReader,
-    private now = new Date(),
+    private now?: Date,
   ) {}
 
   /** The back usually prints the year, number and set, so it is read first and the front only fills gaps. */
