@@ -2,7 +2,7 @@
 
 - [x] 1.1 Write the failing tests first: no colour literals (hex, rgb, hsl) in `src/**` styles or components outside `src/app/tokens.css`; both themes define every colour role; every pair listed in design D8 meets 4.5 to 1 (3 to 1 for large text and icons) in both themes with the pocket blended over the page; a Playwright test sets `colorScheme` dark then light, then flips it with `page.emulateMedia` while open, and the page background token differs each time; a test overrides `--color-accent` on the root and the primary button, an active chip and a serial tag change with it; verify they fail before the token file exists
 - [x] 1.2 Create `src/app/tokens.css` with the roles, scales, `color-scheme: light dark` and both themes from design D1, D3 and D8, import it first in `main.tsx`, and move the existing `app.css` colours onto it; verify the 1.1 tests pass and `npm run build` succeeds (the chip and tag parts of the token-swap test pass after 2.2)
-- [ ] 1.3 Verify the theme follows the phone on the device: `adb shell cmd uimode night yes` and `no` switch the running app without a restart ("Dark system setting", "Light system setting", "Setting changes while running"); if the activity's `uiMode` config change blocks the switch, fix it before moving on
+- [x] 1.3 Verify the theme follows the phone on the device: `adb shell cmd uimode night yes` and `no` switch the running app without a restart ("Dark system setting", "Light system setting", "Setting changes while running"); if the activity's `uiMode` config change blocks the switch, fix it before moving on
 
 ## 2. The collection list
 
