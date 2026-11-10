@@ -54,3 +54,4 @@
 {"v":1,"ts":"2026-11-10T15:42:54.648Z","from":"a1a8541a","id":"T-21","set":{"note":"PR #12 merged (groups 1-6). Left: 7.1-7.2 phone checks (dashboard tiles vs list, picklist, subset/insert, back), 7.3 owner review, 7.4 archive; update every device first."}}
 {"v":1,"ts":"2026-11-10T15:42:57.607Z","from":"a1a8541a","id":"T-22","set":{"title":"refine-navigation-and-add-flow: build (groups 1-6; phone checks last)","status":"open","area":"the-binder","size":"small"}}
 {"v":1,"ts":"2026-11-10T16:12:58.065Z","from":"a1a8541a","id":"T-22","set":{"status":"done","note":"Built and merged in PR #14; phone checks (group 6) remain."}}
+{"v":1,"ts":"2026-11-10T16:34:19.736Z","from":"a1a8541a","id":"T-23","set":{"title":"Remove the Browse collection button from the dashboard (Cards tab replaces it)","status":"open","area":"the-binder","size":"small"}}

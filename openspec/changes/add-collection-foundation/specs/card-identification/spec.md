@@ -15,7 +15,7 @@ The system SHALL run free on-device text recognition on a newly captured front o
 
 #### Scenario: Nothing recognized
 - **WHEN** on-device recognition reads no usable details
-- **THEN** the form opens empty with a message offering "Identify with Claude"
+- **THEN** the form keeps its fields and shows a note offering "Identify with Claude"
 
 #### Scenario: Works offline
 - **GIVEN** the device is offline
