@@ -22,7 +22,7 @@
 ## 3. Card photos
 
 - [x] 3.1 Write acceptance tests for every scenario in `specs/card-photos/spec.md` (against `FakePhotoSource`); verify they fail for the right reason
-- [ ] 3.2 Build capture (front then back, skip back) with `CapacitorCameraPhotoSource` over `@capacitor/camera` and the "Pick from photos" fallback (design D7); verify "Camera capture on Android", "Camera closed without a photo" and "Choose existing image" pass, and manually verify all three on the phone (phone 2026-11-09: capture, cancel and pick work; the system camera app, not this app, chooses the lens, so "the rear camera opens" is open until the in-app camera change)
+- [x] 3.2 Build capture (front then back, skip back) with `CapacitorCameraPhotoSource` over `@capacitor/camera` and the "Pick from photos" fallback (design D7); verify "Camera capture on Android", "Camera closed without a photo" and "Choose existing image" pass, and manually verify all three on the phone (phone 2026-11-09: capture, cancel and pick work; capture now runs through the card scanner on the rear camera, added by `scan-card-with-document-scanner`)
 - [ ] 3.3 Implement the worker-based resize/WebP pipeline and thumbnails (design D7); verify a 12 MP fixture compresses to ≤ 500 KB in a Vitest test, and on the phone ML Kit still reads the serial stamp from the compressed fixture
 - [x] 3.4 Store photos and thumbnails in the local `PhotoStore` (IndexedDB, size-capped full-photo cache), with retake/replace; verify "Replace front photo" passes against the fake remote
 - [ ] 3.5 Build the zoomable detail view and offline thumbnail fallback; verify "View full photo offline" and "Zoom to read serial" pass, and pinch-zoom is smooth on the phone

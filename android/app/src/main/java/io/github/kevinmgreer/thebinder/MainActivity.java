@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(BinderAuthPlugin.class);
+        registerPlugin(BinderScannerPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

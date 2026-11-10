@@ -4,6 +4,8 @@ import { createRoot } from "react-dom/client";
 import { CapacitorCameraPhotoSource } from "./adapters/capacitor-camera";
 import { CapacitorAppInfo } from "./adapters/capacitor-app-info";
 import { capacitorNativeAuth } from "./adapters/capacitor-native-auth";
+import { capacitorScanner } from "./adapters/capacitor-scanner";
+import { ScannerPhotoSource } from "./adapters/document-scanner-photo-source";
 import { ClaudeRecognizer } from "./adapters/claude-recognizer";
 import { BinderDb } from "./adapters/db";
 import { DexieCollectionStore } from "./adapters/dexie";
@@ -29,7 +31,9 @@ const ports: Ports = {
   ...fakes,
   collection: new DexieCollectionStore(db),
   photos: new DexiePhotoStore(db),
-  photoSource: Capacitor.isNativePlatform() ? new CapacitorCameraPhotoSource() : fakes.photoSource,
+  photoSource: Capacitor.isNativePlatform()
+    ? new ScannerPhotoSource(capacitorScanner, new CapacitorCameraPhotoSource())
+    : fakes.photoSource,
   auth: new FakeAuthProvider(testHooks && params.get("auth") !== "signed-out" ? { email: "owner@example.test" } : null),
 };
 if (Capacitor.isNativePlatform()) {
