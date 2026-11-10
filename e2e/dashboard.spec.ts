@@ -105,6 +105,7 @@ test("Deleting an autographed card lowers Autos by one", async ({ page }) => {
   await page.getByTestId("card-row").first().click();
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Confirm delete" }).click();
+  await expect(page.getByTestId("summary")).toBeVisible();
   await back(page);
   await expect(tile(page, "Autos")).toHaveAccessibleName("Autos, 1");
 });
