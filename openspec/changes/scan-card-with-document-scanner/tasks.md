@@ -6,8 +6,8 @@
 
 ## 2. Android plugin
 
-- [ ] 2.1 Add the `play-services-mlkit-document-scanner` dependency and `BinderScannerPlugin.java` with `scan()` per design D1 and D2 (`SCANNER_MODE_BASE`, page limit 1, JPEG, gallery import off, `UNAVAILABLE` on missing Play services), and register it in `MainActivity.java`; verify `gradlew assembleDebug` succeeds and the app still launches on the phone
-- [ ] 2.2 Check the release build is unaffected: verify `gradlew assembleRelease` succeeds and the APK still contains no `sk-ant-` string
+- [x] 2.1 Add the `play-services-mlkit-document-scanner` dependency and `BinderScannerPlugin.java` with `scan()` per design D1 and D2 (`SCANNER_MODE_BASE`, page limit 1, JPEG, gallery import off, `UNAVAILABLE` on missing Play services), and register it in `MainActivity.java`; verify `gradlew assembleDebug` succeeds and the app still launches on the phone
+- [x] 2.2 Check the release build is unaffected: verify `gradlew assembleRelease` succeeds and the APK still contains no `sk-ant-` string
 
 ## 3. On the phone
 
