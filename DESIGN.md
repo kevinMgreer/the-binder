@@ -213,7 +213,7 @@ Detail screen, top to bottom: the player as a large title (title size, weight 50
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.
 
 ### Navigation
-The dashboard is home: Android's back button closes the app from there. The list has a Back button in its header that returns to the dashboard, and so does the Android back button. The detail and settings screens have no on-screen Back button: Android's back button and gesture return to where they were opened from (the list for detail, the dashboard or the list for settings). Forms keep Cancel and sheets keep Close.
+The dashboard is home: Android's back button closes the app from there. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to list, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.

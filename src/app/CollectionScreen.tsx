@@ -16,7 +16,6 @@ interface Props {
   update: UpdateInfo | null;
   onAdd: () => void;
   onScan: (mode: "camera" | "pick") => void;
-  onBack: () => void;
   onSettings: () => void;
   onOpen: (card: Card) => void;
 }
@@ -31,7 +30,7 @@ const FLAG_LABELS = {
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, update, onAdd, onScan, onBack, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, update, onAdd, onScan, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
@@ -101,7 +100,6 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
     <section className="collection">
       <header>
         <div className="title-row">
-          <button onClick={onBack}>Back</button>
           <h1>The Binder</h1>
           <button onClick={onSettings}>Settings</button>
         </div>

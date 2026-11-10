@@ -31,7 +31,7 @@ export function App() {
 
   // Android back: one screen up, and leave the app only from the dashboard.
   useEffect(() => {
-    const handle = CapacitorApp.addListener("backButton", () => {
+    const goBack = () => {
       const sheet = openSheets.at(-1);
       if (sheet) sheet();
       else if (view.name === "dashboard") void CapacitorApp.exitApp();
@@ -39,8 +39,15 @@ export function App() {
       else if (view.name === "detail") setView({ name: "list" });
       else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id });
       else if ("from" in view) setView({ name: view.from });
-    });
-    return () => void handle.then((h) => h.remove());
+    };
+    const handle = CapacitorApp.addListener("backButton", goBack);
+    // A browser has no back button; test builds fire this event so e2e tests reach the same handler.
+    const testHooks = import.meta.env.DEV || import.meta.env.MODE === "e2e";
+    if (testHooks) window.addEventListener("hardware-back", goBack);
+    return () => {
+      void handle.then((h) => h.remove());
+      window.removeEventListener("hardware-back", goBack);
+    };
   }, [view]);
 
   if (view.name === "settings") {
@@ -123,7 +130,6 @@ export function App() {
       {...shared("list")}
       filters={filters}
       onFiltersChange={setFilters}
-      onBack={() => setView({ name: "dashboard" })}
       onOpen={(card) => setView({ name: "detail", id: card.id })}
     />
   );

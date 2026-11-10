@@ -80,7 +80,7 @@ In `matches`, team, manufacturer, set, subset, insert and parallel compare `norm
 ### D8. Dashboard is home; filters live in `App`
 `View` gains `{ name: "dashboard" }`, which becomes the initial view. `App` holds `filters` in state and passes `filters` and `onFiltersChange` to `CollectionScreen` (which drops its own `useState`). A tile tap sets `{ ...emptyFilters, ...tile.filters }` and shows the list; Browse collection sets `emptyFilters`. Because the state sits above the views, the list keeps its filters across card detail and edit.
 
-`scan`, `settings` and new-card `form` views carry `from: "dashboard" | "list"`, so cancel, save, Back and the hardware back return to the screen that opened them. Back handling: list goes to dashboard, dashboard exits, the rest as today. The `CollectionScreen` header gets a Back button.
+`scan`, `settings` and new-card `form` views carry `from: "dashboard" | "list"`, so cancel, save and the hardware back return to the screen that opened them. Back handling: list goes to dashboard, dashboard exits, the rest as today. No screen gets an on-screen Back button (the owner ruled Android back is enough); the user always has the hardware back, and the dashboard's Browse collection is the way down.
 
 The Add card button and its sheet move out of `CollectionScreen` into a small `AddCard` component used by both screens, so each screen keeps exactly one add entry. `DESIGN.md`'s three single-add-button lines (Overview "one bottom-anchored add button", Buttons "the single entry point for adding", Don't "add a second add entry point") are reworded to one add button per screen, on the list and the dashboard.
 - Alternative: a router library. A dependency for two more states. Rejected.

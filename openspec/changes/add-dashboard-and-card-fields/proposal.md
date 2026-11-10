@@ -9,7 +9,7 @@ The owner opens the app to see what the collection holds, not only to find one c
 - **Data file version 2.** The Drive data file's `schemaVersion` goes from 1 to 2. Cards written before this change have no subset or insert and still load, display, edit and sync; a version 1 file is read as is and rewritten once as version 2 on the first sync, with the same cards. No card is changed.
 - **Dashboard landing screen.** The app opens on a dashboard instead of the list. It shows a fixed set of stat tiles in this order: Cards (total, counting quantity), Distinct, Autos, Relics, Serial-numbered, Topps Gold, Atlanta Braves. Tapping a tile opens the collection list with that tile's filter applied (shown as chips, removable as today); a Browse collection button opens the list unfiltered. Stats are computed in one pass over the cards and only when the cards change.
 - **Filters gain Manufacturer, Subset and Insert,** and the text filters (team, set, parallel, manufacturer, subset, insert) match ignoring case and accents, so a tile's count always equals the number of rows its list shows.
-- **Navigation.** Android back from the list returns to the dashboard; back on the dashboard closes the app. Settings, scan and the add form return to the screen that opened them. The list header gets a Back control. The list's filters survive opening a card and coming back.
+- **Navigation.** Android back from the list returns to the dashboard; back on the dashboard closes the app. Settings, scan and the add form return to the screen that opened them. No screen gets an on-screen Back control. The list's filters survive opening a card and coming back.
 
 Out of scope:
 - Tiles the owner can add, remove or reorder; the set is fixed (see design D5).
@@ -28,7 +28,7 @@ Out of scope:
 ### Modified Capabilities
 - `card-catalog` (ADDED requirements only): "Subset and insert", "Raw condition picklist", and "Filters ignore case; subset, insert and manufacturer filters". The capability is defined by the unarchived `add-collection-foundation` change, so its existing requirements are extended, not MODIFIED.
 - `drive-storage` (ADDED): "Older data files keep working": the file carries version 2, and version 1 files and cards without the new fields keep loading and syncing. Also defined by `add-collection-foundation`.
-- `collection-list` (ADDED): "The list returns to the dashboard", a Back control and filters kept across opening a card. Defined by the unarchived `redesign-ui-binder-pockets` change.
+- `collection-list` (ADDED): "The list returns to the dashboard" (by the Android back button) and filters kept across opening a card. Defined by the unarchived `redesign-ui-binder-pockets` change.
 - `app-shell` (MODIFIED): "Hardware back button goes up one screen" closes the app from the dashboard, not the list, and returns from Settings to the screen that opened it.
 
 ## Impact

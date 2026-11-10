@@ -24,5 +24,5 @@ The system SHALL handle the Android back button by returning to the previous scr
 - **THEN** the dashboard is shown and the app stays open
 
 #### Scenario: Back from settings
-- **WHEN** the user opens Settings from the dashboard and presses back or taps Back
+- **WHEN** the user opens Settings from the dashboard and presses back (Settings has no on-screen Back button)
 - **THEN** the dashboard is shown; when Settings was opened from the list, the list is shown

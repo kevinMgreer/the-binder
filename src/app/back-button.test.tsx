@@ -88,10 +88,11 @@ test("back from the list shows the dashboard and keeps the app open", async () =
   expect(native.exitApp).not.toHaveBeenCalled();
 });
 
-test("the list's Back button shows the dashboard", async () => {
+test("the list has no Back button; hardware back is the way to the dashboard", async () => {
   await renderSignedIn();
   await openList();
-  fireEvent.click(screen.getByRole("button", { name: "Back" }));
+  expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+  await pressBack();
   await onDashboard();
 });
 

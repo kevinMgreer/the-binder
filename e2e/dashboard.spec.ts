@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hardwareBack } from "./helpers";
 
 type Seed = Record<string, unknown>;
 
@@ -14,7 +15,7 @@ async function seed(page: Page, cards: Seed[]) {
 }
 
 const tile = (page: Page, label: string) => page.getByRole("button", { name: new RegExp(`^${label}, \\d`) });
-const back = (page: Page) => page.getByRole("button", { name: "Back", exact: true });
+const back = hardwareBack;
 const browse = (page: Page) => page.getByRole("button", { name: "Browse collection" });
 const chips = (page: Page) => page.locator(".chip");
 
@@ -50,7 +51,7 @@ test("Tap Autos after another filter leaves only the Autograph chip", async ({ p
   await seed(page, [{ cardNumber: "1", flags: AUTO }, { cardNumber: "2", team: "Boston Red Sox" }]);
   await tile(page, "Atlanta Braves").click();
   await expect(chips(page)).toHaveCount(1);
-  await back(page).click();
+  await back(page);
   await tile(page, "Autos").click();
   await expect(chips(page)).toHaveCount(1);
   await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
@@ -68,7 +69,7 @@ test("Browse the whole collection clears filters and search", async ({ page }) =
   await seed(page, [{ cardNumber: "1", flags: { rookie: false, autograph: false, relic: true } }, { cardNumber: "2" }]);
   await tile(page, "Relics").click();
   await page.getByLabel("Search", { exact: true }).fill("Acu");
-  await back(page).click();
+  await back(page);
   await browse(page).click();
   await expect(chips(page)).toHaveCount(0);
   await expect(page.getByLabel("Search", { exact: true })).toHaveValue("");
@@ -104,13 +105,14 @@ test("Deleting an autographed card lowers Autos by one", async ({ page }) => {
   await page.getByTestId("card-row").first().click();
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Confirm delete" }).click();
-  await back(page).click();
+  await back(page);
   await expect(tile(page, "Autos")).toHaveAccessibleName("Autos, 1");
 });
 
-test("Back to the dashboard from the list", async ({ page }) => {
+test("Back to the dashboard from the list, which has no Back button", async ({ page }) => {
   await browse(page).click();
-  await back(page).click();
+  await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
+  await back(page);
   await expect(browse(page)).toBeVisible();
 });
 
