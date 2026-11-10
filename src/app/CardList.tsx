@@ -2,15 +2,10 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef } from "react";
 import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
-import { useThumbUrl } from "./hooks";
+import { Thumb } from "./Thumb";
 
 // Fits the 67 dp thumbnail, the button's 12 dp padding and the 8 dp gap to the next row (the li's bottom padding).
 const ROW_HEIGHT = 100;
-
-function Thumb({ card }: { card: Card }) {
-  const url = useThumbUrl(card.id, "front", !!card.photos.front, card.updatedAt);
-  return url ? <img className="thumb" src={url} alt="" /> : <span className="thumb" aria-hidden="true" />;
-}
 
 export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card) => void }) {
   const scroller = useRef<HTMLDivElement>(null);

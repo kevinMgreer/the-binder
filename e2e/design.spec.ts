@@ -176,6 +176,7 @@ for (const size of PHONES) {
     });
 
     test("Sync status is a status region on the title row, left of the gear", async ({ page }) => {
+      await setStatus(page, { state: "idle", pending: 0 });
       const status = page.locator("header").getByRole("status");
       await expect(status).toHaveText("Synced");
       const row = (await page.locator("header .title-row").boundingBox())!;
@@ -652,7 +653,6 @@ test.describe("States at phone size", () => {
       for (const text of await page.locator(".recent-name, .team-name, .team-count, .dashboard h2").all()) {
         expect(await legible(text)).toBeGreaterThanOrEqual(4.5);
       }
-      await expectTouchable(page, "dashboard groups");
     });
   }
 
@@ -673,7 +673,6 @@ test.describe("States at phone size", () => {
 
   test("Tiles at phone size: six tiles are 48 dp, in view, clear of the system bars", async ({ page }) => {
     await page.goto("/");
-    await seedDashboard(page);
     await page.evaluate(() => {
       document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
       document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");

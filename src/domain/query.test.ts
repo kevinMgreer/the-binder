@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { serialLabel } from "./format";
 import { makeCard } from "./fixtures";
-import { applyFilters, emptyFilters, findDuplicate, sortCards, summarize } from "./query";
+import { applyFilters, emptyFilters, findDuplicate, sortCards } from "./query";
 
 test("serial label shows readable and unreadable serials", () => {
   expect(serialLabel({ name: "Gold", serial: 23, serialLegible: true, printRun: 2026 })).toBe("23/2026");
@@ -15,10 +15,6 @@ test("default sort is year, then set, then numeric card number", () => {
   const c = makeCard({ year: 2019, set: "Z", cardNumber: "1" });
   const d = makeCard({ year: 2020, set: "A", cardNumber: "5" });
   expect(sortCards([a, b, c, d])).toEqual([c, d, a, b]);
-});
-
-test("summary counts quantity and distinct cards", () => {
-  expect(summarize([makeCard({ quantity: 3 }), makeCard()])).toEqual({ total: 4, distinct: 2 });
 });
 
 test("search ignores case and accents and covers notes", () => {

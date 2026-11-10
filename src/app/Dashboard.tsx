@@ -4,7 +4,8 @@ import { collectionStats, type Tile } from "../domain/dashboard";
 import { AddCard } from "./AddCard";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
-import { SyncIndicator } from "./SyncIndicator";
+import { SyncActions, SyncIndicator } from "./SyncIndicator";
+import { Thumb } from "./Thumb";
 import { UpdateLink } from "./UpdateLink";
 import type { UpdateInfo } from "./useUpdates";
 
@@ -15,24 +16,24 @@ interface Props {
   onNavigate: (to: Destination) => void;
   onSettings: () => void;
   onTile: (tile: Tile) => void;
+  onOpenCard: (card: Card) => void;
 }
 
-export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile }: Props) {
-  const stats = useMemo(() => collectionStats(cards), [cards]);
+export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile, onOpenCard }: Props) {
+  const { tiles, recent, teams } = useMemo(() => collectionStats(cards), [cards]);
   return (
     <section className="dashboard">
       <header>
         <div className="title-row">
           <h1>Dashboard</h1>
+          <SyncIndicator />
           <SettingsButton onClick={onSettings} />
         </div>
-        <div className="meta">
-          <SyncIndicator />
-        </div>
+        <SyncActions />
       </header>
       {update && <UpdateLink update={update} />}
       <div className="tiles">
-        {stats.map((tile) => {
+        {tiles.map((tile) => {
           const value = tile.value.toLocaleString();
           return (
             <button key={tile.label} className="tile" data-testid="tile" aria-label={`${tile.label}, ${value}`} onClick={() => onTile(tile)}>
@@ -42,6 +43,44 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
           );
         })}
       </div>
+      {recent.length > 0 && (
+        <div className="group">
+          <h2>Recently added</h2>
+          <div className="recent">
+            {recent.map((card) => (
+              <button
+                key={card.id}
+                className="recent-card"
+                data-testid="recent"
+                aria-label={`${card.player}, ${card.year} ${card.set} #${card.cardNumber}`}
+                onClick={() => onOpenCard(card)}
+              >
+                <Thumb card={card} />
+                <span className="recent-name">{card.player}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {teams.length > 0 && (
+        <div className="group">
+          <h2>Top teams</h2>
+          <div className="teams">
+            {teams.map((team) => (
+              <button
+                key={team.name}
+                className="team"
+                data-testid="team"
+                aria-label={`${team.name}, ${team.count}`}
+                onClick={() => onTile({ label: team.name, filters: { team: team.name }, count: "match" })}
+              >
+                <span className="team-name">{team.name}</span>
+                <span className="team-count">{team.count.toLocaleString()}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <AddCard onAdd={onAdd} />
       <BottomNav active="dashboard" onNavigate={onNavigate} />
     </section>

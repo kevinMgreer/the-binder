@@ -1,13 +1,13 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
-import { applyFilters, distinctValues, emptyFilters, sortCards, summarize, type Filters } from "../domain/query";
+import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters } from "../domain/query";
 import { AddCard } from "./AddCard";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
 import { Sheet } from "./Sheet";
-import { SyncIndicator } from "./SyncIndicator";
+import { SyncActions, SyncIndicator } from "./SyncIndicator";
 import { UpdateLink } from "./UpdateLink";
 import type { UpdateInfo } from "./useUpdates";
 
@@ -38,7 +38,6 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters)), [cards, filters]);
-  const { total, distinct } = summarize(cards);
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
@@ -103,14 +102,10 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
       <header>
         <div className="title-row">
           <h1>Cards</h1>
+          <SyncIndicator />
           <SettingsButton onClick={onSettings} />
         </div>
-        <div className="meta">
-          <p data-testid="summary">
-            {total} {total === 1 ? "card" : "cards"}, {distinct} distinct
-          </p>
-          <SyncIndicator />
-        </div>
+        <SyncActions />
       </header>
       {update && <UpdateLink update={update} />}
       <div className="search-row">

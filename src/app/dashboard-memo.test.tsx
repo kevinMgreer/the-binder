@@ -5,6 +5,7 @@ import { makeCard } from "../domain/fixtures";
 import { Dashboard } from "./Dashboard";
 
 vi.mock("./SyncIndicator", () => ({ SyncIndicator: () => null, SyncActions: () => null }));
+vi.mock("./Thumb", () => ({ Thumb: () => null }));
 afterEach(cleanup);
 
 test("No recount without a change: a re-render with the same cards does not recompute tiles, recent or teams", () => {

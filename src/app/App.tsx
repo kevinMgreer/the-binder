@@ -14,7 +14,7 @@ import { useUpdates } from "./useUpdates";
 type View =
   | { name: Screen }
   | { name: "form"; card?: Card; from: Screen }
-  | { name: "detail"; id: string }
+  | { name: "detail"; id: string; from: Screen }
   | { name: "settings"; from: Screen };
 
 /** The screens a flow can start from and returns to. */
@@ -33,8 +33,8 @@ export function App() {
       if (sheet) sheet();
       else if (view.name === "dashboard") void CapacitorApp.exitApp();
       else if (view.name === "list") setView({ name: "dashboard" });
-      else if (view.name === "detail") setView({ name: "list" });
-      else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id });
+      else if (view.name === "detail") setView({ name: view.from });
+      else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id, from: view.from });
       else if ("from" in view) setView({ name: view.from });
     };
     const handle = CapacitorApp.addListener("backButton", goBack);
@@ -64,9 +64,9 @@ export function App() {
         cards={cards}
         onSave={async (saved, photos) => {
           await save(saved, photos);
-          setView(card ? { name: "detail", id: saved.id } : { name: view.from });
+          setView(card ? { name: "detail", id: saved.id, from: view.from } : { name: view.from });
         }}
-        onCancel={() => setView(card ? { name: "detail", id: card.id } : { name: view.from })}
+        onCancel={() => setView(card ? { name: "detail", id: card.id, from: view.from } : { name: view.from })}
       />
     );
   }
@@ -77,10 +77,10 @@ export function App() {
       return (
         <CardDetail
           card={card}
-          onEdit={() => setView({ name: "form", card, from: "list" })}
+          onEdit={() => setView({ name: "form", card, from: view.from })}
           onDelete={async () => {
             await remove(card);
-            setView({ name: "list" });
+            setView({ name: view.from });
           }}
         />
       );
@@ -103,6 +103,7 @@ export function App() {
           setFilters({ ...emptyFilters, ...tile.filters });
           setView({ name: "list" });
         }}
+        onOpenCard={(card) => setView({ name: "detail", id: card.id, from: "dashboard" })}
       />
     );
   }
@@ -112,7 +113,7 @@ export function App() {
       {...shared("list")}
       filters={filters}
       onFiltersChange={setFilters}
-      onOpen={(card) => setView({ name: "detail", id: card.id })}
+      onOpen={(card) => setView({ name: "detail", id: card.id, from: "list" })}
     />
   );
 }

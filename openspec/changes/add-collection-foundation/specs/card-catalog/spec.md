@@ -77,9 +77,9 @@ The system SHALL let the user search by text across player, team, set and notes,
 - **THEN** only cards matching all three filters are listed, with a count
 
 ### Requirement: Collection summary
-The system SHALL show the total number of cards (counting quantity) and the number of distinct cards.
+The system SHALL show the total number of cards (counting quantity) and the number of distinct cards on the dashboard's Cards and Distinct tiles, not as a summary line on the collection list.
 
 #### Scenario: Totals with duplicates
 - **GIVEN** two distinct cards, one with quantity 3
-- **WHEN** the user views the collection
-- **THEN** the summary shows 4 cards, 2 distinct
+- **WHEN** the user views the dashboard
+- **THEN** the Cards tile reads 4 and the Distinct tile reads 2

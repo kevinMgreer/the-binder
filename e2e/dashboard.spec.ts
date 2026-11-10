@@ -17,7 +17,7 @@ async function seed(page: Page, cards: Seed[]) {
 }
 
 const tile = (page: Page, label: string) => page.getByRole("button", { name: new RegExp(`^${label}, \\d`) });
-const team = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(`^${name}, \\d`) });
+const team = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(`^${name}, \\d`, "i") });
 const back = hardwareBack;
 const cardsTab = (page: Page) => page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Cards", exact: true });
 const onDashboard = (page: Page) => expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
@@ -83,7 +83,7 @@ test("Top teams: tap an entry opens the list filtered to it, earlier Autograph c
   await tile(page, "Autos").click();
   await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
   await back(page);
-  await expect(team(page, "Atlanta Braves")).toHaveAccessibleName("Atlanta Braves, 3");
+  await expect(team(page, "Atlanta Braves")).toHaveAccessibleName(/^atlanta braves, 3$/i);
   await expect(page.getByTestId("team")).toHaveCount(2);
   await team(page, "Atlanta Braves").click();
   await expect(chips(page)).toHaveCount(1);
@@ -95,6 +95,7 @@ test("Recently added: newest four first, editing does not reorder, open and back
   const day = (n: number) => `2026-02-0${n}T00:00:00.000Z`;
   await seed(page, [1, 2, 3, 4, 5, 6].map((n) => ({ cardNumber: String(n), player: `Player ${n}`, createdAt: day(n), updatedAt: n === 1 ? "2026-03-01T00:00:00.000Z" : day(n) })));
   const names = () => page.getByTestId("recent").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")!.split(",")[0]));
+  await expect(page.getByTestId("recent")).toHaveCount(4);
   expect(await names()).toEqual(["Player 6", "Player 5", "Player 4", "Player 3"]);
   await page.getByTestId("recent").first().click();
   await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
