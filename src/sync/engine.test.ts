@@ -105,7 +105,10 @@ describe("version 1 file from an earlier install", () => {
     expect(file.schemaVersion).toBe(2);
     expect(file.cards).toEqual([old]);
 
-    await a.engine.syncNow();
+    // A restarted app has no remembered version, so it takes the full pull-merge path instead of the early exit.
+    const restarted = install(remote);
+    await restarted.collection.putSynced([old]);
+    await restarted.engine.syncNow();
     expect(write).toHaveBeenCalledTimes(1);
   });
 });
