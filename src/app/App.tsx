@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
+import { useEffect, useState } from "react";
 import type { Card } from "../domain/card";
 import type { Photos } from "../ports";
 import { CardDetail } from "./CardDetail";
@@ -20,6 +21,16 @@ export function App() {
   const { cards, save, remove } = useCards();
   const updates = useUpdates();
   const [view, setView] = useState<View>({ name: "list" });
+
+  // Android back: one screen up, and leave the app only from the list.
+  useEffect(() => {
+    const handle = CapacitorApp.addListener("backButton", () => {
+      if (view.name === "list") void CapacitorApp.exitApp();
+      else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id });
+      else setView({ name: "list" });
+    });
+    return () => void handle.then((h) => h.remove());
+  }, [view]);
 
   if (view.name === "settings") {
     return (
