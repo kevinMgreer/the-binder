@@ -15,7 +15,7 @@ The system SHALL require the user to sign in with a Google account before any Dr
 
 #### Scenario: Successful sign-in
 - **WHEN** the user completes Google sign-in and grants access
-- **THEN** the system shows the user's collection
+- **THEN** the system shows the dashboard
 
 #### Scenario: User declines access
 - **WHEN** the user cancels the Google consent screen or denies Drive access

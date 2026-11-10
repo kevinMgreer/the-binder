@@ -1,7 +1,7 @@
 # card-catalog Specification
 
 ## Purpose
-Defines the card record's catalog fields (such as subset and insert) and the condition list, so cards can be described and counted consistently.
+Defines what the app records about each baseball card and how the owner adds, edits, removes and finds cards in the collection.
 
 ## Requirements
 

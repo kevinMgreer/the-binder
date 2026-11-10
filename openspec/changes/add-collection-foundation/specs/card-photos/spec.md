@@ -15,11 +15,11 @@ The system SHALL let the user take a photo of a card's front and back with the d
 
 #### Scenario: Camera closed without a photo
 - **WHEN** the user backs out of the camera without taking a photo
-- **THEN** the app returns to where the user started, nothing is added, and "Pick from photos" remains available
+- **THEN** the form stays as it was, nothing is added, and "Pick front from photos" or "Pick back from photos" remains available
 
 #### Scenario: Choose existing image
-- **WHEN** the user chooses "Pick from photos" and selects an image
-- **THEN** that image is used as the card photo
+- **WHEN** the user chooses "Pick front from photos" or "Pick back from photos" on the card form and selects an image
+- **THEN** that image is used as that side's card photo
 
 ### Requirement: Compress photos
 The system SHALL resize and compress each photo on the device before storing it, keeping enough detail to read the card number and serial number, and producing a separate small thumbnail.

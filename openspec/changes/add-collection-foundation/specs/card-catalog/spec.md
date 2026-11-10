@@ -57,7 +57,7 @@ The system SHALL let the user edit any field of a card and delete a card after c
 - **WHEN** the user deletes a card and confirms
 - **THEN** the card and its photos are removed from the collection
 
-### Requirement: Browse the collection
+### Requirement: List the collection
 The system SHALL list cards with a thumbnail, player, year, set, card number and parallel, sorted by year then set then card number by default.
 
 #### Scenario: Large collection

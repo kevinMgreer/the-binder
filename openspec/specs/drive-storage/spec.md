@@ -1,7 +1,7 @@
 # drive-storage Specification
 
 ## Purpose
-Defines how the collection data file is stored in Drive, including its schema version and upgrading files written by earlier installs.
+Keeps the collection's data and photos in the owner's Google Drive as the system of record, with a local copy on each device for offline use and sync between devices.
 
 ## Requirements
 

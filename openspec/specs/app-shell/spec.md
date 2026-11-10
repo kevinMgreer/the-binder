@@ -44,11 +44,11 @@ The system SHALL handle the Android back button by returning to the previous scr
 - **THEN** the dashboard is shown; when Settings was opened from the list, the list is shown
 
 ### Requirement: Screens that the back button handles show no Back button
-The system SHALL NOT show an on-screen Back button on the card detail and settings screens, because the Android back button and gesture already return to the list there. It SHALL keep Cancel on the add and edit forms and Close on sheets.
+The system SHALL NOT show an on-screen Back button on the card detail and settings screens, because the Android back button and gesture already return to the previous screen there (the list for card detail, the screen Settings was opened from for Settings). It SHALL keep Cancel on the add and edit forms and Close on sheets.
 
 #### Scenario: Detail and settings have no Back button
 - **WHEN** the card detail or settings screen is showing
-- **THEN** no button named Back is shown, and pressing the Android back button shows the collection list and keeps the app open
+- **THEN** no button named Back is shown, and pressing the Android back button shows the screen it was opened from (the list for card detail) and keeps the app open
 
 ### Requirement: Bottom navigation between Dashboard and Cards
 The system SHALL show a bottom navigation bar with two destinations, Dashboard and Cards in that order, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Each destination SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The active destination SHALL be marked by an indicator shape behind its icon, the accent colour and `aria-current="page"`, so it does not rely on colour alone. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
