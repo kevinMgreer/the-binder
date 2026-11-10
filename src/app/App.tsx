@@ -38,7 +38,6 @@ export function App() {
   if (view.name === "settings") {
     return (
       <SettingsScreen
-        onBack={() => setView({ name: "list" })}
         update={updates.available}
         onCheckForUpdates={updates.check}
       />
@@ -82,7 +81,6 @@ export function App() {
             await remove(card);
             setView({ name: "list" });
           }}
-          onBack={() => setView({ name: "list" })}
         />
       );
     }

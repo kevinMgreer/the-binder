@@ -32,6 +32,8 @@
 
 - [x] 3.12 Second polish pass after the owner saw 3.9 to 3.11 on the phone: write the failing e2e tests first, then make the row the thumbnail, the player with the tag badge at the right and one quiet "year set · #number" line (parallel, grade and quantity as plain ellipsised text, row height 100), and the detail a large title with a tag badge, a quiet subtitle, a photo strip, a ruled list of facts, a muted last-edited line, a full-width Edit and Delete apart; verify a long parallel keeps the quiet line to one line and the badge uses the accent text token ("Long extras", "Fact list")
 
+- [x] 3.13 Owner changes after the third phone look: write the failing tests first (detail order title, subtitle, facts, photo strip, last edited, Edit, Delete; no Back button on detail and settings; Android back from each still returns to the list in `back-button.test.tsx`), then move the photo strip below the facts and remove the Back buttons from the detail and settings screens; verify the full suite passes, with the e2e specs that clicked Back reloading instead ("Fact list", "Detail and settings have no Back button"); also make the "States at phone size" loop wait for the app and re-apply the sync status until it shows
+
 ## 4. On the phone
 
 - [ ] 4.1 Install the debug build, switch Android between dark and light with `adb shell cmd uimode night yes` and `no`, and screenshot the list, detail, form, scan and settings screens in each; verify both themes render with legible text and the pocket look, nothing sits under the system bars, and there is no white flash at launch in dark mode

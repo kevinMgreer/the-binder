@@ -66,6 +66,6 @@ test("A failed check is silent on its own and reported on a manual check, and th
   await openSettings(page);
   await page.getByRole("button", { name: "Check for updates" }).click();
   await expect(page.getByText("Could not check for updates")).toBeVisible();
-  await page.getByRole("button", { name: "Back" }).click();
+  await page.reload();
   await expect(page.getByTestId("summary")).toBeVisible();
 });

@@ -199,10 +199,13 @@ Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textare
 Full-width pocket button, 12px padding and gap, 48x67 thumbnail (4px radius, pocket placeholder, cover fit). Two lines, row height 100px: the player name (body size, weight 500, single-line ellipsis) with the Tag as a badge at the right end of the same line, and one quiet muted label-size line "year set · #number" (number mono) continuing with parallel, grade and quantity as plain text. The line never wraps: the extras shrink first, then the set, never the number.
 
 ### Card facts
-Detail screen: a strip of pocket photo thumbnails, the player as a large title (title size, weight 500) with the Tag badge beside it, a muted label-size subtitle "year set · #number", then `dl.facts`, a plain list with 1px pocket-edge dividers (no box): muted label-size label at the left, body-size value right-aligned, 12px row padding, rows only for what the card has. Last edited is a muted line below, Edit is the full-width primary button, Delete sits apart below a divider in the danger zone.
+Detail screen, top to bottom: the player as a large title (title size, weight 500) with the Tag badge beside it, a muted label-size subtitle "year set · #number", `dl.facts`, a plain list with 1px pocket-edge dividers (no box): muted label-size label at the left, body-size value right-aligned, 12px row padding, rows only for what the card has; then a strip of pocket photo thumbnails. Last edited is a muted line below that, Edit is the full-width primary button, Delete sits apart below a divider in the danger zone.
 
 ### Banner and status
 Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text: Ok when idle, Danger on error/paused/needs-decision. Empty state is a dashed pocket-edge box with muted text.
+
+### Navigation
+The detail and settings screens have no on-screen Back button: Android's back button and gesture return to the list. Forms keep Cancel and sheets keep Close.
 
 ### Photos
 Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.

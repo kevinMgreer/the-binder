@@ -9,7 +9,6 @@ interface Props {
   card: Card;
   onEdit: () => void;
   onDelete: () => Promise<void>;
-  onBack: () => void;
 }
 
 const SIDES: CardSide[] = ["front", "back"];
@@ -23,7 +22,7 @@ function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen
   );
 }
 
-export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
+export function CardDetail({ card, onEdit, onDelete }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [viewing, setViewing] = useState<CardSide | null>(null);
   const serial = serialLabel(card.parallel);
@@ -39,15 +38,6 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
 
   return (
     <section>
-      <button onClick={onBack}>Back</button>
-      <div className="photo-row">
-        {SIDES.map((side) => card.photos[side] && <PhotoThumb key={side} card={card} side={side} onOpen={() => setViewing(side)} />)}
-      </div>
-      {viewing && (
-        <Sheet label={`${viewing === "front" ? "Front" : "Back"} photo view`} full onClose={() => setViewing(null)}>
-          <PhotoView card={card} side={viewing} />
-        </Sheet>
-      )}
       <div className="title-row">
         <h2>{card.player}</h2>
         {serial && <span className="tag">{serial}</span>}
@@ -64,6 +54,14 @@ export function CardDetail({ card, onEdit, onDelete, onBack }: Props) {
         ))}
       </dl>
       {card.notes && <p>{card.notes}</p>}
+      <div className="photo-row">
+        {SIDES.map((side) => card.photos[side] && <PhotoThumb key={side} card={card} side={side} onOpen={() => setViewing(side)} />)}
+      </div>
+      {viewing && (
+        <Sheet label={`${viewing === "front" ? "Front" : "Back"} photo view`} full onClose={() => setViewing(null)}>
+          <PhotoView card={card} side={viewing} />
+        </Sheet>
+      )}
       <p>
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>
       </p>

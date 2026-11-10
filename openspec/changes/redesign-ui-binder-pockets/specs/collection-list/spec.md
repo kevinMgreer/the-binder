@@ -79,8 +79,8 @@ The system SHALL keep every sheet and its pinned buttons above the system naviga
 - **THEN** the sheet's last button ends at least 64 dp above the bottom edge of the screen
 
 ### Requirement: The card detail screen is a tidy fact sheet
-The system SHALL lay the card detail screen out as: a strip of pocket photo thumbnails, the player as a large title with the serial tag as a badge beside it in the accent text colour, a quiet subtitle "year set · #number", a plain list of facts separated by hairline dividers with the label muted at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a muted last-edited line, Edit as a full-width primary button, and Delete set apart below a divider. The list SHALL NOT sit in a box.
+The system SHALL lay the card detail screen out, top to bottom, as: the player as a large title with the serial tag as a badge beside it in the accent text colour, a quiet subtitle "year set · #number", a plain list of facts separated by hairline dividers with the label muted at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a strip of pocket photo thumbnails, a muted last-edited line, Edit as a full-width primary button, and Delete set apart below a divider. The list SHALL NOT sit in a box.
 
 #### Scenario: Fact list
 - **WHEN** a card with a team, a serial-numbered parallel, a grade and quantity 3 is opened
-- **THEN** the title has the tag beside it, the subtitle follows, then the ruled facts, then the last-edited line, and Edit is below that at the full width
+- **THEN** the title has the tag beside it, the subtitle follows, then the ruled facts, then the photo strip, then the last-edited line, and Edit is below that at the full width, with Edit and Delete still visible at 360 by 800 on a card with two photos

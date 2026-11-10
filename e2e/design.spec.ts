@@ -268,6 +268,10 @@ test.describe("destructive actions stay apart", () => {
     expect(box.height).toBeGreaterThanOrEqual(90);
     expect(box.height).toBeLessThanOrEqual(104);
     await expect(page.getByRole("button", { name: "View back photo" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
+    const y = async (l: Locator) => (await l.boundingBox())!.y;
+    expect(await y(page.getByTestId("facts"))).toBeLessThan(await y(thumb));
+    expect(await y(thumb)).toBeLessThan(await y(page.getByTestId("updated")));
     await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeInViewport();
     await expect(page.getByRole("button", { name: "Delete", exact: true })).toBeInViewport();
     await thumb.click();
@@ -279,6 +283,7 @@ test.describe("destructive actions stay apart", () => {
   test("Sign out is apart in settings", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Settings" }).click();
+    await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
     const out = page.getByRole("button", { name: "Sign out", exact: true });
     const others = [page.getByRole("button", { name: "Check for updates" }), page.getByTestId("version")];
     for (const other of others) expect(await gap(other, out)).toBeGreaterThanOrEqual(24);
@@ -436,7 +441,7 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await expectTouchable(page, "form");
     await page.getByRole("button", { name: "Cancel" }).click();
-    await page.getByRole("button", { name: "Back" }).click();
+    await page.reload();
     await page.getByRole("button", { name: "Settings" }).click();
     await expectTouchable(page, "settings");
     await page.goto("/?auth=signed-out");
@@ -463,6 +468,13 @@ test.describe("States at phone size", () => {
       return (hi + 0.05) / (lo + 0.05);
     });
 
+  // The app's own sync can overwrite a status set right after load, so set it again until it shows.
+  const forceStatus = (page: Page, status: object, shown: Locator) =>
+    expect(async () => {
+      await setStatus(page, status);
+      await expect(shown).toBeVisible({ timeout: 500 });
+    }).toPass();
+
   const states: [string, (page: Page) => Promise<Locator>][] = [
     ["empty collection", async (page) => page.getByTestId("empty-state")],
     [
@@ -476,15 +488,17 @@ test.describe("States at phone size", () => {
     [
       "sync error",
       async (page) => {
-        await setStatus(page, { state: "error", pending: 2 });
-        return page.getByTestId("sync-status");
+        const target = page.getByTestId("sync-status");
+        await forceStatus(page, { state: "error", pending: 2 }, target.filter({ hasText: "Sync problem" }));
+        return target;
       },
     ],
     [
       "needs-decision dialog",
       async (page) => {
-        await setStatus(page, { state: "needs-decision", pending: 0 });
-        return page.getByRole("dialog", { name: "Data file missing" });
+        const target = page.getByRole("dialog", { name: "Data file missing" });
+        await forceStatus(page, { state: "needs-decision", pending: 0 }, target);
+        return target;
       },
     ],
     [
@@ -541,6 +555,7 @@ test.describe("States at phone size", () => {
           document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
           document.documentElement.style.setProperty("--safe-area-inset-bottom", "24px");
         });
+        await expect(page.getByTestId("summary")).toBeVisible();
         const target = await show(page);
         await expect(target).toBeVisible();
         expect(await legible(target)).toBeGreaterThanOrEqual(4.5);
