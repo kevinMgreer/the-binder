@@ -14,11 +14,10 @@ interface Props {
   onAdd: () => void;
   onNavigate: (to: Destination) => void;
   onSettings: () => void;
-  onBrowse: () => void;
   onTile: (tile: Tile) => void;
 }
 
-export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onBrowse, onTile }: Props) {
+export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile }: Props) {
   const stats = useMemo(() => collectionStats(cards), [cards]);
   return (
     <section className="dashboard">
@@ -43,7 +42,6 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onBrow
           );
         })}
       </div>
-      <button onClick={onBrowse}>Browse collection</button>
       <AddCard onAdd={onAdd} />
       <BottomNav active="dashboard" onNavigate={onNavigate} />
     </section>
