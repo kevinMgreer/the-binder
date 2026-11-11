@@ -140,7 +140,12 @@ for (const size of PHONES) {
       const search = page.getByLabel("Search", { exact: true });
       const filter = page.getByRole("button", { name: /^Filter/ });
       const add = page.getByRole("button", { name: "Add card", exact: true });
-      for (const el of [status, gear, search, filter, shown, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      const sort = page.getByRole("button", { name: /^Sort: / });
+      for (const el of [status, gear, search, filter, shown, sort, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      const rowBox = (await page.locator(".shown-row").boundingBox())!;
+      const sortBox = (await sort.boundingBox())!;
+      expect(sortBox.y).toBeGreaterThanOrEqual(rowBox.y - 0.5);
+      expect(sortBox.y + sortBox.height).toBeLessThanOrEqual(rowBox.y + rowBox.height + 0.5);
       expect((await status.boundingBox())!.y).toBeLessThan((await search.boundingBox())!.y);
       expect(Math.abs((await search.boundingBox())!.y - (await filter.boundingBox())!.y)).toBeLessThan(24);
       const scrollerBottom = await bottom(scroller);

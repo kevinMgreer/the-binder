@@ -145,6 +145,7 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .photo-row { display: flex; gap: var(--space-3); margin-bottom: var(--space-4); }
 .photo-thumb { height: 140px; min-width: 0; max-width: calc(50% - var(--space-3) / 2); padding: 0; border: 0; border-radius: 0; background: none; }
 .shown { margin: 0; color: var(--color-ink-muted); }
+.shown-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .empty { color: var(--color-ink-muted); padding: var(--space-5) var(--space-3); background: var(--color-panel); border: var(--rule) solid var(--color-rule); border-radius: var(--radius-frame); }
 
 .list-scroller { flex: 1; overflow: auto; margin-bottom: calc(var(--nav-height) + var(--space-2)); }

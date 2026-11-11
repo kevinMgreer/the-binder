@@ -11,6 +11,7 @@ import { flaggedKeys, suggestionPatch, type DraftKey } from "./suggestions";
 
 interface Draft {
   player: string;
+  sortName: string;
   team: string;
   year: string;
   manufacturer: string;
@@ -41,6 +42,7 @@ const listedCondition = (stored: string) =>
 function toDraft(c?: Card): Draft {
   return {
     player: c?.player ?? "",
+    sortName: c?.sortName ?? "",
     team: c?.team ?? "",
     year: c ? String(c.year) : "",
     manufacturer: c?.manufacturer ?? "",
@@ -77,6 +79,7 @@ function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): C
     ...existing,
     id: existing?.id ?? crypto.randomUUID(),
     player: d.player.trim(),
+    sortName: d.sortName.trim(),
     team: d.team.trim(),
     year: d.year.trim() === "" ? Number.NaN : Number(d.year),
     manufacturer: d.manufacturer.trim(),
@@ -213,11 +216,11 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const hintFor = (key: string) =>
     suggested[key as DraftKey] ? (flagged.has(key as DraftKey) ? "Suggested · Check this" : "Suggested") : undefined;
 
-  const text = (key: keyof Draft & string, label: string, error?: FieldKey, type = "text") => {
+  const text = (key: keyof Draft & string, label: string, error?: FieldKey, type = "text", fixedHint?: string) => {
     const message = error && errors[error];
     const required = (REQUIRED_FIELDS as readonly string[]).includes(key);
     return (
-      <Field label={label} error={message} hint={hintFor(key)} required={required}>
+      <Field label={label} error={message} hint={hintFor(key) ?? fixedHint} required={required}>
         <input
           id={fieldId(label)}
           type={type}
@@ -276,6 +279,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       )}
       {note && <p role="status">{note}</p>}
       {text("player", "Player", "player")}
+      {text("sortName", "Sort name", undefined, "text", "Optional: how this card sorts, e.g. Acuña")}
       {text("team", "Team")}
       {text("year", "Year", "year", "number")}
       {text("manufacturer", "Manufacturer")}
