@@ -51,11 +51,11 @@ The system SHALL NOT show an on-screen Back button on the card detail and settin
 - **THEN** no button named Back is shown, and pressing the Android back button shows the screen it was opened from and keeps the app open
 
 ### Requirement: Bottom navigation between Dashboard and Cards
-The system SHALL show a bottom navigation bar with two destinations, Dashboard and Cards in that order, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Each destination SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The active destination SHALL be marked by an indicator shape behind its icon, the accent colour and `aria-current="page"`, so it does not rely on colour alone. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
+The system SHALL show a bottom navigation bar with three items in this order, Dashboard, Add and Cards, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Dashboard and Cards are destinations; Add is an action (a plus icon in a 40 by 24 dp ink-filled frame with a 6 px radius, plain ground-coloured plus, label "Add", accessible name "Add card") that is never marked current and opens the add card form exactly as the former Add card button did, returning to the screen it was opened from on back, save or cancel. Each item SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The bar SHALL sit on the ground colour in the light theme and the panel colour in the dark theme, with a 1 px rule along its top. The active destination SHALL be marked by the ink colour, label weight 600, a solid icon and `aria-current="page"`, with no underline, pill or line under the tabs; inactive destinations SHALL use the muted ink colour, label weight 400 and an outline version of the same icon, and stay readable with the contrast the theme requires. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
 
 #### Scenario: Shown on the top-level screens
 - **WHEN** the dashboard or the collection list is showing
-- **THEN** a navigation landmark holds exactly two items labelled Dashboard and Cards, and the item for the showing screen has `aria-current="page"`
+- **THEN** a navigation landmark holds exactly three items labelled Dashboard, Add and Cards in that order, the item for the showing screen has `aria-current="page"`, and Add never does
 
 #### Scenario: Hidden elsewhere
 - **WHEN** the card detail, add form, edit form or Settings screen is showing
@@ -68,11 +68,15 @@ The system SHALL show a bottom navigation bar with two destinations, Dashboard a
 
 #### Scenario: Active destination is not colour alone
 - **WHEN** the dashboard is showing, in the light and in the dark theme
-- **THEN** the Dashboard item has an indicator shape behind its icon that the Cards item does not have, its label is readable text, and no colour literal is used outside the tokens file
+- **THEN** the Dashboard item is in the ink colour with no pseudo-element underline while the Cards item is in the muted ink colour, its label weight is 600 against the Cards label's 400, its icon is solid while the Cards icon is an outline (and they swap when Cards is the screen), the Add label stays at weight 500, its label is readable text, and no colour literal is used outside the tokens file
+
+#### Scenario: Inactive label is readable
+- **WHEN** the dashboard is showing, in the light and in the dark theme
+- **THEN** the Cards label's effective colour against the bar is at least 4.5 to 1
 
 #### Scenario: Above the gesture bar
 - **WHEN** the bottom inset is 48 dp and the dashboard is showing on a 360 by 800 phone
-- **THEN** both items are at least 48 by 48 dp, at least 8 dp apart, and end at least 48 dp above the bottom edge of the screen
+- **THEN** all three items are at least 48 by 48 dp, at least 8 dp apart, and end at least 48 dp above the bottom edge of the screen
 
 ### Requirement: Back moves between the two destinations like tabs
 The system SHALL treat Dashboard as the start destination: pressing the Android back button on the collection list SHALL show the dashboard, and on the dashboard SHALL close the app, however the user reached that screen. Back from a screen opened from a destination SHALL return to that destination, and back SHALL close an open sheet first.
@@ -128,7 +132,7 @@ The system SHALL offer Settings on the dashboard and the collection list as an i
 - **THEN** Settings is shown, and back returns to the list
 
 ### Requirement: Add card opens the card form above the bottom navigation
-The system SHALL show exactly one Add card button on the dashboard and on the collection list, as the full-width primary button fixed just above the bottom navigation bar with at least 8 dp between them, and tapping it SHALL open the add card form directly, with no sheet in between.
+The system SHALL offer exactly one Add card control on the dashboard and on the collection list, the Add item of the bottom navigation (named "Add card"), and SHALL NOT draw a separate Add card button or a band behind one; tapping it SHALL open the add card form directly, with no sheet in between. Scrolling content SHALL end above the bar so the last item is fully reachable.
 
 #### Scenario: One tap to the form
 - **WHEN** the user taps Add card on the dashboard or the list
@@ -136,4 +140,4 @@ The system SHALL show exactly one Add card button on the dashboard and on the co
 
 #### Scenario: One add button per screen
 - **WHEN** the dashboard or the list is showing
-- **THEN** exactly one button named "Add card" is visible, its bottom edge is at least 8 dp above the top of the bottom navigation bar, and it does not cover the dashboard's last item (the last entry of the last group shown) once scrolled to the end
+- **THEN** exactly one button named "Add card" exists and it is inside the bottom navigation, and no standalone Add card button or band exists; the dashboard's last item, scrolled to the end, ends above the bar

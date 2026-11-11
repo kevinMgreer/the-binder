@@ -10,7 +10,7 @@
 
 - [x] 2.1 Rewrite `src/app/tokens.css` to design D3: both palettes from the app-theme table (light in `:root`, every colour role overridden in the dark block), font, type, shape, stitch, frame and gutter tokens; keep the spacing scale, `--target-min`, `--nav-height` and `color-scheme: light dark`; verify 1.1 passes
 - [x] 2.2 Add `@fontsource/roboto-slab` and `@fontsource/inter` to `package.json`, import only slab 600/700 and sans 400/500/600 in `src/main.tsx` before `tokens.css`; read each package's LICENSE and copy both licence texts to `public/licenses/` (record Roboto Slab's licence, OFL 1.1 or Apache 2.0, in design D4); verify `npm run build` emits the woff2 files into `dist`, `dist/licenses/` holds both texts, and 1.2 passes
-- [ ] 2.3 Check the launch in dark for a cream or white flash (design D1): if `android/app/src/main/res/values/styles.xml` or the splash shows light in dark, add a `values-night` window background of `#101a30`; verify the "Dark system setting" e2e passes and note the phone check in 5.1
+- [x] 2.3 Check the launch in dark for a cream or white flash (design D1): if `android/app/src/main/res/values/styles.xml` or the splash shows light in dark, add a `values-night` window background of `#101a30`; verify the "Dark system setting" e2e passes and note the phone check in 5.1
 
 ## 3. Components and screens (app.css plus the named components)
 
@@ -51,4 +51,4 @@
 
 ## 6. Archive
 
-- [ ] 6.1 Archive with `/opsx:archive` once groups 1 to 4 are merged (group 5 lives in `docs/device-checklist.md` and does not block); verify `openspec validate --specs --strict` passes and `app-theme`, `dashboard`, `collection-list` and `app-shell` main specs no longer contain "pocket", "see-through" or "accent colour"
+- [x] 6.1 Archive with `/opsx:archive` once groups 1 to 4 are merged (group 5 lives in `docs/device-checklist.md` and does not block); verify `openspec validate --specs --strict` passes and `app-theme`, `dashboard`, `collection-list` and `app-shell` main specs no longer contain "pocket", "see-through" or "accent colour"
