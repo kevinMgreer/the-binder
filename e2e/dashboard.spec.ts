@@ -34,6 +34,7 @@ test("Launch: dashboard with the sync state and six tiles in order", async ({ pa
   await expect(page.getByTestId("card-row")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Recently added" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Top teams" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Top players" })).toHaveCount(0);
 });
 
 test("Tap Rookies: list with a Rookie chip and a count equal to the tile", async ({ page }) => {
@@ -89,6 +90,33 @@ test("Top teams: tap an entry opens the list filtered to it, earlier Autograph c
   await expect(chips(page)).toHaveCount(1);
   await expect(page.getByRole("button", { name: /^Remove Team filter/ })).toBeVisible();
   await expect(page.getByTestId("shown")).toHaveText("Showing 3");
+});
+
+test("Top players: order, distinct count, tap opens the list with a Player chip; Recently added is last", async ({ page }) => {
+  await seed(page, [
+    { cardNumber: "1", player: "Aaron Judge", flags: AUTO },
+    { cardNumber: "2", player: "Aaron Judge", quantity: 3 },
+    { cardNumber: "3", player: "Mookie Betts" },
+    { cardNumber: "4", player: "Shohei Ohtani", team: "Los Angeles Angels" },
+  ]);
+  const rows = page.getByTestId("player");
+  await expect(rows).toHaveCount(3);
+  expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")))).toEqual(["Aaron Judge, 2", "Mookie Betts, 1", "Shohei Ohtani, 1"]);
+  const tops = await page.locator("h2").allTextContents();
+  expect(tops).toEqual(["Top teams", "Top players", "Recently added"]);
+  for (const box of await rows.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height))) expect(box).toBeGreaterThanOrEqual(48);
+  await tile(page, "Autos").click();
+  await back(page);
+  await rows.first().click();
+  await expect(chips(page)).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toBeVisible();
+  await expect(page.getByTestId("shown")).toHaveText("Showing 2");
+});
+
+test("Top players: six tiles stay visible at phone size", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await seed(page, [{ cardNumber: "1", player: "Aaron Judge" }]);
+  for (const t of await page.getByTestId("tile").all()) await expect(t).toBeInViewport();
 });
 
 test("Recently added: newest four first, editing does not reorder, open and back", async ({ page }) => {

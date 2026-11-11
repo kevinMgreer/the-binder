@@ -27,7 +27,7 @@ export interface TeamStat {
 }
 
 const RECENT = 4;
-const TOP_TEAMS = 5;
+const TOP = 5;
 const collator = new Intl.Collator();
 
 export interface CollectionStats {
@@ -35,7 +35,22 @@ export interface CollectionStats {
   /** The newest cards by creation time, newest first. */
   recent: Card[];
   teams: TeamStat[];
+  /** Same shape and rules as teams, keyed by the card's whole player string. */
+  players: TeamStat[];
 }
+
+/** One distinct card per call; spellings that differ in case, accents or edge spaces are one entry, labelled by the first seen. */
+function tally(map: Map<string, TeamStat>, raw: string) {
+  const name = raw.trim();
+  if (!name) return;
+  const key = normalize(name);
+  const entry = map.get(key);
+  if (entry) entry.count += 1;
+  else map.set(key, { name, count: 1 });
+}
+
+const top = (map: Map<string, TeamStat>) =>
+  [...map.values()].sort((a, b) => b.count - a.count || collator.compare(a.name, b.name)).slice(0, TOP);
 
 /** One pass over the cards; the match tiles and team counts use the same predicate and key as the list they open. */
 export function collectionStats(cards: Card[]): CollectionStats {
@@ -43,6 +58,7 @@ export function collectionStats(cards: Card[]): CollectionStats {
   const values = TILES.map(() => 0);
   const recent: Card[] = [];
   const teams = new Map<string, TeamStat>();
+  const players = new Map<string, TeamStat>();
   for (const card of cards) {
     TILES.forEach((tile, i) => {
       if (tile.count === "total") values[i] += card.quantity;
@@ -50,13 +66,8 @@ export function collectionStats(cards: Card[]): CollectionStats {
       else if (tests[i]!(card)) values[i] += 1;
     });
 
-    const name = card.team.trim();
-    if (name) {
-      const key = normalize(name);
-      const entry = teams.get(key);
-      if (entry) entry.count += 1;
-      else teams.set(key, { name, count: 1 });
-    }
+    tally(teams, card.team);
+    tally(players, card.player);
 
     if (recent.length < RECENT || card.createdAt > recent[RECENT - 1].createdAt) {
       recent.push(card);
@@ -67,6 +78,7 @@ export function collectionStats(cards: Card[]): CollectionStats {
   return {
     tiles: TILES.map((tile, i) => ({ ...tile, value: values[i] })),
     recent,
-    teams: [...teams.values()].sort((a, b) => b.count - a.count || collator.compare(a.name, b.name)).slice(0, TOP_TEAMS),
+    teams: top(teams),
+    players: top(players),
   };
 }

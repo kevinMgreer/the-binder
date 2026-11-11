@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { Card } from "../domain/card";
-import { collectionStats, type Tile } from "../domain/dashboard";
+import { collectionStats, type TeamStat, type Tile } from "../domain/dashboard";
+import type { Filters } from "../domain/query";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
 import { SyncActions, SyncIndicator } from "./SyncIndicator";
@@ -19,7 +20,28 @@ interface Props {
 }
 
 export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile, onOpenCard }: Props) {
-  const { tiles, recent, teams } = useMemo(() => collectionStats(cards), [cards]);
+  const { tiles, recent, teams, players } = useMemo(() => collectionStats(cards), [cards]);
+  /** Top teams and Top players: one ruled table, a row opens the list filtered to that name. */
+  const ruled = (heading: string, testId: string, rows: TeamStat[], filters: (name: string) => Partial<Filters>) =>
+    rows.length > 0 && (
+      <div className="group">
+        <h2>{heading}</h2>
+        <div className="teams">
+          {rows.map((row) => (
+            <button
+              key={row.name}
+              className="team"
+              data-testid={testId}
+              aria-label={`${row.name}, ${row.count}`}
+              onClick={() => onTile({ label: row.name, filters: filters(row.name), count: "match" })}
+            >
+              <span className="team-name">{row.name}</span>
+              <span className="team-count">{row.count.toLocaleString()}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
   return (
     <section className="dashboard">
       <header>
@@ -43,6 +65,8 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
           );
         })}
       </div>
+      {ruled("Top teams", "team", teams, (name) => ({ team: name }))}
+      {ruled("Top players", "player", players, (name) => ({ player: name }))}
       {recent.length > 0 && (
         <div className="group">
           <h2>Recently added</h2>
@@ -57,25 +81,6 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
               >
                 <Thumb card={card} />
                 <span className="recent-name">{card.player}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      {teams.length > 0 && (
-        <div className="group">
-          <h2>Top teams</h2>
-          <div className="teams">
-            {teams.map((team) => (
-              <button
-                key={team.name}
-                className="team"
-                data-testid="team"
-                aria-label={`${team.name}, ${team.count}`}
-                onClick={() => onTile({ label: team.name, filters: { team: team.name }, count: "match" })}
-              >
-                <span className="team-name">{team.name}</span>
-                <span className="team-count">{team.count.toLocaleString()}</span>
               </button>
             ))}
           </div>

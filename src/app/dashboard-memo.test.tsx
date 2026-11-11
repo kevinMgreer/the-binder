@@ -8,7 +8,7 @@ vi.mock("./SyncIndicator", () => ({ SyncIndicator: () => null, SyncActions: () =
 vi.mock("./Thumb", () => ({ Thumb: () => null }));
 afterEach(cleanup);
 
-test("No recount without a change: a re-render with the same cards does not recompute tiles, recent or teams", () => {
+test("No recount without a change: a re-render with the same cards does not recompute tiles, recent, teams or players", () => {
   const spy = vi.spyOn(stats, "collectionStats");
   const cards = [makeCard()];
   const props = { onAdd() {}, onNavigate() {}, onSettings() {}, onTile() {}, onOpenCard() {} };

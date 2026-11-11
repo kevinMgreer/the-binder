@@ -169,7 +169,7 @@ test("Back from card detail shows the list with Cards active", async () => {
 
 test("back from a card opened on the dashboard shows the dashboard", async () => {
   await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
-  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, / }));
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, \d{4} / }));
   expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
   await pressBack();
   await onDashboard();
@@ -190,7 +190,7 @@ test("a card opened on the dashboard and removed by a sync shows the dashboard, 
       </SyncProvider>
     </PortsProvider>,
   );
-  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, / }));
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, \d{4} / }));
   expect(await screen.findByRole("button", { name: "Edit" })).toBeTruthy();
   await ports.collection.putMany([{ ...card, deletedAt: new Date().toISOString() }]);
   await act(async () => {
@@ -202,7 +202,7 @@ test("a card opened on the dashboard and removed by a sync shows the dashboard, 
 
 test("delete from a card opened on the dashboard shows the dashboard", async () => {
   await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
-  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, / }));
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, \d{4} / }));
   fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
   fireEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
   await onDashboard();
