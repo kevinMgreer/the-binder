@@ -123,7 +123,7 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); flex: none; }
 .chip { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); border-radius: var(--radius-pill); }
 .chip::after { content: "\00d7"; margin-left: var(--space-2); font-size: var(--type-table); line-height: 1; }
-/* Add is an action, not a destination: the plus sits in an ink-filled frame like a primary button. */
+/* Add is an action, not a destination: the plus sits in an outlined frame (1px ink border, panel background, ink plus). */
 .nav-add { display: inline-flex; align-items: center; justify-content: center; width: var(--size-nav-add-w); height: var(--size-nav-add-h); box-sizing: border-box; background: var(--color-panel); color: var(--color-ink); border: var(--rule) solid var(--color-ink); border-radius: var(--radius-frame); }
 .nav-add svg { width: var(--size-nav-icon); height: var(--size-nav-icon); }
 .bottom-nav .nav-action { color: var(--color-ink); font-weight: 500; }

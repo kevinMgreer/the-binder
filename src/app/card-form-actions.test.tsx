@@ -1,10 +1,11 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
 import type { CapturedPhoto } from "../ports";
 import { CardForm } from "./CardForm";
 import { PortsProvider } from "./ports-context";
+import { openSheets } from "./Sheet";
 
 const acquire = vi.hoisted(() => vi.fn());
 vi.mock("../photos/acquire", () => ({ acquirePhoto: acquire }));
@@ -14,11 +15,11 @@ afterEach(() => {
   acquire.mockReset();
 });
 
-function renderForm(card?: ReturnType<typeof makeCard>) {
+function renderForm(card?: ReturnType<typeof makeCard>, cards: ReturnType<typeof makeCard>[] = []) {
   const onCancel = vi.fn();
   render(
     <PortsProvider ports={createFakePorts()}>
-      <CardForm card={card} cards={[]} onSave={async () => {}} onCancel={onCancel} />
+      <CardForm card={card} cards={cards} onSave={async () => {}} onCancel={onCancel} />
     </PortsProvider>,
   );
   return onCancel;
@@ -95,4 +96,49 @@ test("a captured photo alone makes Cancel ask", async () => {
   cancel();
   expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
   expect(onCancel).not.toHaveBeenCalled();
+});
+
+test("Keep editing returns focus to Cancel, by tap and by back", () => {
+  renderForm();
+  type("Player", "Hank Aaron");
+  cancel();
+  fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+  expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
+  cancel();
+  act(() => openSheets.at(-1)?.());
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
+});
+
+test("Discard on the edit form leaves the stored card unchanged", () => {
+  const stored = makeCard();
+  const before = structuredClone(stored);
+  const onCancel = renderForm(stored);
+  type("Quantity", "5");
+  cancel();
+  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  expect(onCancel).toHaveBeenCalledTimes(1);
+  expect(stored).toEqual(before);
+});
+
+test("the photo stays attached after Keep editing", async () => {
+  acquire.mockResolvedValue({ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto);
+  renderForm();
+  fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
+  await screen.findByRole("button", { name: "Retake front" });
+  cancel();
+  fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+  expect(screen.getByRole("button", { name: "Retake front" })).toBeTruthy();
+});
+
+test("back with the duplicate prompt open shows no discard dialog", async () => {
+  renderForm(undefined, [makeCard()]);
+  type("Player", "Ronald Acuña Jr.");
+  type("Year", "2024");
+  type("Set", "Series 1");
+  type("Card number", "27");
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await screen.findByRole("dialog", { name: "Duplicate card" });
+  act(() => openSheets.at(-1)?.());
+  expect(screen.queryByRole("alertdialog")).toBeNull();
 });

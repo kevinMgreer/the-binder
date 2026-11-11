@@ -154,13 +154,19 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
     (Object.keys(initial) as (keyof Draft)[]).some((k) => draft[k] !== initial[k]);
   const question = card ? "Discard changes?" : "Discard this card?";
 
+  const cancelButton = useRef<HTMLButtonElement>(null);
+  const keepEditing = () => {
+    setConfirming(false);
+    cancelButton.current?.focus();
+  };
+
   // Android back asks first, like Cancel; back again while asking means Keep editing.
   useEffect(() => {
-    if (!dirty && !confirming) return;
-    const back = () => setConfirming(!confirming);
+    if ((!dirty && !confirming) || duplicate) return;
+    const back = () => (confirming ? keepEditing() : setConfirming(true));
     openSheets.push(back);
     return () => void openSheets.splice(openSheets.lastIndexOf(back), 1);
-  }, [dirty, confirming]);
+  }, [dirty, confirming, duplicate]);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
@@ -345,7 +351,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
         </p>
       )}
       <div className="actions">
-        <button type="button" onClick={() => (dirty ? setConfirming(true) : onCancel())}>
+        <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>
           Cancel
         </button>
         <button type="submit" className="primary" disabled={preparing.front || preparing.back}>
@@ -355,7 +361,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       {confirming && (
         <div role="alertdialog" aria-label={question}>
           <p>{question}</p>
-          <button type="button" autoFocus onClick={() => setConfirming(false)}>
+          <button type="button" autoFocus onClick={keepEditing}>
             Keep editing
           </button>
           <button type="button" className="danger" onClick={onCancel}>
