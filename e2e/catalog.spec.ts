@@ -220,6 +220,16 @@ test("Filter by player", async ({ page }) => {
   await expect(rows(page)).toHaveCount(1);
   await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
   await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Filter, 1 applied", exact: true })).toBeVisible();
+});
+
+test("A player filter of only spaces shows no chip and no badge", async ({ page }) => {
+  await addCard(page, base);
+  await openFilters(page);
+  await page.getByLabel("Player", { exact: true }).fill("   ");
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Filter", exact: true })).toBeVisible();
 });
 
 test("Clear all clears the player filter and keeps search", async ({ page }) => {

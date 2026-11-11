@@ -1,6 +1,6 @@
-﻿## 1. Filter
+## 1. Filter
 
-- [x] 1.1 Write the test in `src/domain/query.test.ts`: "acuna" matches "Ronald AcuÃ±a Jr." but not a card whose team or notes contain "acuna"; empty or all-space text matches all. Verify it fails
+- [x] 1.1 Write the test in `src/domain/query.test.ts`: "acuna" matches "Ronald Acuña Jr." but not a card whose team or notes contain "acuna"; empty or all-space text matches all. Verify it fails
 - [x] 1.2 Add `player: string` to `Filters` and `emptyFilters`, and match it against `c.player` in `matcher` with `key()`, in `src/domain/query.ts`. Verify the 1.1 test passes
 
 ## 2. Sheet
