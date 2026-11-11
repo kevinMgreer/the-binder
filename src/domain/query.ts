@@ -86,7 +86,7 @@ export function lastNameKey(c: Card): string {
   if (sortName) return sortName;
   const player = c.player.trim();
   const team = normalize(c.team.trim());
-  // shortcut: the team is matched between spaces/edges, so punctuation next to it ("LA's") defeats the match.
+  // shortcut: the team is matched between spaces/edges, so punctuation next to it ("LA's") defeats the match, match on word boundaries if possessive team names show up in real data.
   if (team && ` ${normalize(player)} `.includes(` ${team} `)) return player;
   let name = player.split(/\s*[/&]\s*|\s+and\s+/i)[0];
   const suffix = /[\s,]+(?:jr|sr|ii|iii|iv)\.?$/i;

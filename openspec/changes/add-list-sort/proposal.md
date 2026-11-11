@@ -7,7 +7,7 @@ The Cards list is always sorted by year, then set, then card number, so finding 
 - The Cards list gets a "Sort" button on the "Showing N" line that opens a sheet: sort by Last name (default), Year, Team or Set, ascending or descending. The button names the current order, for example "Sort: Last name ↑".
 - The chosen sort lives in app memory like the filters: it survives opening a card and coming back, and resets to Last name ascending on a fresh launch. It is not saved.
 - The default list order changes from year/set/number to player last name, with year, set and card number breaking ties. No stored data changes.
-- A card gets an optional "Sort name" field in the card form, under Player, with the hint "Optional: how this card sorts, e.g. Acuña". When it is blank the last name is derived from Player when the list is sorted: suffixes (Jr., Sr., II, III, IV) are dropped and the last word is used; a multi-player card ("A / B", "A & B", "A and B") uses the first player's last name; a team card (Player contains the card's Team) sorts by the whole Player text.
+- A card gets an optional "Sort name" field in the card form, under Player, with the hint "Optional: how this card sorts, e.g. Acuña". When it is blank the last name is derived from Player when the list is sorted: suffixes (Jr., Sr., II, III, IV) are dropped and the last word is used; a multi-player card ("A / B", "A & B", "A and B") uses the first player's last name; a team card (Player contains the card's Team as a whole word) sorts by the whole Player text.
 - No data migration and no `schemaVersion` bump: the field is optional and read with a fallback.
 
 ## Capabilities
