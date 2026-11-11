@@ -15,6 +15,7 @@ export const cardSchema = z
     manufacturer: z.string(),
     set: required,
     subset: z.string().optional(),
+    sortName: z.string().optional(),
     insert: z.string().optional(),
     cardNumber: z.string(),
     parallel: z
