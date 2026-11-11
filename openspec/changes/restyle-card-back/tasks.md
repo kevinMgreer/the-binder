@@ -38,7 +38,7 @@
 - [ ] 5.2 Screenshot dashboard, list, detail, form, Settings and the filter sheet in both themes: verify the spacing feels open, the fonts are Roboto Slab and Inter in airplane mode, 12 px labels read at arm's length, the frames show real photos whole, and the bar sits above the gesture bar
 - [ ] 5.3 Owner review on the phone of the whole look, including the open questions in design.md (ink-filled primary action, Night Game without Oswald, nav icons kept); verify the owner accepts or lists changes, applied in one batch
 
-## 7. Owner phone review (applied after the first phone test; supersedes tasks 2 and 3 where they differ)
+## 7. Owner phone review (applied after the first phone test; supersedes groups 1 to 4 where they differ: gold buttons, the stitch, 8 dp frame gaps and the one-line caption in tasks 1.3-1.5, 3.1, 3.2, 3.6-3.8, 3.10 and 4.1 are the first look, not the shipped one)
 
 - [x] 7.1 Spacing tokens (`--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8) in `tokens.css` and used by every screen; verify the "Generous spacing" e2e and the 100 dp rows and 5,000-card perf tests pass
 - [x] 7.2 Remove the stitch (`--color-stitch`, `--stitch-line`, `--stitch-gap`, `.stitch`) everywhere; a 1 px rule under titles only; red is the Rookies flag alone, renamed `--color-flag` (the flag and `--color-flag` were removed again in 7.6); verify "Rule under the title"

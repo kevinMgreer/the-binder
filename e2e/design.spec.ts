@@ -1160,6 +1160,23 @@ test.describe("Card-back look", () => {
     near(await ratioOf(back), 3.5 / 2.5);
   });
 
+  test("Photo strip framed: two landscape photos fit the row without overlap", async ({ page }) => {
+    await page.goto("/");
+    await seedPhotoCards(page);
+    await openCollection(page);
+    await page.getByTestId("card-row").filter({ hasText: "Landscape Lou" }).click();
+    const front = page.getByRole("button", { name: "View front photo" }).locator(".frame");
+    const back = page.getByRole("button", { name: "View back photo" }).locator(".frame");
+    await expect(front).toHaveAttribute("data-orientation", "landscape");
+    await expect(back).toHaveAttribute("data-orientation", "landscape");
+    const f = (await front.boundingBox())!;
+    const b = (await back.boundingBox())!;
+    expect(f.x + f.width).toBeLessThanOrEqual(b.x);
+    expect(b.x + b.width).toBeLessThanOrEqual(360 - 24 + 0.5);
+    near(await ratioOf(front), 3.5 / 2.5);
+    near(await ratioOf(back), 3.5 / 2.5);
+  });
+
   test("Ruled stat table: two columns, three rows, shared 1 px rules, cells at least 56 dp", async ({ page }) => {
     await page.goto("/");
     const tiles = page.getByTestId("tile");
