@@ -43,6 +43,31 @@ test("editing a card keeps a field the form does not know", async () => {
   expect(onSave.mock.calls[0][0]).toMatchObject({ futureField: "keep me", notes: "changed" });
 });
 
+test("Sort name follows Player, is optional and carries its hint", () => {
+  renderForm();
+  const fields = [...document.querySelectorAll("input")].map((i) => i.id);
+  expect(fields.indexOf("f-sort-name")).toBe(fields.indexOf("f-player") + 1);
+  const input = screen.getByLabelText("Sort name");
+  expect(input.getAttribute("aria-required")).toBeNull();
+  expect(screen.getByText("Optional: how this card sorts, e.g. Acuña")).toBeTruthy();
+});
+
+test("saving with a Sort name stores it, trimmed; editing shows it and keeps it", async () => {
+  const onSave = renderForm();
+  fillMinimum();
+  type("Sort name", "  De La Cruz ");
+  save();
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].sortName).toBe("De La Cruz");
+  cleanup();
+  const again = renderForm(makeCard({ sortName: "De La Cruz" }));
+  expect((screen.getByLabelText("Sort name") as HTMLInputElement).value).toBe("De La Cruz");
+  type("Notes", "changed");
+  save();
+  await vi.waitFor(() => expect(again).toHaveBeenCalledTimes(1));
+  expect(again.mock.calls[0][0]).toMatchObject({ sortName: "De La Cruz", notes: "changed" });
+});
+
 test("the condition is a pick list with a Not set choice", () => {
   renderForm();
   const select = screen.getByLabelText("Condition") as HTMLSelectElement;
