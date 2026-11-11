@@ -8,7 +8,7 @@ Two rules on the card form do not match real cards. Not every card prints a numb
 - Add a "Serial-numbered" checkbox to the form. The Serial field and "Serial unreadable" show only when it is checked. Print run is always enterable.
 - The "?/99" style serial label, the Serial-numbered filter and the dashboard Serial-numbered tile follow the checkbox, not the print run. A card with print run 99 and not serial-numbered shows no label, matches the Print run filter, and does not match the Serial-numbered filter.
 - Cards saved before this change keep their meaning: one with a serial number or a print run counts as serial-numbered.
-- Out of scope: changing what Search or the other filters match, scanner or Claude suggestions (they still suggest a number when they find one), a migration of stored cards, a "number unknown" marker.
+- Out of scope: changing what Search or the other filters match, scanner or Claude suggestions beyond ticking Serial-numbered when they suggest a serial, a migration of stored cards, a "number unknown" marker.
 
 ## Capabilities
 
@@ -20,7 +20,8 @@ None.
 
 - `card-catalog`: card number optional; print run independent of serial-numbered; duplicate match and sort with a missing number.
 - `card-form-guidance`: required fields are player, year and set.
-- `collection-list`: row and tag rules for a card without a number and for print run without serial-numbered.
+- `collection-list`: row, detail and tag rules for a card without a number and for print run without serial-numbered.
+- `dashboard`: the Serial-numbered tile counts cards marked serial-numbered.
 
 ## Impact
 

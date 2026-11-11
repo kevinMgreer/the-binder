@@ -9,7 +9,7 @@
 - Enter a print run without marking the card serial-numbered.
 
 **Non-Goals:**
-- No migration, no new filter, no change to Search, no change to suggestions.
+- No migration, no new filter, no change to Search.
 
 ## Decisions
 
@@ -27,6 +27,9 @@
   Alternatives: bump to 3 (rewrite on first sync with no data to convert). $0: none.
 - **Form: a Serial-numbered checkbox before Serial.** Serial and "Serial unreadable" render only when it is checked; Print run always renders. Unchecking keeps the typed serial in the draft but it is dropped on save.
   Alternatives: show Serial whenever a print run is typed (guesses the user's intent, hides the field on first open). $0: none.
+- **A suggested serial ticks Serial-numbered.** A scanner or Claude suggestion with a serial or an unreadable serial sets the box in `suggestions.ts`; otherwise the suggested Serial would sit in a hidden field and be dropped on save. A suggested print run alone does not tick it. Editing an old card saved with only "Serial unreadable" opens with the box ticked, so the mark is not lost.
+  Alternatives: leave suggestions alone (suggested serial silently lost). $0: none.
+- **Print run of a not-serial-numbered card is shown only in the edit form and through the Print run filter.** The tag was its only display; showing it as a detail fact is left to the owner (todo raised).
 - **Dashboard tile and filters need no code change**: both call `isSerialNumbered`. The Print run filter reads `parallel.printRun` and is untouched.
 
 ## Risks / Trade-offs

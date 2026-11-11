@@ -97,6 +97,11 @@ test("editing an old print-run-only card opens with Serial-numbered checked", ()
   expect(screen.getByLabelText("Serial")).toBeTruthy();
 });
 
+test("editing an old card saved with only Serial unreadable opens with Serial-numbered checked", () => {
+  renderForm(makeCard({ parallel: { name: "", serial: null, serialLegible: false, printRun: null } }));
+  expect((screen.getByLabelText("Serial-numbered") as HTMLInputElement).checked).toBe(true);
+});
+
 test("a card without a number saves", async () => {
   const onSave = renderForm();
   fillMinimum();

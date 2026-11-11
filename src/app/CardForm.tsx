@@ -49,7 +49,8 @@ function toDraft(c?: Card): Draft {
     insert: c?.insert ?? "",
     cardNumber: c?.cardNumber ?? "",
     parallel: c?.parallel?.name ?? "",
-    serialNumbered: c ? isSerialNumbered(c) : false,
+    // An old card with only "Serial unreadable" ticked has no serial or print run but was serial-numbered.
+    serialNumbered: c ? isSerialNumbered(c) || c.parallel?.serialLegible === false : false,
     serial: c?.parallel?.serial?.toString() ?? "",
     serialUnreadable: c?.parallel ? !c.parallel.serialLegible : false,
     printRun: c?.parallel?.printRun?.toString() ?? "",
