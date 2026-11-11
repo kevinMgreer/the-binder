@@ -86,7 +86,7 @@ test.describe("theme", () => {
     expect(await pageBackground(page)).toBe(dark);
   });
 
-  test("overriding the accent token restyles button, active chip and serial tag", async ({ page }) => {
+  test("overriding the gold token restyles Add card, Save, Show cards and Edit, and no chip or tag", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
     await seed(page, CARDS);
@@ -94,10 +94,34 @@ test.describe("theme", () => {
     const chip = page.getByRole("button", { name: "Remove Year filter" });
     const add = page.getByRole("button", { name: "Add card", exact: true });
     const tag = page.getByTestId("card-row").filter({ hasText: "Acuña" }).getByText("13/150");
-    await page.evaluate(() => document.documentElement.style.setProperty("--color-accent", "rgb(1, 2, 3)"));
+    const chipBefore = await css(chip, "background-color");
+    const tagBefore = await css(tag, "color");
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-gold", "rgb(1, 2, 3)"));
     expect(await css(add, "background-color")).toBe("rgb(1, 2, 3)");
+    expect(await css(chip, "background-color")).toBe(chipBefore);
+    expect(await css(tag, "color")).toBe(tagBefore);
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    expect(await css(page.getByRole("button", { name: /^Show \d+ cards?$/ }), "background-color")).toBe("rgb(1, 2, 3)");
+    await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+    await page.getByTestId("card-row").first().click();
+    expect(await css(page.getByRole("button", { name: "Edit", exact: true }), "background-color")).toBe("rgb(1, 2, 3)");
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    expect(await css(page.getByRole("button", { name: "Save", exact: true }), "background-color")).toBe("rgb(1, 2, 3)");
+  });
+
+  test("overriding the ink token restyles the title, active chip, serial tag and a stat-table rule", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    await applyYearFrom(page, "2000");
+    const chip = page.getByRole("button", { name: "Remove Year filter" });
+    const title = page.getByRole("heading", { name: "Cards", exact: true });
+    const tag = page.getByTestId("card-row").filter({ hasText: "Acuña" }).getByText("13/150");
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
+    expect(await css(title, "color")).toBe("rgb(1, 2, 3)");
     expect(await css(chip, "background-color")).toBe("rgb(1, 2, 3)");
     expect(await css(tag, "color")).toBe("rgb(1, 2, 3)");
+    await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Dashboard", exact: true }).click();
+    expect(await css(page.locator(".tiles"), "border-top-color")).toBe("rgb(1, 2, 3)");
   });
 });
 
@@ -259,7 +283,8 @@ for (const size of PHONES) {
       await expect(number).toBeVisible();
       expect(await bottom(number)).toBeLessThanOrEqual(await bottom(long));
       const tag = rows.filter({ hasText: "Acuña" }).getByText("13/150");
-      expect(await css(tag, "color")).not.toBe(await css(plain.getByText("Plain Card"), "color"));
+      expect(await css(tag, "border-top-width")).toBe("1px");
+      expect(await css(tag, "font-family")).toContain("Roboto Slab");
     });
 
     test("Nothing applied: no chips and no badge", async ({ page }) => {
@@ -299,7 +324,7 @@ test.describe("destructive actions stay apart", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
   const notAccent = async (page: Page, button: Locator) => {
-    await page.evaluate(() => document.documentElement.style.setProperty("--color-accent", "rgb(1, 2, 3)"));
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-gold", "rgb(1, 2, 3)"));
     expect(await css(button, "color")).not.toBe("rgb(1, 2, 3)");
     expect(await css(button, "background-color")).not.toBe("rgb(1, 2, 3)");
   };
@@ -447,7 +472,7 @@ test.describe("polish after the second phone review", () => {
     expect(await y(edited)).toBeLessThan(await y(edit));
     expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 12 - 1);
     expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
-    await page.evaluate(() => document.documentElement.style.setProperty("--color-accent-text", "rgb(1, 2, 3)"));
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
   });
 });
@@ -732,12 +757,48 @@ test.describe("Bottom navigation and header", () => {
     test(`Active destination is not colour alone in ${scheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
-      const fill = (name: "Dashboard" | "Cards") => css(item(page, name).locator(".nav-indicator"), "background-color");
-      expect(await fill("Dashboard")).not.toBe("rgba(0, 0, 0, 0)");
-      expect(await fill("Cards")).toBe("rgba(0, 0, 0, 0)");
+      const stitch = (name: "Dashboard" | "Cards") => item(page, name).evaluate((el) => {
+        const s = getComputedStyle(el, "::after");
+        return { content: s.content, border: s.borderTopColor, style: s.borderTopStyle };
+      });
+      const token = await page.evaluate(() => {
+        const probe = document.createElement("i");
+        probe.style.color = "var(--color-stitch)";
+        document.body.append(probe);
+        const c = getComputedStyle(probe).color;
+        probe.remove();
+        return c;
+      });
+      const on = await stitch("Dashboard");
+      expect(on.border).toBe(token);
+      expect(on.style).toBe("dashed");
+      expect((await stitch("Cards")).content).toBe("none");
       await expect(item(page, "Dashboard")).toContainText("Dashboard");
       await expect(item(page, "Dashboard").locator("svg[aria-hidden=true]")).toHaveCount(1);
-      expect(await css(item(page, "Dashboard"), "font-weight")).toBe("500");
+      expect(Number(await css(item(page, "Dashboard"), "font-weight"))).toBeGreaterThan(Number(await css(item(page, "Cards"), "font-weight")));
+    });
+
+    test(`Inactive label is readable in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      const [fg, bg] = await item(page, "Cards").evaluate((el) => {
+        const rgb = (c: string) => c.match(/[\d.]+/g)!.map(Number);
+        let bar: Element | null = el;
+        let base = [0, 0, 0, 0];
+        while (bar && base[3] === 0) {
+          base = rgb(getComputedStyle(bar).backgroundColor);
+          if (base.length < 4) base.push(1);
+          bar = bar.parentElement;
+        }
+        const s = getComputedStyle(el);
+        const [r, g, b, a = 1] = rgb(s.color);
+        const op = Number(s.opacity);
+        return [[r, g, b, a * op], base];
+      });
+      const mix = [0, 1, 2].map((i) => fg[i] * fg[3] + bg[i] * (1 - fg[3]));
+      const lum = (c: number[]) => c.slice(0, 3).map((v, i) => { v /= 255; v = v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; return v * [0.2126, 0.7152, 0.0722][i]; }).reduce((x, y) => x + y);
+      const [hi, lo] = [lum(mix), lum(bg)].sort((x, y) => y - x);
+      expect((hi + 0.05) / (lo + 0.05)).toBeGreaterThanOrEqual(4.5);
     });
   }
 
@@ -822,5 +883,294 @@ test.describe("Bottom navigation and header", () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
     expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual(add.y);
+  });
+});
+
+const PHOTO_SHAPES: [string, number, number][] = [["Landscape Lou", 448, 320], ["Portrait Pat", 320, 448], ["Portrait Pete", 320, 448]];
+
+/** Three cards with photos (one landscape) and one without, newest first on the dashboard. */
+async function seedPhotoCards(page: Page) {
+  await page.evaluate(async (shapes) => {
+    const ports = (window as unknown as Win).__ports;
+    const { makeCard } = await import("/src/domain/fixtures.ts");
+    const cards = [];
+    for (const [i, [player, w, h]] of shapes.entries()) {
+      const card = makeCard({ player, cardNumber: player, createdAt: `2026-03-0${i + 2}T00:00:00.000Z`, photos: { front: { fileId: `f${i}`, thumbId: `t${i}` }, back: { fileId: `b${i}`, thumbId: `bt${i}` } } });
+      const canvas = new OffscreenCanvas(w, h);
+      canvas.getContext("2d")!.fillRect(0, 0, w, h);
+      const blob = await canvas.convertToBlob({ type: "image/webp" });
+      const wide = new OffscreenCanvas(448, 320);
+      wide.getContext("2d")!.fillRect(0, 0, 448, 320);
+      const backBlob = await wide.convertToBlob({ type: "image/webp" });
+      await ports.photos.cacheThumb(card.id, "front", blob);
+      await ports.photos.cacheFull(card.id, "front", blob);
+      await ports.photos.cacheThumb(card.id, "back", backBlob);
+      await ports.photos.cacheFull(card.id, "back", backBlob);
+      cards.push(card);
+    }
+    cards.push(makeCard({ player: "Plain Pam", cardNumber: "Plain", createdAt: "2026-03-01T00:00:00.000Z" }));
+    await ports.collection.putSynced(cards);
+  }, PHOTO_SHAPES);
+  await page.reload();
+}
+
+const ratioOf = async (loc: Locator) => {
+  const b = (await loc.boundingBox())!;
+  return b.width / b.height;
+};
+const near = (actual: number, expected: number) => expect(Math.abs(actual / expected - 1)).toBeLessThan(0.02);
+
+test.describe("Card-back look", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Palette on the dashboard: ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      const want = scheme === "light"
+        ? { bg: "rgb(243, 236, 220)", ink: "rgb(28, 43, 74)" }
+        : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)" };
+      expect(await pageBackground(page)).toBe(want.bg);
+      expect(await css(page.getByRole("heading", { name: "Dashboard" }), "color")).toBe(want.ink);
+      expect(await css(page.getByRole("button", { name: "Add card", exact: true }), "background-color")).toBe("rgb(241, 194, 74)");
+      if (scheme === "dark") expect(await css(page.locator(".tiles"), "background-color")).toBe("rgb(23, 35, 63)");
+    });
+
+    test(`No pocket surface remains in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await seed(page, CARDS);
+      const scan = () =>
+        page.evaluate(() =>
+          [...document.querySelectorAll("button, input, select, textarea, [role=dialog], [role=alertdialog], .banner")].flatMap((el) => {
+            const s = getComputedStyle(el);
+            const alpha = (s.backgroundColor.match(/[\d.]+/g) ?? []).map(Number)[3] ?? 1;
+            const bad = [];
+            if (s.backgroundImage !== "none") bad.push("gradient");
+            if (s.boxShadow !== "none") bad.push("shadow");
+            if (alpha !== 0 && alpha !== 1) bad.push("translucent");
+            return bad.map((b) => `${el.tagName}.${el.className} ${b}`);
+          }),
+        );
+      await showUpdateBanner(page);
+      expect(await scan()).toEqual([]);
+      await page.getByRole("button", { name: /^Filter/ }).click();
+      expect(await scan()).toEqual([]);
+      await page.getByRole("button", { name: "Close" }).click();
+      await page.getByTestId("card-row").first().click();
+      expect(await scan()).toEqual([]);
+      await page.getByRole("button", { name: "Delete", exact: true }).click();
+      expect(await scan()).toEqual([]);
+      await page.getByRole("button", { name: "Keep" }).click();
+      await page.getByRole("button", { name: "Edit", exact: true }).click();
+      expect(await scan()).toEqual([]);
+      await page.getByRole("button", { name: "Cancel" }).click();
+      await page.reload();
+      await page.getByRole("button", { name: "Settings", exact: true }).click();
+      expect(await scan()).toEqual([]);
+      await setStatus(page, { state: "needs-decision", pending: 0 });
+      expect(await scan()).toEqual([]);
+    });
+  }
+
+  test("Secondary buttons are outlined in ink and active chips are ink", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    await applyYearFrom(page, "2000");
+    const ink = "rgb(28, 43, 74)";
+    const chip = page.getByRole("button", { name: "Remove Year filter" });
+    expect(await css(chip, "background-color")).toBe(ink);
+    expect(await css(chip, "color")).toBe("rgb(243, 236, 220)");
+    const outlined = async (b: Locator) => {
+      expect(await css(b, "background-color")).toBe("rgba(0, 0, 0, 0)");
+      expect(await css(b, "border-top-color")).toBe(ink);
+      expect(await css(b, "border-top-width")).toBe("1px");
+      expect(await css(b, "color")).toBe(ink);
+      expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(47.5);
+    };
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    await outlined(page.getByRole("button", { name: "Clear all" }));
+    await page.getByRole("button", { name: "Close" }).click();
+    await page.getByTestId("card-row").first().click();
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await outlined(page.getByRole("button", { name: "Cancel" }));
+  });
+
+  test("Stitch under the title on the dashboard, list, detail, form and Settings", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const check = async (heading: Locator) => {
+      const stitch = page.locator(".stitch").first();
+      await expect(stitch).toHaveAttribute("aria-hidden", "true");
+      const h = (await heading.boundingBox())!;
+      expect((await stitch.boundingBox())!.y).toBeGreaterThanOrEqual(h.y + h.height - 1);
+      expect(await css(stitch, "border-top-style")).toBe("dashed");
+      expect(await css(stitch, "border-top-width")).toBe("1.5px");
+    };
+    await check(page.getByRole("heading", { name: "Cards", exact: true }));
+    await page.getByTestId("card-row").first().click();
+    await check(page.getByRole("heading", { name: "Ronald Acuña Jr." }));
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await check(page.getByRole("heading", { name: "Edit card" }));
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await page.reload();
+    await check(page.getByRole("heading", { name: "Dashboard" }));
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await check(page.getByRole("heading", { name: "Settings" }));
+  });
+
+  test("Red stays rare on the dashboard", async ({ page }) => {
+    await page.goto("/");
+    await seedDashboard(page);
+    const stray = await page.evaluate(() => {
+      const probe = document.createElement("i");
+      probe.style.color = "var(--color-stitch)";
+      document.body.append(probe);
+      const red = getComputedStyle(probe).color;
+      probe.remove();
+      return [...document.querySelectorAll("body *")].flatMap((el) => {
+        if (el.classList.contains("stitch")) return [];
+        const s = getComputedStyle(el);
+        const borders = (["Top", "Right", "Bottom", "Left"] as const).filter((d) => parseFloat(s[`border${d}Width`]) > 0).map((d) => s[`border${d}Color`]);
+        return [s.color, s.backgroundColor, ...borders].includes(red) ? [`${el.tagName}.${el.className}`] : [];
+      });
+    });
+    expect(stray).toEqual([]);
+  });
+
+  test("Sizes on the dashboard", async ({ page }) => {
+    await page.goto("/");
+    await seedDashboard(page);
+    const size = (sel: string) => css(page.locator(sel).first(), "font-size");
+    expect(await size("h1")).toBe("28px");
+    expect(await size(".tile-value")).toBe("24px");
+    expect(await size(".tile-label")).toBe("12px");
+    expect(await css(page.locator(".tile-label").first(), "font-variant-caps")).toBe("all-small-caps");
+    expect(await size(".team-count")).toBe("18px");
+    expect(await size(".recent-name")).toBe("12px");
+  });
+
+  test("No stray sizes on the dashboard, list, detail, form, Settings and filter sheet", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const sizes = () =>
+      page.evaluate(() => {
+        const bad = new Set<string>();
+        for (const el of document.querySelectorAll("body *")) {
+          const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) || /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
+          if (own) {
+            const px = getComputedStyle(el).fontSize;
+            if (!["12px", "14px", "16px", "18px", "24px", "28px"].includes(px)) bad.add(`${el.tagName}.${el.className} ${px}`);
+          }
+        }
+        return [...bad];
+      });
+    const nav = page.getByRole("navigation", { name: "Main" });
+    expect(await sizes()).toEqual([]);
+    await nav.getByRole("button", { name: "Dashboard", exact: true }).click();
+    expect(await sizes()).toEqual([]);
+    await nav.getByRole("button", { name: "Cards", exact: true }).click();
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    expect(await sizes()).toEqual([]);
+    await page.getByRole("button", { name: "Close" }).click();
+    await page.getByTestId("card-row").first().click();
+    expect(await sizes()).toEqual([]);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    expect(await sizes()).toEqual([]);
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await page.reload();
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    expect(await sizes()).toEqual([]);
+  });
+
+  test("Frames: portrait ratio, landscape and placeholder, in Recently added and in the list", async ({ page }) => {
+    await page.goto("/");
+    await seedPhotoCards(page);
+    const recent = (name: string) => page.getByTestId("recent").filter({ hasText: name });
+    await expect(recent("Landscape Lou").locator(".frame")).toHaveAttribute("data-orientation", "landscape");
+    await expect(recent("Portrait Pat").locator("img")).toBeVisible();
+    near(await ratioOf(recent("Portrait Pat").locator(".frame")), 2.5 / 3.5);
+    near(await ratioOf(recent("Landscape Lou").locator(".frame")), 3.5 / 2.5);
+    near(await ratioOf(recent("Landscape Lou").locator("img")), 448 / 320);
+    const widths = await page.getByTestId("recent").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().width)));
+    expect(new Set(widths).size).toBe(1);
+    const nameLine = recent("Portrait Pat").locator(".recent-name");
+    expect(await nameLine.evaluate((el) => getComputedStyle(el).whiteSpace === "nowrap" && el.getClientRects().length === 1)).toBe(true);
+    near(await ratioOf(recent("Plain Pam").locator(".frame")), 2.5 / 3.5);
+
+    await openCollection(page);
+    const row = (name: string) => page.getByTestId("card-row").filter({ hasText: name });
+    await expect(row("Landscape Lou").locator(".frame")).toHaveAttribute("data-orientation", "landscape");
+    near(await ratioOf(row("Landscape Lou").locator(".frame")), 3.5 / 2.5);
+    near(await ratioOf(row("Portrait Pat").locator(".frame")), 2.5 / 3.5);
+    near(await ratioOf(row("Plain Pam").locator(".frame")), 2.5 / 3.5);
+    for (const f of [row("Plain Pam").locator(".frame"), row("Portrait Pat").locator(".frame")]) {
+      expect(await css(f, "border-top-width")).toBe("1px");
+      expect(await css(f, "border-top-left-radius")).toBe("6px");
+    }
+  });
+
+  test("Photo strip framed: portrait front and landscape back", async ({ page }) => {
+    await page.goto("/");
+    await seedPhotoCards(page);
+    await openCollection(page);
+    await page.getByTestId("card-row").filter({ hasText: "Portrait Pat" }).click();
+    const front = page.getByRole("button", { name: "View front photo" }).locator(".frame");
+    const back = page.getByRole("button", { name: "View back photo" }).locator(".frame");
+    await expect(back).toHaveAttribute("data-orientation", "landscape");
+    near(await ratioOf(front), 2.5 / 3.5);
+    near(await ratioOf(back), 3.5 / 2.5);
+  });
+
+  test("Ruled stat table: two columns, three rows, shared 1 px rules, cells at least 56 dp", async ({ page }) => {
+    await page.goto("/");
+    const tiles = page.getByTestId("tile");
+    await expect(tiles).toHaveCount(6);
+    const boxes = await tiles.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: Math.round(r.x), y: Math.round(r.y) }; }));
+    expect(new Set(boxes.map((b) => b.x)).size).toBe(2);
+    expect(new Set(boxes.map((b) => b.y)).size).toBe(3);
+    expect(await css(page.locator(".tiles"), "border-top-width")).toBe("1px");
+    for (const [i, el] of (await tiles.all()).entries()) {
+      const cell = await el.evaluate((e) => {
+        const cellBox = e.getBoundingClientRect();
+        const s = getComputedStyle(e);
+        const rule = getComputedStyle(e, "::before");
+        return { h: cellBox.height + 8, radius: s.borderTopLeftRadius, shadow: s.boxShadow, image: s.backgroundImage, right: rule.borderRightWidth, bottom: rule.borderBottomWidth };
+      });
+      expect(cell.h).toBeGreaterThanOrEqual(56);
+      expect(cell.radius).toBe("0px");
+      expect(cell.shadow).toBe("none");
+      expect(cell.image).toBe("none");
+      expect(cell.right).toBe(i % 2 === 0 ? "1px" : "0px");
+      expect(cell.bottom).toBe(i < 4 ? "1px" : "0px");
+    }
+  });
+
+  test("Recently added as trading cards and Top teams as a ruled table", async ({ page }) => {
+    await page.goto("/");
+    await seedDashboard(page);
+    const recent = page.getByTestId("recent");
+    const boxes = await recent.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, w: r.width, y: r.y }; }));
+    expect(new Set(boxes.map((b) => Math.round(b.w))).size).toBe(1);
+    expect(new Set(boxes.map((b) => Math.round(b.y))).size).toBe(1);
+    for (const [i, b] of boxes.slice(1).entries()) expect(b.x - (boxes[i].x + boxes[i].w)).toBeGreaterThanOrEqual(7.5);
+    await expect(recent.first().locator(".frame")).toHaveCount(1);
+    const teams = page.getByTestId("team");
+    expect((await teams.first().locator(".team-name").boundingBox())!.x).toBeLessThan((await teams.first().locator(".team-count").boundingBox())!.x);
+    expect(await css(teams.first().locator(".team-count"), "font-family")).toContain("Roboto Slab");
+    expect(await teams.first().evaluate((e) => getComputedStyle(e, "::before").borderBottomWidth)).toBe("1px");
+  });
+
+  test("Ruled, not boxed: list rows are 100 dp with a 1 px rule and no gradient", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const rows = page.getByTestId("card-row");
+    for (const r of [rows.nth(0), rows.nth(1)]) {
+      expect((await r.boundingBox())!.height).toBe(100);
+      expect(await r.evaluate((e) => getComputedStyle(e, "::after").borderBottomWidth)).toBe("1px");
+      expect(await css(r.getByRole("button"), "background-image")).toBe("none");
+      expect(await css(r.getByRole("button"), "box-shadow")).toBe("none");
+    }
+    expect(await css(page.locator(".list-scroller"), "background-color")).toBe("rgba(0, 0, 0, 0)");
   });
 });

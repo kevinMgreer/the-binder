@@ -45,7 +45,7 @@ Both themes use the Card-Back Calm layout and type: stacked stat cells (small-ca
 `tokens.css` replaces `--color-page`, `--color-surface`, `--color-pocket*`, `--color-accent*`, `--color-ok` and `--type-mono` with:
 - colour: `--color-ground`, `--color-panel`, `--color-ink`, `--color-ink-muted`, `--color-rule`, `--color-stitch`, `--color-gold`, `--color-on-gold`, `--color-danger`, `--color-frame`, `--color-scrim`, `--color-placeholder` (values in the app-theme spec table; scrim `#1c2b4a66` light, `#000000a6` dark; placeholder a flat tone of the ink at low strength, decided in the token file);
 - font: `--font-slab: "Roboto Slab", Georgia, serif`, `--font-sans: Inter, system-ui, sans-serif`;
-- size: `--type-label` 0.6875rem (11), `--type-body` 0.875rem (14), `--type-table` 1.125rem (18), `--type-stat` 1.5rem (24), `--type-title` 1.75rem (28), plus `--type-button` 1rem (16) for the gold button label as in the mock; rem so Android's text size setting scales them;
+- size: `--type-label` 0.75rem (12, the owner's minimum label size), `--type-body` 0.875rem (14), `--type-table` 1.125rem (18), `--type-stat` 1.5rem (24), `--type-title` 1.75rem (28), plus `--type-button` 1rem (16) for the gold button label as in the mock; rem so Android's text size setting scales them;
 - shape: `--radius-print` 3px, `--radius-frame` 6px (frames, buttons, inputs, dark tables), `--radius-pill` for chips and the count badge; `--rule` 1px; `--stitch-line` 1.5px; `--stitch-gap` 5px; `--frame-ratio: 2.5 / 3.5`; `--gutter` 20px (mock page padding);
 - the spacing scale, `--target-min` 48px and `--nav-height` 64px stay.
 The sync state's idle dot and text use the ink (the mock shows an ink dot); error, paused and needs-decision keep the danger colour, and the wording already carries the meaning.
@@ -84,7 +84,7 @@ The dashboard's six tiles stay six `<button>`s with their accessible names; the 
 ## Risks / Trade-offs
 
 - [Cream ground and a slab face are a common vintage default; the app could read as a costume] → keep red rare (stitch and Rookies flag only, checked by the "Red stays rare" scenario), one ink, a strict grid: one `--gutter` on every screen, rules 1 px and aligned to the same column edges, no ornaments, badges or textures beyond the spec.
-- [11 px small-caps labels may be small for a glance at arm's length] → AA contrast holds, sizes are rem so the phone's text size setting scales them; the phone review (5.x) checks it, and a change would be a token value.
+- [12 px small-caps labels may be small for a glance at arm's length] → AA contrast holds, sizes are rem so the phone's text size setting scales them; the phone review (5.x) checks it, and a change would be a token value.
 - [Dark rules at 30 percent cream are below 3:1] → they are decorative; every cell is identified by its text and the cells are buttons with names. Keylines and the stitch, which carry meaning, are held to 3:1.
 - [Fonts arrive after first paint and the layout shifts] → local files load in milliseconds; fixed row and cell heights do not depend on the face; the perf tests still guard the 1 s budget.
 - [Dashed borders render differently across WebView versions and pixel densities] → phone check in light and dark.

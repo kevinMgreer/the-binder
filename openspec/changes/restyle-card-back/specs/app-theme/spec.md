@@ -93,15 +93,15 @@ The system SHALL draw titles and numbers in the slab face Roboto Slab (weights 6
 - **THEN** the title renders in Roboto Slab, the same as online
 
 ### Requirement: Type scale
-The system SHALL use these sizes and no others for text: 11 label (small caps, letter-spaced, sans 600), 14 body (sans 400, list player name 500), 16 gold button label (sans 600), 18 table number (slab 700), 24 stat number (slab 700), 28 screen title (slab 700), each in CSS px scaled by the phone's text size setting.
+The system SHALL use these sizes and no others for text: 12 label (small caps, letter-spaced, sans 600), 14 body (sans 400, list player name 500), 16 gold button label (sans 600), 18 table number (slab 700), 24 stat number (slab 700), 28 screen title (slab 700), each in CSS px scaled by the phone's text size setting.
 
 #### Scenario: Sizes on the dashboard
 - **WHEN** the dashboard is shown at the default text size
-- **THEN** the title computes to 28 px, a stat number to 24 px, a stat label to 11 px with small caps, a Top teams count to 18 px and a Recently added caption to 11 px
+- **THEN** the title computes to 28 px, a stat number to 24 px, a stat label to 12 px with small caps, a Top teams count to 18 px and a Recently added caption to 12 px
 
 #### Scenario: No stray sizes
 - **WHEN** every text element on the dashboard, list, detail, form, Settings and filter sheet is measured at the default text size
-- **THEN** each font size is one of 11, 14, 16, 18, 24 or 28 px
+- **THEN** each font size is one of 12, 14, 16, 18, 24 or 28 px
 
 ### Requirement: Red is the stitch and nothing else
 The system SHALL draw the stitch as a double dashed rule (two 1.5 px dashed lines 5 px apart, in the stitch colour) under each screen title, between the dashboard's sections and under the active bottom-navigation tab, and SHALL use the stitch colour elsewhere only for the small Rookies flag on the dashboard. Error text, Delete and Sign out SHALL use the danger colour, not the stitch colour.
