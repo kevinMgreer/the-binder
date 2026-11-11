@@ -1,50 +1,65 @@
 ---
 name: The Binder
-description: Nine-Pocket Binder, a trading-card collection app where every control is a see-through pocket on a flat page.
+description: A baseball-card collection app that looks like the back of a card, calm cream cardboard (Card-Back Calm) or night navy (Night Game), one ink, stat-line type and a red double-stitch seam.
 colors:
-  page: "#f4f5f7"
-  surface: "#ffffff"
-  pocket: "#e4e8f0cc"
-  pocket-edge: "#14161a1f"
-  scrim: "#14161a66"
-  text: "#14161a"
-  text-muted: "#4a5160"
-  accent: "#f1c24a"
-  on-accent: "#14161a"
-  accent-text: "#7a5200"
-  ok: "#17703d"
-  danger: "#b3261e"
-  dark-page: "#101114"
-  dark-surface: "#17181c"
-  dark-pocket-top: "#ffffff14"
-  dark-pocket: "#ffffff08"
-  dark-pocket-edge: "#ffffff21"
-  dark-scrim: "#000000a6"
-  dark-text: "#eceff4"
-  dark-text-muted: "#aab3c2"
-  dark-on-accent: "#101114"
-  dark-ok: "#7ee0a0"
-  dark-danger: "#ff8a80"
+  ground: "#f3ecdc"
+  panel: "#f3ecdc"
+  ink: "#1c2b4a"
+  ink-muted: "#4a5670"
+  rule: "#1c2b4a8c"
+  stitch: "#c8372d"
+  gold: "#f1c24a"
+  on-gold: "#1c2b4a"
+  danger: "#a82a22"
+  frame: "#f3ecdc"
+  scrim: "#1c2b4a66"
+  placeholder: "#d8d1bf"
+  night-ground: "#101a30"
+  night-panel: "#17233f"
+  night-ink: "#f3ecdc"
+  night-ink-muted: "#c2bcae"
+  night-rule: "#f3ecdc4d"
+  night-stitch: "#e0574b"
+  night-gold: "#f1c24a"
+  night-on-gold: "#101a30"
+  night-danger: "#ff8a80"
+  night-frame: "#f3ecdc"
+  night-scrim: "#000000a6"
+  night-placeholder: "#2a3756"
 typography:
   title:
-    fontFamily: "Roboto, system-ui, sans-serif"
-    fontSize: "1.375rem"
-    lineHeight: 1.2
-  body:
-    fontFamily: "Roboto, system-ui, sans-serif"
+    fontFamily: "Roboto Slab, Georgia, serif"
+    fontSize: "1.75rem"
+    fontWeight: 700
+    lineHeight: 1.1
+  stat:
+    fontFamily: "Roboto Slab, Georgia, serif"
+    fontSize: "2rem"
+    fontWeight: 700
+    lineHeight: 1
+  table:
+    fontFamily: "Roboto Slab, Georgia, serif"
+    fontSize: "1.125rem"
+    fontWeight: 700
+    lineHeight: 1.1
+  button:
+    fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "1rem"
+    fontWeight: 600
+  body:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
     lineHeight: 1.3
   label:
-    fontFamily: "Roboto, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 500
-  mono:
-    fontFamily: "ui-monospace, monospace"
-    fontSize: "0.875rem"
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 600
+    letterSpacing: "0.08em"
 rounded:
-  s: "4px"
-  m: "10px"
-  l: "16px"
+  print: "3px"
+  frame: "6px"
+  pill: "999px"
 spacing:
   "1": "4px"
   "2": "8px"
@@ -54,208 +69,249 @@ spacing:
   "6": "32px"
   "7": "40px"
   "8": "48px"
+  gutter: "20px"
 components:
   button:
-    backgroundColor: "{colors.pocket}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.m}"
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.frame}"
     padding: "0 16px"
     height: "48px"
   button-primary:
-    backgroundColor: "{colors.accent}"
-    textColor: "{colors.on-accent}"
-    rounded: "{rounded.m}"
+    backgroundColor: "{colors.gold}"
+    textColor: "{colors.on-gold}"
+    typography: "{typography.button}"
+    rounded: "{rounded.frame}"
     padding: "0 16px"
     height: "48px"
-  stat-tile:
-    backgroundColor: "{colors.pocket}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.m}"
-    padding: "12px"
-  chip:
-    backgroundColor: "{colors.accent}"
-    textColor: "{colors.on-accent}"
-    rounded: "{rounded.l}"
+  button-danger:
+    backgroundColor: "transparent"
+    textColor: "{colors.danger}"
+    rounded: "{rounded.frame}"
     height: "48px"
-  bottom-nav:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-muted}"
-    activeTextColor: "{colors.accent-text}"
-    indicatorRounded: "{rounded.l}"
-    height: "64px"
-    gap: "8px"
   icon-button:
-    backgroundColor: "{colors.pocket}"
-    rounded: "{rounded.m}"
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.frame}"
     width: "48px"
     height: "48px"
-  tag:
-    textColor: "{colors.accent-text}"
-    rounded: "{rounded.s}"
+  stat-table:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.frame}"
+  stat-tile:
+    textColor: "{colors.ink}"
+    typography: "{typography.stat}"
+    padding: "0 8px"
+    height: "48px"
+  chip:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ground}"
+    rounded: "{rounded.pill}"
+    height: "48px"
+  badge:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ground}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
     padding: "0 4px"
-  sheet:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.l}"
-    padding: "12px"
+  tag:
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.print}"
+    padding: "0 6px"
+  frame:
+    backgroundColor: "{colors.frame}"
+    rounded: "{rounded.frame}"
+    padding: "3px"
   input:
-    backgroundColor: "{colors.pocket}"
-    textColor: "{colors.text}"
-    rounded: "{rounded.m}"
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "0"
     padding: "8px 12px"
     height: "48px"
+  sheet:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.frame}"
+    padding: "12px 20px"
+  bottom-nav:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.ink-muted}"
+    height: "64px"
+  add-bar:
+    backgroundColor: "{colors.ground}"
+    padding: "8px 20px"
 ---
 
 # Design System: The Binder
 
-Recorded from `src/app/tokens.css` and `src/app/app.css` as shipped. The frontmatter is normative; `target-min` (48px) and the scrim/pocket-top roles are described below because they have no frontmatter group.
+Recorded from `src/app/tokens.css`, `app.css`, `fonts.css` and the components as shipped. The frontmatter is normative. Colors prefixed `night-` are the dark theme's values for the same roles (`--color-<role>` in the `prefers-color-scheme: dark` block); the sidecar `.impeccable/design.json` carries tonal ramps, the press-state note and component snippets.
 
 ## Overview
 
-**Creative North Star: "The Nine-Pocket Binder"**
+**Creative North Star: "The Back of the Card"**
 
-A card binder page: a flat, quiet page with see-through pockets holding things. Every interactive surface (button, input, select, summary, dialog, banner, zoom frame) is a pocket: a translucent gradient, a hairline edge and a lit top edge. Nothing floats on shadows or blurs. The one loud voice is a warm card-sleeve yellow accent, used for the primary action, filter chips and counts.
+The collection looks like the back of a baseball card: calm cardboard, one ink, stat-line type. Light is **Card-Back Calm**, a warm cream cardboard ground with deep navy as the only ink for text, rules and borders. Dark is **Night Game**, a deep navy ground with lighter navy panels and cream text. Two things carry the world: the red **stitch** (a thin dashed double rule, the baseball seam) and photos that always sit in true 2.5:3.5 trading-card frames. Everything else is quiet: hairline navy rules, ruled tables of numbers, outlined buttons.
 
-The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 12px page gutters, one Add card button on each top-level screen (the dashboard and the list), just above the bottom navigation, opening the add form.
+The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 20px page gutters, one gold Add card button on each top-level screen.
 
 **Key Characteristics:**
-- Pocket treatment on all controls, flat page behind them.
-- One accent (yellow), one text-safe accent variant for small text.
-- Bottom sheets (not centered modals) for the filter flow.
-- Roboto/system sans, with mono reserved for data (counts, numbers, tags, sync line).
-- Every value is a token in `tokens.css`.
+- One ink (navy in light, cream in dark); rules and borders are that ink, thinned.
+- Red only as the stitch seam and the Rookie flag; gold only as the primary button fill.
+- Numbers in Roboto Slab with tabular figures; labels in uppercase 12 px Inter; body in Inter.
+- Secondary data in ruled stat tables, not boxed cards.
+- Fonts ship inside the app (woff2 under `fonts.css`), so nothing loads from the network.
+- Every colour and font face is a token in `tokens.css`.
 
 ## Colors
 
-A cool grey-blue neutral page with translucent pockets and a single warm yellow accent; status colours are muted green and red, brightened in dark.
+A cream-and-navy neutral world with one seam colour and one button colour. Status is a single danger red.
 
 ### Primary
-- **Sleeve Yellow** (accent #f1c24a, same in both schemes): primary button fill, chip fill, count badge, checkbox accent, focus-adjacent emphasis. Always paired with **Ink on Yellow** (on-accent: #14161a light, #101114 dark).
-- **Deep Amber** (accent-text #7a5200 light; in dark it resolves to the accent yellow): the accent when used as text or outline on the page: links in banners, tag text and border, focus ring. Yellow itself fails contrast as small text on light, so never use accent for text in light.
+- **Card Gold** (gold #f1c24a, same in both themes): the primary button fill only (Add card, Save, sheet apply), always with **Navy on Gold** text (on-gold #1c2b4a light, #101a30 dark).
+
+### Secondary
+- **Seam Red** (stitch #c8372d light, night-stitch #e0574b dark): the double-stitch rule under titles and between sections, the active bottom-nav underline, and the small Rookie flag on the Rookies tile. Decorative only; never text.
 
 ### Neutral
-- **Binder Page** (page #f4f5f7 / dark #101114): app background.
-- **Sheet Paper** (surface #ffffff / dark #17181c): bottom sheets, list scroller, dialogs, zoom frame. Opaque, so content never shows through.
-- **Pocket** (pocket #e4e8f0cc / dark #ffffff08): bottom stop of the pocket gradient and thumbnail placeholder. Light mode pocket-top equals pocket (flat); dark mode pocket-top is #ffffff14, giving the lit top edge.
-- **Pocket Edge** (pocket-edge #14161a1f / dark #ffffff21): 1px pocket border, dashed empty-state border, danger-zone divider.
-- **Ink** (text #14161a / dark #eceff4) and **Muted Ink** (text-muted #4a5160 / dark #aab3c2): body and secondary text, placeholders, hints.
-- **Scrim** (scrim #14161a66 / dark #000000a6): the sheet backdrop only.
+- **Cardboard Cream** (ground #f3ecdc / night-ground #101a30): app background and the Add-card band.
+- **Panel** (panel #f3ecdc / night-panel #17233f): stat tables, sheets, dialogs, banners, bottom nav, zoom view. In light it equals the ground; in dark it is one step lighter navy.
+- **Card Ink** (ink #1c2b4a / night-ink #f3ecdc): all text, borders, chips, badge fill and the focus ring.
+- **Muted Ink** (ink-muted #4a5670 / night-ink-muted #c2bcae): labels, placeholders, hints, inactive nav, secondary row text.
+- **Keyline** (rule #1c2b4a8c / night-rule #f3ecdc4d): thin rules between table cells, list rows, facts, sheet edges and the danger-zone divider.
+- **Frame Stock** (frame #f3ecdc, both themes): the matte of a photo frame.
+- **Print Placeholder** (placeholder #d8d1bf / night-placeholder #2a3756): the empty photo area and the keyline round a photo.
+- **Scrim** (scrim #1c2b4a66 / night-scrim #000000a6): the sheet backdrop only.
 
 ### Status
-- **Ok** (#17703d / dark #7ee0a0): sync idle.
-- **Danger** (#b3261e / dark #ff8a80): errors, invalid fields, danger buttons, sync error/paused/needs-decision.
+- **Danger** (danger #a82a22 / night-danger #ff8a80): errors, invalid field underline, delete, sync error / paused / needs-decision. Sync idle is plain ink; there is no green.
 
 ### Named Rules
 **The Tokens Only Rule.** No colour literal is written outside `tokens.css`. Components reference `var(--color-*)`; a new colour is a new token with a light and a dark value.
 
-**The Text-Safe Accent Rule.** Yellow is a fill. When the accent must read as text or a line on the page, use `--color-accent-text`.
+**The One Ink Rule.** Text, rules and borders are ink at full or thinned strength. Red and gold are never used for text.
 
-**The Phone Decides Rule.** Theme follows `prefers-color-scheme` only. Every colour token that differs in dark is overridden in the one dark block; there is no manual theme switch.
+**The Seam Is Rare Rule.** Red appears only as the stitch and the Rookie flag. Do not use it for buttons, links, badges or emphasis.
+
+**The Phone Decides Rule.** Theme follows `prefers-color-scheme` only. Every token that differs in dark is overridden in the one dark block.
 
 ## Typography
 
-**Body/Title Font:** Roboto, falling back to system-ui, sans-serif.
-**Mono Font:** ui-monospace, monospace (data only).
+**Display / Numbers Font:** Roboto Slab (700, 600 for the tag), falling back to Georgia, serif.
+**Body / Label Font:** Inter (400, 500, 600), falling back to system-ui, sans-serif.
 
-**Character:** Plain Android-native sans, with monospace giving counts and numbers a ledger feel.
+**Character:** A sturdy slab for headings and figures, like the numerals on a card back, with a plain sans for everything read in running text. `font-variant-numeric: tabular-nums` is set on the body so columns of numbers align.
 
 ### Hierarchy
-- **Title** (400/default, 1.375rem, 1.2): h1 and h2 screen and sheet titles.
-- **Body** (400, 1rem, 1.3): default text, inputs, buttons, the player name in list rows (weight 500).
-- **Label** (500 where emphasised, 0.875rem): meta lines, hints, errors, group headings (muted), badge, tag, secondary row text.
-- **Mono** (0.875rem): "shown" line, Top teams counts, card number, tag, sync-adjacent meta.
+- **Title** (Slab 700, 1.75rem, 1.1): h1 and h2 screen titles and form titles.
+- **Stat** (Slab 700, 2rem, 1): the number on each stat tile.
+- **Table** (Slab 700, 1.125rem, 1.1): group headings (Recently added, Top teams, filter groups), sheet titles, team counts, chip close mark.
+- **Button** (Inter 600, 1rem): primary button label.
+- **Body** (Inter 400, 0.875rem, 1.3): default text, inputs, buttons (weight 500), the player name in rows (500), sync detail.
+- **Label** (Inter 600, 0.75rem, uppercase, 0.08em tracking): tile labels, field labels, fact labels, the "shown" line, sync status. Hints, errors, the required note, badge and tag use the same 0.75rem size without the uppercase transform.
 
 ### Named Rules
-**The Three Sizes Rule.** Only title, body and label sizes exist. A new size is a new token.
+**The Six Sizes Rule.** Only label, body, button, table, stat and title sizes exist, each a `--type-*` token. A new size is a new token.
+
+**The Slab Is For Numbers And Headings Rule.** Slab sets titles, stat numbers, counts and the serial tag; Inter sets everything else.
 
 ## Layout
 
-Single column, full-bleed phone layout. Page gutter is 12px (space-3); the list screen uses 8px vertical, 12px horizontal. Rhythm runs on the 4px scale (space-1 4, 2 8, 3 12, 4 16, 5 24, 6 32, 7 40, 8 48). Gaps between related controls are 8px; between groups 12px; danger zone separated by 32px.
+Single column, full-bleed phone layout with a 20px gutter (`--gutter`). Rhythm runs on the 4px scale (space-1 4 through space-8 48). Related controls sit 8px apart; groups 12px; the danger zone is separated by 32px plus a keyline.
 
-The app draws under the system bars: `#root` and scrolling screens add safe-area insets (Capacitor `--safe-area-*` vars, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). The fixed add button spans the width just above it (inset + 64px + 8px) and the list scroller reserves target-min + 64px + 8px + 8px beneath it, so its end clears the add button by at least 8px (16px with the list's own bottom padding); the dashboard reserves the same at the end of its scroll. Headers are one row: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right; there is no count line beneath, and Sign in again or the missing-file choice appear below the row while their state lasts. The app name "The Binder" appears only on the sign-in screen. The list is virtualised with absolutely positioned rows; each row is a full-width pocket button with a 67px square thumbnail slot, text column and optional tag.
+The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). The Add card button lives in a fixed ground-coloured band just above it (8px padding), so scrolled content stops above the button; the list scroller and the dashboard reserve the room beneath so their last row clears the band.
 
-Hit targets: `--target-min` is 48px; every button, summary, banner link, input and checkbox row meets it (checkbox glyph itself is 24px inside a 48px row).
+Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a stitch rule; Sign in again or the missing-file choice appear below the stitch while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the stitch under their title.
+
+The dashboard is a six-tile stat table (two columns by three rows), a Recently added row of four trading-card frames, a Top teams stat table of up to five rows, then the Add card band. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
 
 ### Named Rules
-**The 48 Rule.** Anything tappable is at least 48px (`--target-min`) in height and width, visually or through its row.
+**The 48 Rule.** Anything tappable is at least 48px (`--target-min`) in height and width, visually or through its row; table cells are inset 4px so neighbours stay 8px apart.
 
 ## Elevation & Depth
 
-Flat. Depth comes from tone and hairlines, not shadows or blur. The pocket carries a 1px edge and an inset 1px top highlight (`box-shadow: inset 0 1px 0 var(--color-pocket-top)`), which is a lit edge, not an elevation. Overlays are separated by the scrim and an opaque surface. Primary buttons and chips drop the inset highlight.
+Flat. No shadows, blur or backdrop-filter anywhere. Structure comes from 1px ink keylines, the stitch, and tone (panel one step off the ground in dark). Overlays are an ink or black scrim plus an opaque panel sheet. Pressed state is opacity 0.8; disabled is 0.5.
 
 ### Named Rules
-**The Cheap Effects Rule.** No blur, backdrop-filter, drop shadow or animation-heavy effect; pressed state is a plain opacity change (0.8), disabled is 0.5. The device is a phone running a long virtualised list.
+**The Cheap Effects Rule.** No blur, drop shadow or animation-heavy effect: the device is a phone running a long virtualised list.
+
+**The Stitch Is The Ornament Rule.** The stitch (`--stitch-line` 1.5px dashed red, two lines `--stitch-gap` 5px apart) is the one decorative device. Use it under titles and between sections, not around boxes.
 
 ## Shapes
 
-Three radii: small 4px (thumbnails, tags), medium 10px (the pocket: buttons, inputs, dialogs, banners, empty state), large 16px (chips, count badge, list scroller, sheet top corners). Sheets round only their top corners and drop the bottom and side borders. Count badge and sync dot are fully round. Borders are always 1px (focus ring 2px with 2px offset); the empty state uses a dashed pocket edge.
+Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons, frames, tables, dialogs, banners, sheet top corners), pill 999px (chips, count badge). Ruled fields have no radius, only a bottom line. Borders are always 1px (`--rule`); focus ring is 2px ink with 2px offset. Photos always sit in a 2.5:3.5 frame (`--frame-ratio`), turned to 3.5:2.5 when the photo is landscape, with a 3px cream matte and an inner keyline; the photo keeps its own ratio and is never cropped.
 
 ## Components
 
 ### Buttons
-- **Shape:** pocket, 10px radius, min 48x48, 16px horizontal padding, centred label.
-- **Default:** pocket gradient, hairline edge, Ink text.
-- **Primary:** flat Sleeve Yellow fill and border, Ink on Yellow text, weight 500, no inset highlight. One per sheet/screen footer; in a row it takes the remaining width.
-- **Danger:** default pocket with Danger text.
-- **States:** active drops opacity to 0.8; disabled 0.5; focus-visible 2px Deep Amber outline, 2px offset.
-- **Add button:** primary, fixed just above the bottom navigation with 12px side margins and an 8px gap; the one entry point for adding on its screen, and it opens the add form directly. The dashboard and the list each have exactly one, the same component.
+- **Shape:** frame radius (6px), min 48x48, 16px horizontal padding, transparent with a 1px ink border and ink text, weight 500.
+- **Primary:** Card Gold fill and border, Navy on Gold text, Inter 600 at 1rem. One per screen footer or sheet footer; in a row it takes the remaining width.
+- **Danger:** no border, Danger text, weight 600; sits apart under a keyline in the danger zone, left-aligned.
+- **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset.
+- **Add card:** primary, full width, inside the fixed Add-card band above the bottom navigation; the one entry point for adding on the dashboard and the list, the same component on both.
 
 ### Bottom navigation
-A bar fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px high plus the bottom inset, Sheet Paper background with a 1px pocket-edge top border. Two destinations, Dashboard and Cards, share the width with an 8px gap; each is a button of at least 48x48 with a 24px icon above a label-size label. The active destination is marked three ways so colour is not alone: a pill indicator behind the icon (large radius, pocket fill and edge), Deep Amber text and icon, and weight 500; it has `aria-current="page"`. Inactive items use Muted Ink. Two destinations is a deliberate deviation from Material's three-to-five guidance: top tabs would crowd the header and a drawer hides the dashboard, and Settings stays a header action. Tapping the active item does nothing.
+Fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px plus the bottom inset, panel background with a keyline top border. Dashboard and Cards share the width with an 8px gap; each is a button of at least 48x48 with a 24px inline-SVG icon above a label. Active is marked three ways so colour is not alone: ink text at weight 600, a red stitch underline (centre 40% of the item), and `aria-current="page"`. Inactive items use Muted Ink. Tapping the active item does nothing. Settings stays a header action.
 
 ### Icon button
-An icon-only pocket button, 48x48, 10px radius, for header actions (the Settings gear). Its name comes from `aria-label`. Icons are inline SVG, `currentColor`, `aria-hidden`, defined in `src/app/Icon.tsx` (gear, dashboard, cards); there is no icon font or package.
+Icon-only 48x48 button for header actions (the Settings gear), borderless in the title row. Name from `aria-label`. Icons are inline SVG in `src/app/Icon.tsx` (gear, dashboard, cards), `currentColor`, `aria-hidden`; no icon font or package.
 
-### Stat tile
-A pocket button on the dashboard, in a two-column grid with 8px gaps, at least 48px high (80px). The label sits on top in muted label-size text, the number below it in the mono face at title size in Ink; both are readable text, not an icon. Never accent-filled (the accent stays on the one primary action and on chips). Tapping opens the list filtered to what the tile counts. The accessible name is "label, number". Six tiles: Cards, Distinct, Autos, Relics, Serial-numbered, Rookies; none for one team or parallel (the Filter reaches those).
+### Stat table and tiles
+One ruled block: panel background, 1px ink border, frame radius. Six tiles in a two-column grid; each is a 48px-minimum button inset 4px, with keylines drawn between cells (right of the left column, below the first four). Label on top (uppercase label size, Muted Ink), number below (Slab 700 at 2rem, ink). Never gold-filled. The Rookies tile carries a small red flag notched at its top edge. Tapping opens the list filtered to what the tile counts; the accessible name is "label, number".
 
-### Dashboard groups
-Below the tiles, two groups, each under a muted label-size weight-500 heading and shown only when they have content. Recently added: the four newest cards in a four-column grid of pocket buttons, each the list's thumbnail slot with the player's name beneath on one ellipsised line. Top teams: up to five pocket buttons, 48px high and 8px apart, team name at the left (ellipsis) and its count in mono at the right. No new colour, size or shadow; the accent stays off both groups.
+### Recently added
+Heading in Table size over a stitch, then four equal columns (8px gap) of trading-card frames with the player's name beneath at label size, weight 500, clamped to two lines. Each is a button that opens the card.
 
-### Chips
-Removable filter chips: Sleeve Yellow fill, Ink text, weight 500, 16px radius, 48px min height. A trailing close mark follows the label (see Do's and Don'ts). One chip per active filter, wrapping with 8px gaps. Tapping removes the filter.
+### Top teams
+A ruled stat table: up to five 48px rows separated by keylines, team name at the left (ellipsis), count in Slab 700 at table size at the right.
+
+### Chips and badge
+Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
 
 ### Tag
-Mono label-size, weight 500, Deep Amber text with a 1px Deep Amber outline, 4px radius, 4px horizontal padding, sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled.
+The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.
 
-### Sheets
-Bottom sheets over a scrim backdrop (z-index 10, aligned to the bottom, top inset respected). Opaque Sheet Paper, 16px top corners, 12px top and side padding, 16px plus the bottom inset below, 8px gap. Structure: head (title plus close, space-between), body (scrolls, flex 1), foot (actions, primary takes the width). Every sheet takes the full height (filter sheet and photo view). Group headings inside are muted label-size, weight 500.
+### Frames and photos
+Trading-card frame as described in Shapes. List rows use a 67px slot, dashboard recents fill their column, form photo slots are 96px high, detail thumbnails 140px high. Without a photo the frame shows the Print Placeholder. A tapped photo opens a 60vh zoom panel with the image contained.
 
 ### Inputs / Fields
-Pocket gradient, 10px radius, full width, min 48px, 8px by 12px padding; textarea min 96px. Placeholder in Muted Ink. Invalid input shows a Danger border with a Danger label-size message. Required note is muted label. Checkbox is 24px with accent colour in a 48px row. Search label is visually hidden but present.
+Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1px ink bottom border, no radius, no box, min 48px, 8px by 12px padding; textarea min 96px. Label above in the uppercase label style; placeholder in Muted Ink. Invalid fields get a Danger bottom border and a Danger label-size message. Checkbox is 24px with ink accent in a 48px row. The search label is visually hidden but present.
 
 ### List row
-Full-width pocket button, 12px padding and gap, a 67px square thumbnail slot holding the whole photo in its own orientation (about 48x67 portrait, 67x48 landscape; 4px radius, no crop) or the 48x67 portrait pocket placeholder without a photo. Two lines, row height 100px: the player name (body size, weight 500, single-line ellipsis) with the Tag as a badge at the right end of the same line, and one quiet muted label-size line "year set · #number" (number mono) continuing with parallel, grade and quantity as plain text. The line never wraps: the extras shrink first, then the set, never the number.
+Full-width borderless button with a keyline beneath, the frame slot at the left and two lines of text: player (body, weight 500, single-line ellipsis) with the Tag at the right end, and one quiet label-size line "year set, number" continuing with parallel, grade and quantity. The line never wraps: the extras shrink first, then the set, never the number. Row height 100px.
 
 ### Card facts
-Detail screen, top to bottom: the player as a large title (title size, weight 500) with the Tag badge beside it, a muted label-size subtitle "year set · #number", `dl.facts`, a plain list with 1px pocket-edge dividers (no box): muted label-size label at the left, body-size value right-aligned, 12px row padding, rows only for what the card has; then a strip of pocket photo thumbnails. Last edited is a muted line below that, Edit is the full-width primary button, Delete sits apart below a divider in the danger zone.
+Detail screen, top to bottom: the player as a Title with the Tag beside it, a muted subtitle, a stitch, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines above and between, 12px row padding, rows only for what the card has), the photo thumbnails, a muted last-edited line, Edit as the full-width primary button, then Delete apart under a keyline.
 
-### Banner and status
-Pocket banner with 4px by 12px padding; link text Deep Amber underlined, no pocket styling. Sync status is a coloured dot plus text at label size, with `role="status"`, on the title row between title and gear: Ok when idle, Danger on error/paused/needs-decision. It wraps to two lines rather than being cut. Empty state is a dashed pocket-edge box with muted text.
+### Sheets and dialogs
+Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. Confirm and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
 
 ### Navigation
-The dashboard is the start destination: Android's back button closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, settings to the dashboard or the list it was opened from). Forms keep Cancel and sheets keep Close.
-
-### Photos
-Detail screen shows thumbnails (56x78 slot images, 4px radius; 96px-high thumb buttons) that open a full 60vh zoom pocket with contained image.
+The dashboard is the start destination: Android's back closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, Settings to where it was opened from). Forms keep Cancel and sheets keep Close.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** write every colour, space, radius and type size as a token; add a light and a dark value for any new colour in `tokens.css`.
-- **Do** give every tappable element at least 48px (`--target-min`).
-- **Do** use Deep Amber (`--color-accent-text`) for accent-coloured text or outlines on the page.
-- **Do** build new controls as pockets (gradient, 1px edge, inset top highlight, 10px radius) and new flows as bottom sheets.
-- **Do** keep the effects cheap: opacity for press, scrim plus opaque surface for overlays.
-- **Do** let the phone pick light or dark.
+- **Do** write every colour, space, radius, font face and type size as a token; add a light and a dark value for any new colour in `tokens.css`.
+- **Do** give every tappable element at least 48px (`--target-min`) with 8px between neighbours.
+- **Do** put photos in a 2.5:3.5 frame (3.5:2.5 for landscape) and never crop the photo.
+- **Do** mark section breaks and titles with the stitch, and numbers with Roboto Slab.
+- **Do** build new data lists as ruled tables (1px keylines) and new fields as ruled lines.
+- **Do** keep gold for the one primary action and red for the stitch and the Rookie flag.
+- **Do** let the phone pick light or dark, and bundle any new font inside the app.
 
 ### Don't:
 - **Don't** write colour literals (hex, rgb, hsl) outside `tokens.css`.
-- **Don't** add blur, backdrop-filter or drop shadows; the inset lit edge is the only box-shadow.
+- **Don't** add blur, backdrop-filter or any shadow.
 - **Don't** add an in-app theme toggle.
-- **Don't** use yellow as small text on the light page.
-- **Don't** add a second add button to a screen, or a centered modal where a sheet fits.
+- **Don't** use gold or red as text.
+- **Don't** wrap data in rounded filled cards; use rules, not boxes.
+- **Don't** add a second Add card button to a screen, or a centered modal where a sheet fits.
 
 ### Not canonized (defects the build carries)
-- The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`), a glyph icon; future surfaces should use an inline SVG from `src/app/Icon.tsx`, not copy it.
-- Sizes outside the token scales (thumbnail slot 67x67, placeholder 48x67, photo slots 56x78, 96px thumb and textarea, 60vh zoom, 1.3 and 1.2 line-heights) are one-off literals in `app.css`, not system tokens.
+- The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
+- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 10x14 Rookie flag, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.
+- `font-variant-caps: normal` on the label rule in `app.css` is a no-op leftover and carries no meaning.
