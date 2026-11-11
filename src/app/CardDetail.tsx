@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
+import { Frame } from "./Frame";
 import { useThumbUrl } from "./hooks";
 import { PhotoView } from "./PhotoView";
 import { Sheet } from "./Sheet";
@@ -17,7 +18,7 @@ function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen
   const url = useThumbUrl(card.id, side, true, card.updatedAt);
   return (
     <button className="photo-thumb" aria-label={`View ${side} photo`} onClick={onOpen}>
-      {url && <img src={url} alt="" />}
+      <Frame url={url} />
     </button>
   );
 }
@@ -44,6 +45,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         <h2>{card.player}</h2>
         {serial && <span className="tag">{serial}</span>}
       </div>
+      <div className="stitch" aria-hidden="true" />
       <p className="subtitle" data-testid="subtitle">
         {card.year} {card.set}
         {card.cardNumber && ` · #${card.cardNumber}`}

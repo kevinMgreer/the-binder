@@ -21,6 +21,7 @@ import { SyncProvider } from "./app/sync-context";
 import type { Ports } from "./ports";
 import { SyncEngine } from "./sync/engine";
 import { GitHubReleaseFeed } from "./updates/github-release-feed";
+import "./app/fonts.css";
 import "./app/tokens.css";
 import "./app/app.css";
 

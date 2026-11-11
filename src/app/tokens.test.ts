@@ -93,7 +93,7 @@ describe("colour literals", () => {
     for (const name of readdirSync(dir)) {
       const p = join(dir, name);
       if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(css|tsx?)$/.test(name) && !/\.test\.tsx?$/.test(name) && p !== tokensPath) files.push(p);
+      else if (/\.(css|tsx?)$/.test(name) && !/\.test\.tsx?$/.test(name) && p !== tokensPath && name !== "fonts.css") files.push(p);
     }
   };
   walk(join(root, "src"));

@@ -78,6 +78,7 @@ export function AuthGate({ autoSync, children }: { autoSync: boolean; children: 
     return (
       <main>
         <h1>The Binder</h1>
+        <div className="stitch" aria-hidden="true" />
         <button className="primary" onClick={signIn}>
           Sign in with Google
         </button>

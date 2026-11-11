@@ -17,9 +17,7 @@ export function BottomNav({ active, onNavigate }: Props) {
     <nav className="bottom-nav" aria-label="Main">
       {ITEMS.map(({ to, label }) => (
         <button key={to} aria-current={to === active ? "page" : undefined} onClick={() => to !== active && onNavigate(to)}>
-          <span className="nav-indicator">
-            <Icon name={to === "list" ? "cards" : "dashboard"} />
-          </span>
+          <Icon name={to === "list" ? "cards" : "dashboard"} />
           {label}
         </button>
       ))}
