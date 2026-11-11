@@ -148,9 +148,12 @@ components:
     backgroundColor: "{colors.panel}"
     textColor: "{colors.ink-muted}"
     height: "64px"
-  add-bar:
-    backgroundColor: "{colors.ground}"
-    padding: "8px 20px"
+  nav-add:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ground}"
+    rounded: "{rounded.frame}"
+    width: "40px"
+    height: "24px"
 ---
 
 # Design System: The Binder
@@ -163,7 +166,7 @@ Recorded from `src/app/tokens.css`, `app.css`, `fonts.css` and the components as
 
 The collection looks like the back of a baseball card: calm cardboard, one ink, stat-line type. Light is **Card-Back Calm**, a warm cream cardboard ground with deep navy as the only ink for text, rules and borders. Dark is **Night Game**, a deep navy ground with lighter navy panels and cream text. Two things carry the world: photos that always sit in true 2.5:3.5 trading-card frames, and stat-line numbers in a slab face. Everything else is quiet and open: whitespace between sections, hairline navy rules, ruled tables of numbers, ink-filled primary buttons and outlined secondary ones.
 
-The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 24px page gutters, 32px between sections, one ink-filled Add card button on each top-level screen.
+The phone owns the theme. Light and dark both ship and follow `prefers-color-scheme`; there is no in-app toggle. Density is thumb-first: 48px targets, 24px page gutters, 32px between sections, Add card is the middle item of the bottom navigation on each top-level screen.
 
 **Key Characteristics:**
 - One ink (navy in light, cream in dark); rules and borders are that ink, thinned.
@@ -178,13 +181,13 @@ The phone owns the theme. Light and dark both ship and follow `prefers-color-sch
 A cream-and-navy neutral world with one flag colour. Status is a single danger red.
 
 ### Primary
-- **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Add card, Save, Edit, Show cards in the sheet, Sign in with Google), always with ground-coloured text (cream on navy in light, navy on cream in dark). There is no gold.
+- **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Save, Edit, Show cards in the sheet, Sign in with Google) and the Add frame in the bottom navigation, always with ground-coloured text (cream on navy in light, navy on cream in dark). There is no gold.
 
 ### Secondary
 - **Flag Red** (flag #c8372d light, night-flag #e0574b dark): the small Rookie flag on the Rookies tile and nothing else. Decorative only; never text.
 
 ### Neutral
-- **Cardboard Cream** (ground #f3ecdc / night-ground #101a30): app background and the Add-card band.
+- **Cardboard Cream** (ground #f3ecdc / night-ground #101a30): app background.
 - **Panel** (panel #f3ecdc / night-panel #17233f): stat tables, sheets, dialogs, banners, bottom nav, zoom view. In light it equals the ground; in dark it is one step lighter navy.
 - **Card Ink** (ink #1c2b4a / night-ink #f3ecdc): all text, borders, chips, badge fill and the focus ring.
 - **Muted Ink** (ink-muted #4a5670 / night-ink-muted #c2bcae): labels, placeholders, hints, inactive nav, secondary row text.
@@ -229,11 +232,11 @@ A cream-and-navy neutral world with one flag colour. Status is a single danger r
 
 Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm runs on the 4px scale plus named tokens: `--gap-section` 32 between sections, `--gap-field` 24 between form fields, `--gap-label` 8 from a label to its field, `--pad-cell` 16 inside stat cells, team and fact rows and between a list thumbnail and its text, `--gap-frame` 12 between Recently added frames, `--gap-caption` 8 from frame to caption. Related controls sit 8px apart; the danger zone is separated by 32px plus a keyline.
 
-The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). The Add card button lives in a fixed ground-coloured band just above it (8px padding), so scrolled content stops above the button; the list scroller and the dashboard reserve the room beneath so their last row clears the band.
+The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). Add card is the middle item of that bar, so there is no separate button or band; the list scroller and the dashboard reserve the room beneath so their last row clears the bar.
 
 Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a single 1px rule; Sign in again, the missing-file choice and the full sync error line appear below the rule while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the rule under their title.
 
-The dashboard is a six-tile stat table (two columns by three rows), a Recently added row of four trading-card frames, a Top teams stat table of up to five rows, then the Add card band. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
+The dashboard is a six-tile stat table (two columns by three rows), a Recently added row of four trading-card frames, a Top teams stat table of up to five rows. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
 
 ### Named Rules
 **The 48 Rule.** Anything tappable is at least 48px (`--target-min`) in height and width, visually or through its row; table cells are inset 4px so neighbours stay 8px apart.
@@ -258,13 +261,13 @@ Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons,
 - **Primary:** Ink fill and border, ground-coloured text, Inter 600 at 1rem, frame radius, 48px high. One per screen footer or sheet footer; in a row it takes the remaining width.
 - **Danger:** no border, Danger text, weight 600; sits apart under a keyline in the danger zone, left-aligned.
 - **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset.
-- **Add card:** primary, full width, inside the fixed Add-card band above the bottom navigation; the one entry point for adding on the dashboard and the list, the same component on both.
+- **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a plus in a 40x24 ink-filled frame with the frame radius, ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
 
 ### Bottom navigation
-Fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px plus the bottom inset, panel background with a keyline top border. Dashboard and Cards share the width with an 8px gap; each is a button of at least 48x48 with a 24px inline-SVG icon above a label. Active is ink text at weight 600 with an ink-filled icon and `aria-current="page"`; there is no underline or pill. Inactive items use Muted Ink. Tapping the active item does nothing. Settings stays a header action.
+Fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px plus the bottom inset, panel background with a keyline top border. Dashboard, Add and Cards share the width with 8px gaps; each is a button of at least 48x48 with a 24px inline-SVG icon above a label. Active is ink text at weight 600 with an ink-filled icon and `aria-current="page"`; there is no underline or pill. Inactive items use Muted Ink. Tapping the active item does nothing. Settings stays a header action.
 
 ### Icon button
-Icon-only 48x48 button for header actions (the Settings gear), borderless in the title row. Name from `aria-label`. Icons are inline SVG in `src/app/Icon.tsx` (gear, dashboard, cards), `currentColor`, `aria-hidden`; no icon font or package.
+Icon-only 48x48 button for header actions (the Settings gear), borderless in the title row. Name from `aria-label`. Icons are inline SVG in `src/app/Icon.tsx` (gear, dashboard, cards, plus), `currentColor`, `aria-hidden`; no icon font or package.
 
 ### Stat table and tiles
 One ruled block: panel background, 1px ink border, frame radius. Six tiles in a two-column grid; each is a 48px-minimum button inset 4px, with keylines drawn between cells (right of the left column, below the first four). Label on top (uppercase label size, Muted Ink), number below (Slab 700 at 2rem, ink). Never gold-filled. The Rookies tile carries a small red flag notched at its top edge. Tapping opens the list filtered to what the tile counts; the accessible name is "label, number".
@@ -316,7 +319,7 @@ The dashboard is the start destination: Android's back closes the app from there
 - **Don't** add an in-app theme toggle.
 - **Don't** use the flag red as text.
 - **Don't** wrap data in rounded filled cards; use rules, not boxes.
-- **Don't** add a second Add card button to a screen, or a centered modal where a sheet fits.
+- **Don't** add a second Add card control to a screen, or a centered modal where a sheet fits.
 
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.

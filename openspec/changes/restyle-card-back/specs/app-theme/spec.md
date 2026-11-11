@@ -13,7 +13,7 @@ The system SHALL define every colour, font family, spacing, radius, type size, r
 
 #### Scenario: Changing a token restyles every screen
 - **WHEN** a test overrides the ink token on the root element
-- **THEN** the computed background of the Add card button, the card form's Save button, the filter sheet's Show cards button and the detail screen's Edit button all change to it
+- **THEN** the computed background of the Add frame in the bottom navigation, the card form's Save button, the filter sheet's Show cards button and the detail screen's Edit button all change to it
 
 #### Scenario: Changing the ink token restyles text and rules
 - **WHEN** a test overrides the ink token on the root element
@@ -65,11 +65,11 @@ No other colour roles SHALL exist besides the sheet scrim and the photo placehol
 
 #### Scenario: Light palette
 - **WHEN** the phone is light and the dashboard is shown
-- **THEN** the page background computes to #f3ecdc, the title colour to #1c2b4a and the Add card button background to #1c2b4a with #f3ecdc text
+- **THEN** the page background computes to #f3ecdc, the title colour to #1c2b4a and the Add frame in the bottom navigation to a #1c2b4a background with #f3ecdc plus
 
 #### Scenario: Dark palette
 - **WHEN** the phone is dark and the dashboard is shown
-- **THEN** the page background computes to #101a30, the stat table background to #17233f, the title colour to #f3ecdc and the Add card button background to #f3ecdc with #101a30 text
+- **THEN** the page background computes to #101a30, the stat table background to #17233f, the title colour to #f3ecdc and the Add frame in the bottom navigation to a #f3ecdc background with #101a30 plus
 
 #### Scenario: Every role has both values
 - **WHEN** the token file is read
@@ -120,7 +120,7 @@ The system SHALL use the flag colour only for the small Rookies flag on the dash
 - **THEN** a 1 px rule in the rule colour sits under the screen title, and no element has a dashed border
 
 #### Scenario: Primary button
-- **WHEN** Add card, Save, Edit, Show cards or Sign in with Google is shown
+- **WHEN** Save, Edit, Show cards or Sign in with Google is shown
 - **THEN** its background computes to the ink colour, its text to the ground colour, its radius to 6 px and its height to at least 48 dp
 
 #### Scenario: Red stays rare
@@ -144,7 +144,7 @@ The system SHALL show every card photo and the photo placeholder inside a tradin
 
 ### Requirement: Every screen wears the card-back look
 The system SHALL draw every screen on the ground colour with ink text, ruled tables instead of boxed buttons, and no translucent, blurred or shadowed surface:
-- Cards list: rows on the ground separated by 1 px rules, the search field as a ruled line (a tinted field with an ink underline and no box), the Filter button as an outlined box, applied filter chips as ink-filled pills with ground-coloured text, the shown count in uppercase label type; the fixed Add card button sits on a ground-coloured band so content stops above it.
+- Cards list: rows on the ground separated by 1 px rules, the search field as a ruled line (a tinted field with an ink underline and no box), the Filter button as an outlined box, applied filter chips as ink-filled pills with ground-coloured text, the shown count in uppercase label type; adding is the Add item of the bottom navigation, with no standalone button or band.
 - Card detail: the player title in the slab face with the serial stamp beside it, a rule below, the ruled fact list, framed photo strip, Edit as the primary button, Delete in danger text below a rule.
 - Card form: fields as ruled lines with uppercase labels, framed photo slots each closed by a rule, Identify with Claude set apart from the Scan and Pick buttons, Save as the primary button, Cancel as an ink-outlined button.
 - Settings: groups as ruled stat-table rows, Sign out in danger text apart below a rule.

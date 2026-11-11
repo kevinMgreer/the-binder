@@ -81,7 +81,7 @@ form, section, main { padding: var(--space-3) var(--gutter) calc(var(--gap-field
 
 .collection { display: flex; flex-direction: column; height: 100%; padding: var(--space-3) var(--gutter) 0; box-sizing: border-box; gap: var(--space-3); }
 .collection header { display: flex; flex-direction: column; gap: var(--space-2); }
-.dashboard { display: flex; flex-direction: column; gap: var(--gap-section); padding-bottom: calc(var(--target-min) + var(--nav-height) + var(--space-2) + var(--space-2) + var(--inset-bottom)); }
+.dashboard { display: flex; flex-direction: column; gap: var(--gap-section); padding-bottom: calc(var(--nav-height) + var(--space-4) + var(--inset-bottom)); }
 .dashboard header { display: flex; flex-direction: column; gap: var(--space-2); }
 header .title-rule { margin: 0; }
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 56px; }
@@ -124,9 +124,10 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); flex: none; }
 .chip { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); border-radius: var(--radius-pill); }
 .chip::after { content: "\00d7"; margin-left: var(--space-2); font-size: var(--type-table); line-height: 1; }
-/* A ground-coloured band, so scrolled content stops above the button. */
-.add-bar { position: fixed; left: 0; right: 0; bottom: calc(var(--inset-bottom) + var(--nav-height)); z-index: 1; padding: var(--space-2) var(--gutter); background: var(--color-ground); }
-.add-bar .add-button { display: flex; width: 100%; }
+/* Add is an action, not a destination: the plus sits in an ink-filled frame like a primary button. */
+.nav-add { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 24px; box-sizing: border-box; background: var(--color-ink); color: var(--color-ground); border-radius: var(--radius-frame); }
+.nav-add svg { width: 20px; height: 20px; }
+.bottom-nav .nav-action { color: var(--color-ink); font-weight: 600; }
 
 .bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; box-sizing: border-box; display: flex; gap: var(--space-2); height: calc(var(--nav-height) + var(--inset-bottom)); padding: 0 var(--space-3) var(--inset-bottom); background: var(--color-panel); border-top: var(--rule) solid var(--color-rule); }
 .bottom-nav button { position: relative; flex: 1; flex-direction: column; justify-content: center; gap: var(--space-1); padding: 0; background: none; border: 0; border-radius: 0; color: var(--color-ink-muted); }
@@ -147,7 +148,7 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .shown { margin: 0; color: var(--color-ink-muted); }
 .empty { color: var(--color-ink-muted); padding: var(--space-5) var(--space-3); background: var(--color-panel); border: var(--rule) solid var(--color-rule); border-radius: var(--radius-frame); }
 
-.list-scroller { flex: 1; overflow: auto; margin-bottom: calc(var(--target-min) + var(--nav-height) + var(--space-2) + var(--space-2)); }
+.list-scroller { flex: 1; overflow: auto; margin-bottom: calc(var(--nav-height) + var(--space-2)); }
 .list { position: relative; margin: 0; padding: 0; list-style: none; }
 .list li { position: absolute; top: 0; left: 0; right: 0; box-sizing: border-box; padding: 0 0 var(--space-2); }
 .list li::after { content: ""; position: absolute; left: 0; right: 0; bottom: var(--space-1); border-bottom: var(--rule) solid var(--color-rule); pointer-events: none; }

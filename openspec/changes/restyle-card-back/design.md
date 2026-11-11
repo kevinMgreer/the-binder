@@ -97,7 +97,7 @@ One branch, no data change. Tokens and fonts land first, then screens one by one
 
 ## Update after the owner's phone review
 
-Supersedes D3, D5 and D8 where they differ: the stitch (D5) is removed with `--color-stitch`, `--stitch-line` and `--stitch-gap`, and the Rookies flag keeps its red as `--color-flag`; sections are separated by whitespace and a single 1 px `--color-rule` line under titles only; the active tab has no underline. The primary action (D8) is ink-filled with ground-coloured text, so `--color-gold` and `--color-on-gold` are removed. Spacing is opened up by tokens: `--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8. List rows stay 100 dp.
+Supersedes D3, D5 and D8 where they differ: the stitch (D5) is removed with `--color-stitch`, `--stitch-line` and `--stitch-gap`, and the Rookies flag keeps its red as `--color-flag`; sections are separated by whitespace and a single 1 px `--color-rule` line under titles only; the active tab has no underline. The primary action (D8) is ink-filled with ground-coloured text, so `--color-gold` and `--color-on-gold` are removed. Spacing is opened up by tokens: `--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8. List rows stay 100 dp. Add card is no longer a button or band on the screens: it is the middle item of the bottom navigation (Dashboard, Add, Cards), an action never marked current, drawn as a plus in a 40 by 24 dp ink-filled frame with a 6 px radius. No token changes.
 
 ## Open Questions
 

@@ -91,3 +91,33 @@ The system SHALL show the sync state on the title row of the dashboard and the c
 #### Scenario: Screen reader
 - **WHEN** the sync state changes from "Syncing…" to "Synced", or to the error state
 - **THEN** the title-row element has `role="status"` and its accessible text is the new short wording, and the line under the title rule has no role of its own
+
+### Requirement: The list leads with finding a card
+The system SHALL show, on the collection screen, a header whose one row holds the title, the sync state and Settings, then one row holding the search field and a Filter button, then the card list. It SHALL NOT show a collection count line (total and distinct cards) on this screen; the dashboard's Cards and Distinct tiles carry those totals, and the "Showing N" line stays. It SHALL offer exactly one add action, the Add item of the bottom navigation (named "Add card"), which opens the add form.
+
+#### Scenario: First screen
+- **WHEN** the collection screen opens on a 360 by 800 phone, with the update banner showing
+- **THEN** the sync state, the search field and the Filter button are visible without scrolling, and at least three card rows are visible below them
+
+#### Scenario: No count line
+- **WHEN** the collection screen is shown for a collection of 12 cards, 10 of them distinct
+- **THEN** no text reading "12 cards, 10 distinct" (or any "N cards, N distinct" line) is shown, and the "Showing 10" line is shown
+
+#### Scenario: One add action
+- **WHEN** the collection screen is shown
+- **THEN** exactly one button named "Add card" is visible, it is the Add item of the bottom navigation, and tapping it opens the add form
+
+#### Scenario: Sign in again stays reachable
+- **WHEN** the session needs a new sign-in
+- **THEN** Sign in again is shown in the header area, beneath the title row, in one tap
+
+### Requirement: The first screen holds with the bottom navigation
+The system SHALL keep the collection list's first screen usable with the bottom navigation bar: the "Cards" title, the sync state, the gear, the search field and the Filter button visible without scrolling, and at least three full card rows inside the list scroller. The list scroller SHALL end at least 8 dp above the top of the bottom navigation bar, so the last row can scroll clear of the bar.
+
+#### Scenario: First screen with the bar
+- **WHEN** the collection screen opens on a 360 by 800 phone with a 24 dp status bar, a 48 dp bottom inset and the update banner showing
+- **THEN** the "Cards" title, the sync state, the Settings gear, the search field, the Filter button and the "Showing N" line are in view, the list scroller's bottom is at least 8 dp above the top of the bottom navigation bar, and at least three card rows end above the scroller's bottom
+
+#### Scenario: Last row reachable
+- **WHEN** the user scrolls a list of 20 cards to its end
+- **THEN** the last row is fully visible above the bottom navigation bar and can be tapped

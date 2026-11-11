@@ -86,14 +86,13 @@ test.describe("theme", () => {
     expect(await pageBackground(page)).toBe(dark);
   });
 
-  test("overriding the ink token restyles Add card, Save, Show cards and Edit", async ({ page }) => {
+  test("overriding the ink token restyles Save, Show cards, Edit and the Add frame", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
     await seed(page, CARDS);
     await applyYearFrom(page, "2000");
-    const add = page.getByRole("button", { name: "Add card", exact: true });
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
-    expect(await css(add, "background-color")).toBe("rgb(1, 2, 3)");
+    expect(await css(page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add"), "background-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Filter/ }).click();
     expect(await css(page.getByRole("button", { name: /^Show \d+ cards?$/ }), "background-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
@@ -162,11 +161,11 @@ for (const size of PHONES) {
       for (const name of ["Scan card", "Pick from photos", "Enter by hand"]) await expect(page.getByRole("button", { name })).toHaveCount(0);
     });
 
-    test("One add button per screen, at least 8 dp above the bar", async ({ page }) => {
+    test("One Add card control per screen, in the bar; no standalone button or band", async ({ page }) => {
       const add = page.getByRole("button", { name: "Add card", exact: true });
       await expect(add).toHaveCount(1);
-      const nav = page.getByRole("navigation", { name: "Main" });
-      expect((await nav.boundingBox())!.y - (await bottom(add))).toBeGreaterThanOrEqual(7.5);
+      await expect(page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Add card", exact: true })).toHaveCount(1);
+      await expect(page.locator(".add-bar, .add-button")).toHaveCount(0);
     });
 
     test("A sheet takes focus when it opens and closes on Escape", async ({ page }) => {
@@ -687,7 +686,7 @@ test.describe("States at phone size", () => {
     });
   }
 
-  test("Dashboard groups: four recent cards and five teams, nothing scrolls sideways, Add card clears the last entry", async ({ page }) => {
+  test("Dashboard groups: four recent cards and five teams, nothing scrolls sideways, the bar clears the last entry", async ({ page }) => {
     await page.goto("/");
     await seedDashboard(page);
     await page.evaluate(() => {
@@ -698,8 +697,8 @@ test.describe("States at phone size", () => {
     await expect(page.getByTestId("team")).toHaveCount(5);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
-    expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual(add.y);
+    const navTop = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!.y;
+    expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual(navTop);
   });
 
   test("Tiles at phone size: six tiles are 48 dp, in view, clear of the system bars", async ({ page }) => {
@@ -713,9 +712,9 @@ test.describe("States at phone size", () => {
     for (const el of await page.getByTestId("tile").all()) {
       await expect(el).toBeInViewport({ ratio: 1 });
     }
-    const add = page.getByRole("button", { name: "Add card", exact: true });
-    expect(await bottom(add)).toBeLessThanOrEqual(800 - 48);
-    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual((await add.boundingBox())!.y);
+    const nav = page.getByRole("navigation", { name: "Main" });
+    expect(await bottom(nav.getByRole("button", { name: "Add card", exact: true }))).toBeLessThanOrEqual(800 - 48 + 0.5);
+    expect(await bottom(page.getByTestId("tile").last())).toBeLessThanOrEqual((await nav.boundingBox())!.y);
     expect((await page.getByTestId("tile").first().boundingBox())!.y).toBeGreaterThanOrEqual(24);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   });
@@ -734,7 +733,7 @@ test.describe("Bottom navigation and header", () => {
 
   test("Shown on the top-level screens", async ({ page }) => {
     await page.goto("/");
-    await expect(nav(page).getByRole("button")).toHaveText(["Dashboard", "Cards"]);
+    await expect(nav(page).getByRole("button")).toHaveText(["Dashboard", "Add", "Cards"]);
     await expect(item(page, "Dashboard")).toHaveAttribute("aria-current", "page");
     await expect(item(page, "Cards")).not.toHaveAttribute("aria-current", "page");
     await item(page, "Cards").click();
@@ -858,7 +857,7 @@ test.describe("Bottom navigation and header", () => {
     await expect(page.getByRole("button", { name: /^Remove Autograph filter/ })).toBeVisible();
   });
 
-  test("Last row reachable: 20 cards scroll clear of Add card and the bar", async ({ page }) => {
+  test("Last row reachable: 20 cards scroll clear of the bar", async ({ page }) => {
     await page.goto("/");
     await seed(page, Array.from({ length: 20 }, (_, i) => ({ player: `Player ${String(i).padStart(2, "0")}`, cardNumber: String(i + 1) })));
     await insets(page);
@@ -867,18 +866,37 @@ test.describe("Bottom navigation and header", () => {
     const scrollerBottom = await bottom(page.locator(".list-scroller"));
     await expect(last).toBeInViewport();
     expect(await bottom(last)).toBeLessThanOrEqual(scrollerBottom + 1);
-    expect(scrollerBottom).toBeLessThanOrEqual((await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!.y - 7.5);
+    expect(scrollerBottom).toBeLessThanOrEqual((await nav(page).boundingBox())!.y - 7.5);
     await last.click();
     await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
   });
 
-  test("Add card clears the last dashboard item at the end of the scroll", async ({ page }) => {
+  test("The bar clears the last dashboard item at the end of the scroll", async ({ page }) => {
     await page.goto("/");
     await seedDashboard(page);
     await insets(page);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
-    expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual(add.y);
+    expect(await bottom(page.getByTestId("team").last())).toBeLessThanOrEqual((await nav(page).boundingBox())!.y);
+  });
+
+  test("Add is an action between Dashboard and Cards: a framed plus, never current, opens the form and returns to its origin", async ({ page }) => {
+    await page.goto("/");
+    await expect(nav(page).getByRole("button")).toHaveText(["Dashboard", "Add", "Cards"]);
+    const add = nav(page).getByRole("button", { name: "Add card", exact: true });
+    await expect(add).not.toHaveAttribute("aria-current", /.+/);
+    const box = (await add.boundingBox())!;
+    expect(box.width).toBeGreaterThanOrEqual(47.5);
+    expect(box.height).toBeGreaterThanOrEqual(47.5);
+    const frame = add.locator(".nav-add");
+    expect(await css(frame, "background-color")).toBe("rgb(28, 43, 74)");
+    expect(await css(frame, "border-top-left-radius")).toBe("6px");
+    await expect(add.locator("svg[aria-hidden=true]")).toHaveCount(1);
+    await item(page, "Cards").click();
+    await add.click();
+    await expect(page.getByRole("heading", { name: "Add card" })).toBeVisible();
+    await hardwareBack(page);
+    await expect(page.getByTestId("shown")).toBeVisible();
+    await expect(item(page, "Cards")).toHaveAttribute("aria-current", "page");
   });
 });
 
@@ -928,11 +946,9 @@ test.describe("Card-back look", () => {
         : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)" };
       expect(await pageBackground(page)).toBe(want.bg);
       expect(await css(page.getByRole("heading", { name: "Dashboard" }), "color")).toBe(want.ink);
-      const add = page.getByRole("button", { name: "Add card", exact: true });
-      expect(await css(add, "background-color")).toBe(want.ink);
-      expect(await css(add, "color")).toBe(want.bg);
-      expect(await css(add, "border-top-left-radius")).toBe("6px");
-      expect((await add.boundingBox())!.height).toBeGreaterThanOrEqual(47.5);
+      const frame = page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add");
+      expect(await css(frame, "background-color")).toBe(want.ink);
+      expect(await css(frame, "color")).toBe(want.bg);
       if (scheme === "dark") expect(await css(page.locator(".tiles"), "background-color")).toBe("rgb(23, 35, 63)");
     });
 
@@ -1181,7 +1197,7 @@ test.describe("Card-back look", () => {
     expect(await css(page.locator(".list-scroller"), "background-color")).toBe("rgba(0, 0, 0, 0)");
   });
 
-  test("Fields are ruled lines, buttons are boxes; Add card sits on a ground band; the sheet has a foot rule and Year side by side", async ({ page }) => {
+  test("Fields are ruled lines, buttons are boxes; the sheet has a foot rule and Year side by side", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
     const search = page.getByLabel("Search", { exact: true });
@@ -1189,7 +1205,6 @@ test.describe("Card-back look", () => {
     expect(await css(search, "border-top-width")).toBe("0px");
     expect(await css(search, "border-top-left-radius")).toBe("0px");
     expect(await css(page.getByRole("button", { name: /^Filter/ }), "border-top-left-radius")).toBe("6px");
-    expect(await css(page.locator(".add-bar"), "background-color")).toBe("rgb(243, 236, 220)");
     await page.getByRole("button", { name: /^Filter/ }).click();
     expect(await css(page.locator(".sheet-foot"), "border-top-width")).toBe("1px");
     const [from, to] = await Promise.all(["Year from", "Year to"].map((l) => page.getByLabel(l, { exact: true }).boundingBox()));
