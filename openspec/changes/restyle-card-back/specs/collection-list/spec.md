@@ -63,7 +63,7 @@ The system SHALL mark a serial-numbered card with its existing serial label (for
 - **THEN** its row shows no tag and no empty space reserved for one
 
 ### Requirement: The card detail screen is a tidy fact sheet
-The system SHALL lay the card detail screen out, top to bottom, as: the player as a large title in the slab face with the serial stamp beside it, a stitch rule, a quiet subtitle "year set · #number", a plain list of facts separated by 1 px rules with the label in small-caps label type at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a strip of photo thumbnails in trading-card frames, a muted last-edited line, Edit as a full-width gold primary button, and Delete set apart below a rule. The list SHALL NOT sit in a box.
+The system SHALL lay the card detail screen out, top to bottom, as: the player as a large title in the slab face with the serial stamp beside it, a stitch rule, a quiet subtitle "year set · #number", a plain list of facts separated by 1 px rules with the label in uppercase label type at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a strip of photo thumbnails in trading-card frames, a muted last-edited line, Edit as a full-width gold primary button, and Delete set apart below a rule. The list SHALL NOT sit in a box.
 
 #### Scenario: Fact list
 - **WHEN** a card with a team, a serial-numbered parallel, a grade and quantity 3 is opened

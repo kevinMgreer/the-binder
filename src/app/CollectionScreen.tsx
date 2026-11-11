@@ -165,8 +165,10 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
         >
           <div className="group">
             <h3>Year</h3>
-            {number("yearFrom", "Year from")}
-            {number("yearTo", "Year to")}
+            <div className="pair">
+              {number("yearFrom", "Year from")}
+              {number("yearTo", "Year to")}
+            </div>
           </div>
           <div className="group">
             <h3>Card</h3>

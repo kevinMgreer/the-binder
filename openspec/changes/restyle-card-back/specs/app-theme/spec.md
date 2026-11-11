@@ -56,7 +56,7 @@ The system SHALL show the "Card-Back Calm" palette when the phone is light and t
 | panel (stat tables, sheets, dialogs, bottom bar) | #f3ecdc | #17233f |
 | ink (text, icons, rules) | #1c2b4a | #f3ecdc |
 | muted ink (secondary text) | #4a5670 | #c2bcae |
-| rule (table and row rules) | #1c2b4a | #f3ecdc at 30 percent |
+| rule (row, fact and sheet rules; full ink stays for frames, buttons, field underlines and the stat and team table outlines) | #1c2b4a at 55 percent | #f3ecdc at 30 percent |
 | stitch (seam, Rookies flag) | #c8372d | #e0574b |
 | gold (primary action fill) | #f1c24a | #f1c24a |
 | on-gold (text on gold) | #1c2b4a | #101a30 |
@@ -93,15 +93,15 @@ The system SHALL draw titles and numbers in the slab face Roboto Slab (weights 6
 - **THEN** the title renders in Roboto Slab, the same as online
 
 ### Requirement: Type scale
-The system SHALL use these sizes and no others for text: 12 label (small caps, letter-spaced, sans 600), 14 body (sans 400, list player name 500), 16 gold button label (sans 600), 18 table number (slab 700), 24 stat number (slab 700), 28 screen title (slab 700), each in CSS px scaled by the phone's text size setting.
+The system SHALL use these sizes and no others for text: 12 label (uppercase, letter-spaced 0.08em, sans 600, never small-caps variants, which shrink the capitals below 12), 14 body (sans 400, list player name 500), 16 gold button label (sans 600), 18 table number and group heading (slab 700), 28 screen title (slab 700), 32 stat number (slab 700), each in CSS px scaled by the phone's text size setting.
 
 #### Scenario: Sizes on the dashboard
 - **WHEN** the dashboard is shown at the default text size
-- **THEN** the title computes to 28 px, a stat number to 24 px, a stat label to 12 px with small caps, a Top teams count to 18 px and a Recently added caption to 12 px
+- **THEN** the title computes to 28 px, a stat number to 32 px, a stat label to a computed 12 px in uppercase with normal font-variant-caps, a group heading (Recently added, Top teams) to 18 px in the slab face, a Top teams count to 18 px and a Recently added caption to 12 px
 
 #### Scenario: No stray sizes
 - **WHEN** every text element on the dashboard, list, detail, form, Settings and filter sheet is measured at the default text size
-- **THEN** each font size is one of 12, 14, 16, 18, 24 or 28 px
+- **THEN** each font size is one of 12, 14, 16, 18, 28 or 32 px
 
 ### Requirement: Red is the stitch and nothing else
 The system SHALL draw the stitch as a double dashed rule (two 1.5 px dashed lines 5 px apart, in the stitch colour) under each screen title, between the dashboard's sections and under the active bottom-navigation tab, and SHALL use the stitch colour elsewhere only for the small Rookies flag on the dashboard. Error text, Delete and Sign out SHALL use the danger colour, not the stitch colour.
@@ -131,11 +131,12 @@ The system SHALL show every card photo and the photo placeholder inside a tradin
 
 ### Requirement: Every screen wears the card-back look
 The system SHALL draw every screen on the ground colour with ink text, ruled tables instead of boxed buttons, and no translucent, blurred or shadowed surface:
-- Cards list: rows on the ground separated by 1 px rules, search field and Filter button as ruled inputs, applied filter chips as ink-filled pills with ground-coloured text, the shown count in small-caps label type.
+- Cards list: rows on the ground separated by 1 px rules, the search field as a ruled line (a tinted field with an ink underline and no box), the Filter button as an outlined box, applied filter chips as ink-filled pills with ground-coloured text, the shown count in uppercase label type; the fixed Add card button sits on a ground-coloured band so content stops above it.
 - Card detail: the player title in the slab face with the serial stamp beside it, a stitch below, the ruled fact list, framed photo strip, Edit in gold, Delete in danger text below a rule.
-- Card form: fields as ruled inputs with small-caps labels, framed photo slots, Save in gold, Cancel as an ink-outlined button.
+- Card form: fields as ruled lines with uppercase labels, framed photo slots each closed by a rule, Identify with Claude set apart from the Scan and Pick buttons, Save in gold, Cancel as an ink-outlined button.
 - Settings: groups as ruled stat-table rows, Sign out in danger text apart below a rule.
-- Filter sheet: the panel colour, small-caps group headings, Show cards in gold, Clear all ink-outlined.
+- Filter sheet: the panel colour, slab group headings above a rule (distinct from the uppercase field labels), Year from and Year to side by side, a rule above the foot, Show cards in gold, Clear all ink-outlined.
+- Sync error: the title row keeps only the dot and the short words "Sync problem"; the full wording ("Sync problem, retrying (N unsynced)") sits in a full-width status line under the stitch in the danger colour at 14 px.
 - Dialogs, banners and the empty state: the panel colour with a 1 px rule border, no gradient.
 
 #### Scenario: No pocket surface remains

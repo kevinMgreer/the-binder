@@ -37,7 +37,7 @@ The chosen look is recorded in the surface brief `.impeccable/surfaces/src-app.m
 - $0: CSS only.
 
 ### D2. One layout and one type system for both themes; the themes swap colour only
-Both themes use the Card-Back Calm layout and type: stacked stat cells (small-caps label above a 24 px slab number, 56 dp high), slab title, sans labels, gold button with sans 16 px label. Night Game differs only in colour roles plus the panel: stat tables, Top teams, sheets, dialogs and the bottom bar sit on `#17233f` with a 6 px radius, and rules are cream at 30 percent. The night mock's Oswald uppercase title, uppercase nav labels and inline 40 dp stat cells are not adopted.
+Both themes use the Card-Back Calm layout and type: stacked stat cells (uppercase label above a 32 px slab number, 56 dp high), slab title, sans labels, gold button with sans 16 px label. Night Game differs only in colour roles plus the panel: stat tables, Top teams, sheets, dialogs and the bottom bar sit on `#17233f` with a 6 px radius, and rules are cream at 30 percent. The night mock's Oswald uppercase title, uppercase nav labels and inline 40 dp stat cells are not adopted.
 - Alternatives: copy each mock exactly (rejected: a third font face, two layouts to test at 48 dp and 360 dp width, and screens that change shape when the phone switches theme).
 - $0: no third font.
 
@@ -45,7 +45,7 @@ Both themes use the Card-Back Calm layout and type: stacked stat cells (small-ca
 `tokens.css` replaces `--color-page`, `--color-surface`, `--color-pocket*`, `--color-accent*`, `--color-ok` and `--type-mono` with:
 - colour: `--color-ground`, `--color-panel`, `--color-ink`, `--color-ink-muted`, `--color-rule`, `--color-stitch`, `--color-gold`, `--color-on-gold`, `--color-danger`, `--color-frame`, `--color-scrim`, `--color-placeholder` (values in the app-theme spec table; scrim `#1c2b4a66` light, `#000000a6` dark; placeholder a flat tone of the ink at low strength, decided in the token file);
 - font: `--font-slab: "Roboto Slab", Georgia, serif`, `--font-sans: Inter, system-ui, sans-serif`;
-- size: `--type-label` 0.75rem (12, the owner's minimum label size), `--type-body` 0.875rem (14), `--type-table` 1.125rem (18), `--type-stat` 1.5rem (24), `--type-title` 1.75rem (28), plus `--type-button` 1rem (16) for the gold button label as in the mock; rem so Android's text size setting scales them;
+- size: `--type-label` 0.75rem (12, the owner's minimum label size), `--type-body` 0.875rem (14), `--type-table` 1.125rem (18), `--type-stat` 2rem (32, raised after review), `--type-title` 1.75rem (28), plus `--type-button` 1rem (16) for the gold button label as in the mock; rem so Android's text size setting scales them;
 - shape: `--radius-print` 3px, `--radius-frame` 6px (frames, buttons, inputs, dark tables), `--radius-pill` for chips and the count badge; `--rule` 1px; `--stitch-line` 1.5px; `--stitch-gap` 5px; `--frame-ratio: 2.5 / 3.5`; `--gutter` 20px (mock page padding);
 - the spacing scale, `--target-min` 48px and `--nav-height` 64px stay.
 The sync state's idle dot and text use the ink (the mock shows an ink dot); error, paused and needs-decision keep the danger colour, and the wording already carries the meaning.

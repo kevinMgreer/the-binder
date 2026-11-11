@@ -213,8 +213,17 @@ for (const size of PHONES) {
 
     test("Error wording is whole on at most two lines", async ({ page }) => {
       await setStatus(page, { state: "error", pending: 3 });
-      const status = page.locator("header").getByTestId("sync-status");
+      await expect(page.locator("header .title-row").getByTestId("sync-status")).toHaveText("Sync problem");
+      const status = page.locator("header").getByTestId("sync-detail");
       await expect(status).toHaveText("Sync problem, retrying (3 unsynced)");
+      expect(await css(status, "color")).toBe(await page.evaluate(() => {
+        const p = document.createElement("i");
+        p.style.color = "var(--color-danger)";
+        document.body.append(p);
+        const c = getComputedStyle(p).color;
+        p.remove();
+        return c;
+      }));
       const [h, line] = await status.evaluate((el) => [el.getBoundingClientRect().height, parseFloat(getComputedStyle(el).lineHeight)]);
       expect(h).toBeLessThanOrEqual(2 * line + 1);
       expect(await status.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
@@ -256,7 +265,7 @@ for (const size of PHONES) {
     test("Each sync state shows its wording in the header", async ({ page }) => {
       const states: [object, string][] = [
         [{ state: "syncing", pending: 0 }, "Syncing…"],
-        [{ state: "error", pending: 2 }, "Sync problem, retrying (2 unsynced)"],
+        [{ state: "error", pending: 2 }, "Sync problem"],
         [{ state: "paused", pending: 0 }, "Sync paused"],
         [{ state: "needs-decision", pending: 0 }, "Waiting for your choice"],
         [{ state: "idle", pending: 3 }, "Unsynced: 3"],
@@ -365,8 +374,8 @@ test.describe("destructive actions stay apart", () => {
     const thumb = page.getByRole("button", { name: "View front photo" });
     await expect(thumb).toBeVisible();
     const box = (await thumb.boundingBox())!;
-    expect(box.height).toBeGreaterThanOrEqual(90);
-    expect(box.height).toBeLessThanOrEqual(104);
+    expect(box.height).toBeGreaterThanOrEqual(130);
+    expect(box.height).toBeLessThanOrEqual(150);
     await expect(page.getByRole("button", { name: "View back photo" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
     const y = async (l: Locator) => (await l.boundingBox())!.y;
@@ -1044,9 +1053,16 @@ test.describe("Card-back look", () => {
     await seedDashboard(page);
     const size = (sel: string) => css(page.locator(sel).first(), "font-size");
     expect(await size("h1")).toBe("28px");
-    expect(await size(".tile-value")).toBe("24px");
+    expect(await size(".tile-value")).toBe("32px");
     expect(await size(".tile-label")).toBe("12px");
-    expect(await css(page.locator(".tile-label").first(), "font-variant-caps")).toBe("all-small-caps");
+    expect(await css(page.locator(".tile-label").first(), "text-transform")).toBe("uppercase");
+    expect(await css(page.locator(".tile-label").first(), "font-variant-caps")).toBe("normal");
+    expect(await css(page.locator(".group h2").first(), "font-family")).toContain("Roboto Slab");
+    expect(await size(".group h2")).toBe("18px");
+    for (const tile of await page.getByTestId("tile").all()) {
+      const fits = await tile.evaluate((el) => [...el.querySelectorAll("span")].every((s) => s.scrollWidth <= s.clientWidth + 1 && s.getBoundingClientRect().right <= el.getBoundingClientRect().right + 1));
+      expect(fits).toBe(true);
+    }
     expect(await size(".team-count")).toBe("18px");
     expect(await size(".recent-name")).toBe("12px");
   });
@@ -1061,7 +1077,7 @@ test.describe("Card-back look", () => {
           const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) || (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && (el as HTMLInputElement).type !== "checkbox");
           if (own) {
             const px = getComputedStyle(el).fontSize;
-            if (!["12px", "14px", "16px", "18px", "24px", "28px"].includes(px)) bad.add(`${el.tagName}.${el.className} ${px}`);
+            if (!["12px", "14px", "16px", "18px", "28px", "32px"].includes(px)) bad.add(`${el.tagName}.${el.className} ${px}`);
           }
         }
         return [...bad];
@@ -1096,7 +1112,7 @@ test.describe("Card-back look", () => {
     const widths = await page.getByTestId("recent").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().width)));
     expect(new Set(widths).size).toBe(1);
     const nameLine = recent("Portrait Pat").locator(".recent-name");
-    expect(await nameLine.evaluate((el) => getComputedStyle(el).whiteSpace === "nowrap" && el.getClientRects().length === 1)).toBe(true);
+    expect(await nameLine.evaluate((el) => getComputedStyle(el).webkitLineClamp)).toBe("2");
     near(await ratioOf(recent("Plain Pam").locator(".frame")), 2.5 / 3.5);
 
     await openCollection(page);
@@ -1173,5 +1189,36 @@ test.describe("Card-back look", () => {
       expect(await css(r.getByRole("button"), "box-shadow")).toBe("none");
     }
     expect(await css(page.locator(".list-scroller"), "background-color")).toBe("rgba(0, 0, 0, 0)");
+  });
+
+  test("Fields are ruled lines, buttons are boxes; Add card sits on a ground band; the sheet has a foot rule and Year side by side", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const search = page.getByLabel("Search", { exact: true });
+    expect(await css(search, "border-bottom-width")).toBe("1px");
+    expect(await css(search, "border-top-width")).toBe("0px");
+    expect(await css(search, "border-top-left-radius")).toBe("0px");
+    expect(await css(page.getByRole("button", { name: /^Filter/ }), "border-top-left-radius")).toBe("6px");
+    expect(await css(page.locator(".add-bar"), "background-color")).toBe("rgb(243, 236, 220)");
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    expect(await css(page.locator(".sheet-foot"), "border-top-width")).toBe("1px");
+    const [from, to] = await Promise.all(["Year from", "Year to"].map((l) => page.getByLabel(l, { exact: true }).boundingBox()));
+    expect(Math.abs(from!.y - to!.y)).toBeLessThan(1);
+    expect(to!.x).toBeGreaterThan(from!.x + from!.width);
+    expect(await css(page.locator(".group h3").first(), "font-family")).toContain("Roboto Slab");
+  });
+
+  test("Light rule is a 55 percent ink, the stat table outline is full ink", async ({ page }) => {
+    await page.goto("/");
+    expect(await css(page.locator(".tiles"), "border-top-color")).toBe("rgb(28, 43, 74)");
+    const rule = await page.evaluate(() => {
+      const p = document.createElement("i");
+      p.style.color = "var(--color-rule)";
+      document.body.append(p);
+      const c = getComputedStyle(p).color;
+      p.remove();
+      return c;
+    });
+    expect(rule).toMatch(/^rgba\(28, 43, 74, 0\.5\d*\)$/);
   });
 });

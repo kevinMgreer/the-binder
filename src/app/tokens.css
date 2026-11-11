@@ -6,7 +6,7 @@
   --color-panel: #f3ecdc;
   --color-ink: #1c2b4a;
   --color-ink-muted: #4a5670;
-  --color-rule: var(--color-ink);
+  --color-rule: #1c2b4a8c;
   --color-stitch: #c8372d;
   --color-gold: #f1c24a;
   --color-on-gold: #1c2b4a;
@@ -40,7 +40,7 @@
   --type-body: 0.875rem;
   --type-button: 1rem;
   --type-table: 1.125rem;
-  --type-stat: 1.5rem;
+  --type-stat: 2rem;
   --type-title: 1.75rem;
 
   --target-min: 48px;
