@@ -29,7 +29,7 @@ const cancel = () => fireEvent.click(screen.getByRole("button", { name: "Cancel"
 
 test("Cancel comes first in the action row and Save, the primary button, last", () => {
   renderForm();
-  const buttons = within(document.querySelector(".actions") as HTMLElement).getAllByRole("button");
+  const buttons = within(screen.getByRole("button", { name: "Save" }).parentElement as HTMLElement).getAllByRole("button");
   expect(buttons.map((b) => b.textContent)).toEqual(["Cancel", "Save"]);
   expect(buttons[1].classList.contains("primary")).toBe(true);
   expect(buttons[0].classList.contains("primary")).toBe(false);

@@ -7,6 +7,7 @@ import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } fr
 import { Field, fieldId } from "./Field";
 import { PhotoSlot } from "./PhotoSlot";
 import { usePorts } from "./ports-context";
+import { openSheets } from "./Sheet";
 import { flaggedKeys, suggestionPatch, type DraftKey } from "./suggestions";
 
 interface Draft {
@@ -145,6 +146,21 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const latest = useRef({ draft, suggested });
   latest.current = { draft, suggested };
   const recognized = useRef(new WeakSet<CapturedPhoto>());
+
+  const [initial] = useState(draft);
+  const [confirming, setConfirming] = useState(false);
+  const dirty =
+    !!(photos.front || photos.back || preparing.front || preparing.back) ||
+    (Object.keys(initial) as (keyof Draft)[]).some((k) => draft[k] !== initial[k]);
+  const question = card ? "Discard changes?" : "Discard this card?";
+
+  // Android back asks first, like Cancel; back again while asking means Keep editing.
+  useEffect(() => {
+    if (!dirty && !confirming) return;
+    const back = () => setConfirming(!confirming);
+    openSheets.push(back);
+    return () => void openSheets.splice(openSheets.lastIndexOf(back), 1);
+  }, [dirty, confirming]);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
@@ -329,13 +345,24 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
         </p>
       )}
       <div className="actions">
+        <button type="button" onClick={() => (dirty ? setConfirming(true) : onCancel())}>
+          Cancel
+        </button>
         <button type="submit" className="primary" disabled={preparing.front || preparing.back}>
           Save
         </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
       </div>
+      {confirming && (
+        <div role="alertdialog" aria-label={question}>
+          <p>{question}</p>
+          <button type="button" autoFocus onClick={() => setConfirming(false)}>
+            Keep editing
+          </button>
+          <button type="button" className="danger" onClick={onCancel}>
+            Discard
+          </button>
+        </div>
+      )}
       {duplicate && (
         <div role="dialog" aria-modal="true" aria-label="Duplicate card">
           <p>This card is already in your collection ({duplicate.existing.quantity} owned).</p>
