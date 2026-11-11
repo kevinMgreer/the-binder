@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { serialLabel } from "./format";
 import { makeCard } from "./fixtures";
-import { applyFilters, emptyFilters, findDuplicate, sortCards } from "./query";
+import { applyFilters, emptyFilters, findDuplicate, lastNameKey, sortCards, type SortBy } from "./query";
 
 test("serial label shows readable and unreadable serials", () => {
   expect(serialLabel({ name: "Gold", serial: 23, serialLegible: true, printRun: 2026 })).toBe("23/2026");
@@ -81,6 +81,64 @@ test("print run 99 without the serial-numbered mark matches the print run filter
   const plain = makeCard({ parallel: { name: "Gold", serial: null, serialLegible: true, printRun: 99, serialNumbered: false } });
   expect(applyFilters([plain], { ...emptyFilters, printRun: 99 })).toEqual([plain]);
   expect(applyFilters([plain], { ...emptyFilters, serialNumbered: true })).toEqual([]);
+});
+
+test.each([
+  ["Ronald Acuña Jr.", "Acuña"],
+  ["Ken Griffey, Jr.", "Griffey"],
+  ["Cal Ripken III", "Ripken"],
+  ["Ichiro", "Ichiro"],
+  ["Mike Trout / Shohei Ohtani", "Trout"],
+  ["Aaron Judge & Juan Soto", "Judge"],
+  ["Mookie Betts and Freddie Freeman", "Betts"],
+  ["Jr.", "Jr."],
+])("last name key of %s is %s", (player, key) => {
+  expect(lastNameKey(makeCard({ player }))).toBe(key);
+});
+
+test("a team card keys on the whole player text", () => {
+  expect(lastNameKey(makeCard({ player: "Atlanta Braves Team Card", team: "Atlanta Braves" }))).toBe("Atlanta Braves Team Card");
+});
+
+test("a sort name wins, and a blank one falls back to the derived key", () => {
+  expect(lastNameKey(makeCard({ player: "Elly De La Cruz", sortName: "De La Cruz" }))).toBe("De La Cruz");
+  expect(lastNameKey(makeCard({ player: "Mookie Betts", sortName: "  " }))).toBe("Betts");
+  expect("sortName" in makeCard()).toBe(false);
+  expect(lastNameKey(makeCard({ player: "Mookie Betts" }))).toBe("Betts");
+});
+
+const acuna = makeCard({ player: "Ronald Acuña Jr.", year: 2024, team: "Atlanta Braves", set: "Topps Chrome" });
+const betts = makeCard({ player: "Mookie Betts", year: 2021, team: "Los Angeles Dodgers", set: "Bowman" });
+const freeman = makeCard({ player: "Freddie Freeman", year: 2019, team: "Texas Rangers", set: "Topps Chrome" });
+
+test("sortCards defaults to last name ascending, ignoring accents", () => {
+  expect(sortCards([freeman, betts, acuna])).toEqual([acuna, betts, freeman]);
+});
+
+test("ties in the sort key fall back to year", () => {
+  const old = makeCard({ player: "Ronald Acuña Jr.", year: 2019 });
+  expect(sortCards([acuna, old])).toEqual([old, acuna]);
+});
+
+test.each<[SortBy, typeof acuna[]]>([
+  ["lastName", [acuna, betts, freeman]],
+  ["year", [freeman, betts, acuna]],
+  ["team", [acuna, betts, freeman]],
+  ["set", [betts, freeman, acuna]],
+])("sort by %s, and descending is the exact reverse", (by, expected) => {
+  const cards = [freeman, acuna, betts];
+  expect(sortCards(cards, { by, descending: false })).toEqual(expected);
+  expect(sortCards(cards, { by, descending: true })).toEqual([...sortCards(cards, { by, descending: false })].reverse());
+});
+
+test("year descending lists newest first", () => {
+  expect(sortCards([freeman, acuna, betts], { by: "year", descending: true })).toEqual([acuna, betts, freeman]);
+});
+
+test("a plain surname sorts before a sort name that comes later", () => {
+  const darvish = makeCard({ player: "Yu Darvish" });
+  const cruz = makeCard({ player: "Elly De La Cruz", sortName: "De La Cruz" });
+  expect(sortCards([cruz, darvish])).toEqual([darvish, cruz]);
 });
 
 test("duplicate match uses player, year, set, number, parallel and grade, and ignores tombstones", () => {
