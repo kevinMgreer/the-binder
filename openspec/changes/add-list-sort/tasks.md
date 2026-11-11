@@ -18,6 +18,6 @@
 
 ## 3. Docs and archive notes
 
-- [ ] 3.1 Note in `DESIGN.md` (Components, near the filter chips) the Sort button on the Showing line and the Sort sheet's two radio groups, and in the Navigation paragraph that Cards keeps its last sort as well as its search and filters. Verify the wording matches the shipped UI
+- [x] 3.1 Note in `DESIGN.md` (Components, near the filter chips) the Sort button on the Showing line and the Sort sheet's two radio groups, and in the Navigation paragraph that Cards keeps its last sort as well as its search and filters. Verify the wording matches the shipped UI
 - [ ] 3.2 Before archiving, confirm `refine-card-fields` and `restyle-card-back` are archived (design.md, Context), then run `openspec validate add-list-sort --strict`. Verify it passes and the archived `collection-list` and `card-catalog` specs keep the restyle and refine wording plus the Sort additions
 - [ ] 3.3 Verify on the phone (owner): with an updated build on every device, set a Sort name on one card, sync, and check the list order on the phone; restart the app and check it opens at "Sort: Last name ↑"
