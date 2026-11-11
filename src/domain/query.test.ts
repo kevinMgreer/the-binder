@@ -100,6 +100,12 @@ test("a team card keys on the whole player text", () => {
   expect(lastNameKey(makeCard({ player: "Atlanta Braves Team Card", team: "Atlanta Braves" }))).toBe("Atlanta Braves Team Card");
 });
 
+test("a short team only matches as a whole word", () => {
+  expect(lastNameKey(makeCard({ player: "Clayton Kershaw", team: "LA" }))).toBe("Kershaw");
+  expect(lastNameKey(makeCard({ player: "LA Dodgers", team: "LA Dodgers" }))).toBe("LA Dodgers");
+  expect(lastNameKey(makeCard({ player: "Los Ángeles Dodgers", team: "los angeles" }))).toBe("Los Ángeles Dodgers");
+});
+
 test("a sort name wins, and a blank one falls back to the derived key", () => {
   expect(lastNameKey(makeCard({ player: "Elly De La Cruz", sortName: "De La Cruz" }))).toBe("De La Cruz");
   expect(lastNameKey(makeCard({ player: "Mookie Betts", sortName: "  " }))).toBe("Betts");

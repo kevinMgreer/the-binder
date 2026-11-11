@@ -36,7 +36,7 @@ The system SHALL list cards with a thumbnail, player, year, set, card number and
 
 ### Requirement: Sort name
 The system SHALL offer an optional Sort name field in the card form, directly under Player, not marked required, with the hint "Optional: how this card sorts, e.g. Acuña". A sort name that is blank after trimming SHALL count as none. A card's last-name sort key SHALL be its sort name when it has one; otherwise it SHALL be derived from the player text each time the list is sorted, without changing the stored card:
-1. When the card's team is not blank and the player text contains the team (ignoring case and accents), the key is the whole player text.
+1. When the card's team is not blank and the player text contains the team as a whole word (ignoring case and accents), the key is the whole player text.
 2. Otherwise, when the player text names several players separated by "/", "&" or the word "and", only the first of them is used.
 3. Trailing suffixes "Jr", "Sr", "II", "III" and "IV" are dropped, with or without a period and a comma before them, ignoring case.
 4. The key is the last remaining word; when no word remains, it is the whole player text.
