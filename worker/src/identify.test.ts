@@ -230,6 +230,19 @@ describe("identification", () => {
     expect(images).toHaveLength(2);
   });
 
+  test("numbers the model sends as text are kept", async () => {
+    anthropicReply = () =>
+      claudeSuggestion({
+        player: "Some Player",
+        year: "1989",
+        parallel: { name: "Gold", serial: "23", printRun: "99" },
+        confidence: { year: "low" },
+      });
+    const body: any = await (await identify(identifyRequest({ token: await makeToken() }))).json();
+    expect(body.suggestion).toMatchObject({ year: 1989, parallel: { serial: 23, printRun: 99 } });
+    expect(body.lowConfidence).toEqual(["year"]);
+  });
+
   test("the API key never appears in any response", async () => {
     const ok = await identify(identifyRequest({ token: await makeToken() }));
     const okText = await ok.text();

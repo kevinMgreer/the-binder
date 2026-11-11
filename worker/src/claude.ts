@@ -50,10 +50,18 @@ const TOOL = {
 
 const PROMPT =
   "These are the front and the back (when present) of one baseball card. Report its details by calling report_card. " +
-  "Report only what you can read or identify with confidence, and leave out anything you cannot see.";
+  "Fill in every field you can, and give your best guess rather than leaving a field out: report guesses with confidence \"low\" (the app flags those for the owner to check) and reserve omission for fields with no evidence at all. " +
+  "player: the name as printed on the front. team: the team shown on the card. " +
+  "year: the season or the copyright year on the back (the line with a (c) or copyright symbol, often next to the manufacturer); if only a copyright year is visible, use it. " +
+  "manufacturer and set: from the logos and set name on the front or back (for example Topps, Series 1). " +
+  "cardNumber: the number on the back. Use the parallel field only for parallels or serial-numbered cards (for example 23/2026).";
 
 const text = (v: unknown) => (typeof v === "string" && v.trim() !== "" ? v.trim() : undefined);
-const integer = (v: unknown) => (typeof v === "number" && Number.isInteger(v) ? v : undefined);
+// Models sometimes send "1989" for an integer field; dropping it silently lost the year.
+const integer = (v: unknown) => {
+  const n = typeof v === "string" && /^\s*\d+\s*$/.test(v) ? Number(v) : v;
+  return typeof n === "number" && Number.isInteger(n) ? n : undefined;
+};
 
 function toBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -110,5 +118,8 @@ export async function identifyCard(images: File[], env: ClaudeEnv): Promise<Card
   const data = (await response.json()) as { content?: { type: string; input?: Record<string, any> }[] };
   const call = data.content?.find((block) => block.type === "tool_use");
   if (!call?.input) throw new Error("Anthropic returned no card details");
-  return clean(call.input);
+  const result = clean(call.input);
+  // Field names only, never values: shows in `wrangler tail` what the model sent and what survived cleaning.
+  console.log(`identify returned=[${Object.keys(call.input)}] kept=[${Object.keys(result.suggestion)}] low=[${result.lowConfidence}]`);
+  return result;
 }
