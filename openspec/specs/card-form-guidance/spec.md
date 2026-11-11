@@ -6,11 +6,11 @@ Tells the user which card fields must be filled in and, when a save is refused, 
 ## Requirements
 
 ### Requirement: Required fields are marked before saving
-The system SHALL mark the required card fields (player, year, set and card number) as required on the form before the user tries to save.
+The system SHALL mark the required card fields (player, year and set) as required on the form before the user tries to save. Card number is not required.
 
 #### Scenario: Required fields visible on a new card
 - **WHEN** the user opens the form to add a card
-- **THEN** player, year, set and card number are each labelled as required and no other field is
+- **THEN** player, year and set are each labelled as required and no other field is
 
 ### Requirement: A blocked save leads the user to the problem
 The system SHALL, when a save is refused for missing or invalid fields, bring the first of those fields into view and focus it with its error showing, and SHALL name all of the fields in a message next to the Save button.
