@@ -17,12 +17,12 @@ function themes() {
 }
 
 const COLOURS = [
-  "--color-ground", "--color-panel", "--color-ink", "--color-ink-muted", "--color-rule", "--color-stitch", "--color-gold",
-  "--color-on-gold", "--color-danger", "--color-frame", "--color-scrim", "--color-placeholder",
+  "--color-ground", "--color-panel", "--color-ink", "--color-ink-muted", "--color-rule", "--color-flag",
+  "--color-danger", "--color-frame", "--color-scrim", "--color-placeholder",
 ];
 const HEX = {
-  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670", "--color-stitch": "#c8372d", "--color-gold": "#f1c24a", "--color-on-gold": "#1c2b4a", "--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
-  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae", "--color-stitch": "#e0574b", "--color-gold": "#f1c24a", "--color-on-gold": "#101a30", "--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
+  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670", "--color-flag": "#c8372d", "--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
+  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae", "--color-flag": "#e0574b", "--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
 };
 
 type Rgba = [number, number, number, number];
@@ -56,16 +56,16 @@ describe("tokens.css", () => {
     });
   }
 
-  it("declares color-scheme light dark, fonts, the type scale, the stitch, the frame and the gutter", () => {
+  it("declares color-scheme light dark, fonts, the type scale, the frame and the spacing rhythm", () => {
     const css = read();
     expect(css).toMatch(/color-scheme:\s*light dark/);
-    const names = ["--space-1", "--space-8", "--radius-print", "--radius-frame", "--radius-pill", "--target-min", "--font-slab", "--font-sans", "--frame-ratio", "--stitch-line", "--stitch-gap", "--gutter"];
+    const names = ["--space-1", "--space-8", "--radius-print", "--radius-frame", "--radius-pill", "--target-min", "--font-slab", "--font-sans", "--frame-ratio", "--gutter", "--gap-section", "--gap-field", "--gap-label", "--pad-cell", "--pad-row", "--gap-frame", "--gap-caption"];
     for (const size of ["label", "body", "button", "table", "stat", "title"]) names.push(`--type-${size}`);
     for (const name of names) expect(css, name).toContain(name + ":");
   });
 
-  it("keeps no pocket, accent or mono token", () => {
-    expect(read()).not.toMatch(/--color-pocket|--color-accent|--type-mono|--color-page|--color-surface/);
+  it("keeps no pocket, accent, mono, stitch or gold token", () => {
+    expect(read()).not.toMatch(/--color-pocket|--color-accent|--type-mono|--color-page|--color-surface|stitch|gold/);
   });
 
   for (const theme of ["light", "dark"] as const) {
@@ -76,12 +76,11 @@ describe("tokens.css", () => {
         for (const fg of ["--color-ink", "--color-ink-muted", "--color-danger"]) {
           expect(ratio(c(fg), c(bg)), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
         }
-        for (const fg of ["--color-stitch", "--color-ink"]) {
-          expect(ratio(c(fg), c(bg)), `${fg} (stitch, keyline) on ${bg}`).toBeGreaterThanOrEqual(3);
+        for (const fg of ["--color-flag", "--color-ink"]) {
+          expect(ratio(c(fg), c(bg)), `${fg} (flag, keyline) on ${bg}`).toBeGreaterThanOrEqual(3);
         }
       }
-      expect(ratio(c("--color-on-gold"), c("--color-gold")), "on-gold on gold").toBeGreaterThanOrEqual(4.5);
-      expect(ratio(c("--color-ground"), c("--color-ink")), "ground text on ink chip").toBeGreaterThanOrEqual(4.5);
+      expect(ratio(c("--color-ground"), c("--color-ink")), "ground text on the ink fill of a primary button or chip").toBeGreaterThanOrEqual(4.5);
     });
   }
 });

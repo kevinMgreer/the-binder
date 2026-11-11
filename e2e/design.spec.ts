@@ -86,20 +86,14 @@ test.describe("theme", () => {
     expect(await pageBackground(page)).toBe(dark);
   });
 
-  test("overriding the gold token restyles Add card, Save, Show cards and Edit, and no chip or tag", async ({ page }) => {
+  test("overriding the ink token restyles Add card, Save, Show cards and Edit", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
     await seed(page, CARDS);
     await applyYearFrom(page, "2000");
-    const chip = page.getByRole("button", { name: "Remove Year filter" });
     const add = page.getByRole("button", { name: "Add card", exact: true });
-    const tag = page.getByTestId("card-row").filter({ hasText: "Acuña" }).getByText("13/150");
-    const chipBefore = await css(chip, "background-color");
-    const tagBefore = await css(tag, "color");
-    await page.evaluate(() => document.documentElement.style.setProperty("--color-gold", "rgb(1, 2, 3)"));
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(add, "background-color")).toBe("rgb(1, 2, 3)");
-    expect(await css(chip, "background-color")).toBe(chipBefore);
-    expect(await css(tag, "color")).toBe(tagBefore);
     await page.getByRole("button", { name: /^Filter/ }).click();
     expect(await css(page.getByRole("button", { name: /^Show \d+ cards?$/ }), "background-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
@@ -336,7 +330,7 @@ test.describe("destructive actions stay apart", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
   const notAccent = async (page: Page, button: Locator) => {
-    await page.evaluate(() => document.documentElement.style.setProperty("--color-gold", "rgb(1, 2, 3)"));
+    await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(button, "color")).not.toBe("rgb(1, 2, 3)");
     expect(await css(button, "background-color")).not.toBe("rgb(1, 2, 3)");
   };
@@ -482,7 +476,7 @@ test.describe("polish after the second phone review", () => {
     expect(await y(subtitle)).toBeLessThan(await y(facts));
     expect(await y(facts)).toBeLessThan(await y(edited));
     expect(await y(edited)).toBeLessThan(await y(edit));
-    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 20 - 1);
+    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 24 - 1);
     expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
@@ -769,22 +763,12 @@ test.describe("Bottom navigation and header", () => {
     test(`Active destination is not colour alone in ${scheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
-      const stitch = (name: "Dashboard" | "Cards") => item(page, name).evaluate((el) => {
-        const s = getComputedStyle(el, "::after");
-        return { content: s.content, border: s.borderTopColor, style: s.borderTopStyle };
-      });
-      const token = await page.evaluate(() => {
-        const probe = document.createElement("i");
-        probe.style.color = "var(--color-stitch)";
-        document.body.append(probe);
-        const c = getComputedStyle(probe).color;
-        probe.remove();
-        return c;
-      });
-      const on = await stitch("Dashboard");
-      expect(on.border).toBe(token);
-      expect(on.style).toBe("dashed");
-      expect((await stitch("Cards")).content).toBe("none");
+      const after = (name: "Dashboard" | "Cards") => item(page, name).evaluate((el) => getComputedStyle(el, "::after").content);
+      expect(await after("Dashboard")).toBe("none");
+      expect(await after("Cards")).toBe("none");
+      const ink = scheme === "light" ? "rgb(28, 43, 74)" : "rgb(243, 236, 220)";
+      expect(await css(item(page, "Dashboard"), "color")).toBe(ink);
+      expect(await css(item(page, "Cards"), "color")).not.toBe(ink);
       await expect(item(page, "Dashboard")).toContainText("Dashboard");
       await expect(item(page, "Dashboard").locator("svg[aria-hidden=true]")).toHaveCount(1);
       expect(Number(await css(item(page, "Dashboard"), "font-weight"))).toBeGreaterThan(Number(await css(item(page, "Cards"), "font-weight")));
@@ -944,7 +928,11 @@ test.describe("Card-back look", () => {
         : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)" };
       expect(await pageBackground(page)).toBe(want.bg);
       expect(await css(page.getByRole("heading", { name: "Dashboard" }), "color")).toBe(want.ink);
-      expect(await css(page.getByRole("button", { name: "Add card", exact: true }), "background-color")).toBe("rgb(241, 194, 74)");
+      const add = page.getByRole("button", { name: "Add card", exact: true });
+      expect(await css(add, "background-color")).toBe(want.ink);
+      expect(await css(add, "color")).toBe(want.bg);
+      expect(await css(add, "border-top-left-radius")).toBe("6px");
+      expect((await add.boundingBox())!.height).toBeGreaterThanOrEqual(47.5);
       if (scheme === "dark") expect(await css(page.locator(".tiles"), "background-color")).toBe("rgb(23, 35, 63)");
     });
 
@@ -1008,17 +996,17 @@ test.describe("Card-back look", () => {
     await outlined(page.getByRole("button", { name: "Cancel" }));
   });
 
-  test("Stitch under the title on the dashboard, list, detail, form and Settings", async ({ page }) => {
+  test("Rule under the title on the dashboard, list, detail, form and Settings, and no dashed border anywhere", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
     const check = async (heading: Locator) => {
-      const stitch = page.locator(".stitch").first();
-      await expect(stitch).toHaveAttribute("aria-hidden", "true");
+      const rule = page.locator(".title-rule").first();
+      await expect(rule).toHaveAttribute("aria-hidden", "true");
       const h = (await heading.boundingBox())!;
-      expect((await stitch.boundingBox())!.y).toBeGreaterThanOrEqual(h.y + h.height - 1);
-      expect(await css(stitch, "border-top-style")).toBe("dashed");
-      // 1.5 px snaps to whole device pixels, so it computes between 1 and 1.5 px.
-      expect(parseFloat(await css(stitch, "border-top-width"))).toBeGreaterThanOrEqual(1);
+      expect((await rule.boundingBox())!.y).toBeGreaterThanOrEqual(h.y + h.height - 1);
+      expect(await css(rule, "border-top-style")).toBe("solid");
+      expect(await css(rule, "border-top-width")).toBe("1px");
+      expect(await page.evaluate(() => [...document.querySelectorAll("*")].some((el) => getComputedStyle(el).borderTopStyle === "dashed"))).toBe(false);
     };
     await check(page.getByRole("heading", { name: "Cards", exact: true }));
     await page.getByTestId("card-row").filter({ hasText: "Acuña" }).click();
@@ -1037,12 +1025,11 @@ test.describe("Card-back look", () => {
     await seedDashboard(page);
     const stray = await page.evaluate(() => {
       const probe = document.createElement("i");
-      probe.style.color = "var(--color-stitch)";
+      probe.style.color = "var(--color-flag)";
       document.body.append(probe);
       const red = getComputedStyle(probe).color;
       probe.remove();
       return [...document.querySelectorAll("body *")].flatMap((el) => {
-        if (el.classList.contains("stitch")) return [];
         const s = getComputedStyle(el);
         const borders = (["Top", "Right", "Bottom", "Left"] as const).filter((d) => parseFloat(s[`border${d}Width`]) > 0).map((d) => s[`border${d}Color`]);
         return [s.color, s.backgroundColor, ...borders].includes(red) ? [`${el.tagName}.${el.className}`] : [];
@@ -1209,6 +1196,29 @@ test.describe("Card-back look", () => {
     expect(Math.abs(from!.y - to!.y)).toBeLessThan(1);
     expect(to!.x).toBeGreaterThan(from!.x + from!.width);
     expect(await css(page.locator(".group h3").first(), "font-family")).toContain("Roboto Slab");
+  });
+
+  test("Generous spacing: 24 px gutter, 32 px between sections, 16 px cell padding, 12 px frame gaps, 8 px captions, 24 px field gaps", async ({ page }) => {
+    await page.goto("/");
+    await seedDashboard(page);
+    const table = (await page.locator(".tiles").boundingBox())!;
+    expect(table.x).toBe(24);
+    const gap = async (a: Locator, b: Locator) => (await b.boundingBox())!.y - (await a.boundingBox())!.y - (await a.boundingBox())!.height;
+    const groups = page.locator(".group");
+    expect(await gap(page.locator(".tiles"), groups.nth(0))).toBeGreaterThanOrEqual(31.5);
+    expect(await gap(groups.nth(0), groups.nth(1))).toBeGreaterThanOrEqual(31.5);
+    const tile = page.getByTestId("tile").first();
+    const [tileBox, labelBox] = await Promise.all([tile.boundingBox(), tile.locator(".tile-label").boundingBox()]);
+    expect(labelBox!.x - (tileBox!.x - 4)).toBeGreaterThanOrEqual(15.5);
+    const recent = page.getByTestId("recent");
+    const [a, b] = await Promise.all([recent.nth(0).boundingBox(), recent.nth(1).boundingBox()]);
+    expect(Math.round(b!.x - (a!.x + a!.width))).toBe(12);
+    const frame = (await recent.first().locator(".frame").boundingBox())!;
+    const caption = (await recent.first().locator(".recent-name").boundingBox())!;
+    expect(Math.round(caption.y - (frame.y + frame.height))).toBe(8);
+    await page.getByRole("button", { name: "Add card", exact: true }).click();
+    const [f1, f2] = await Promise.all(["Player", "Team"].map((l) => page.getByLabel(l, { exact: true }).boundingBox()));
+    expect(f2!.y - (f1!.y + f1!.height)).toBeGreaterThanOrEqual(24 + 8);
   });
 
   test("Light rule is a 55 percent ink, the stat table outline is full ink", async ({ page }) => {

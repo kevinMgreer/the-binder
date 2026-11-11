@@ -48,7 +48,7 @@ The system SHALL show each card as one fixed-height row of 100 dp on the ground 
 - **THEN** the set name is cut with an ellipsis on its one line and the card number stays visible
 
 ### Requirement: Serial-numbered cards stand out
-The system SHALL mark a serial-numbered card with its existing serial label (for example 13/150, or ?/99 when the serial is unreadable) as a stamp: ink text in the slab face with tabular figures inside a 1 px ink outline, on the list row and on the card detail screen, and SHALL NOT show a tag on a card without a serial number. The stamp SHALL NOT be filled with gold or drawn in the stitch colour.
+The system SHALL mark a serial-numbered card with its existing serial label (for example 13/150, or ?/99 when the serial is unreadable) as a stamp: ink text in the slab face with tabular figures inside a 1 px ink outline, on the list row and on the card detail screen, and SHALL NOT show a tag on a card without a serial number. The stamp SHALL NOT be filled or drawn in the flag colour.
 
 #### Scenario: Tag on a serial-numbered card
 - **WHEN** a card with serial 13 and print run 150 is listed
@@ -63,7 +63,7 @@ The system SHALL mark a serial-numbered card with its existing serial label (for
 - **THEN** its row shows no tag and no empty space reserved for one
 
 ### Requirement: The card detail screen is a tidy fact sheet
-The system SHALL lay the card detail screen out, top to bottom, as: the player as a large title in the slab face with the serial stamp beside it, a stitch rule, a quiet subtitle "year set · #number", a plain list of facts separated by 1 px rules with the label in uppercase label type at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a strip of photo thumbnails in trading-card frames, a muted last-edited line, Edit as a full-width gold primary button, and Delete set apart below a rule. The list SHALL NOT sit in a box.
+The system SHALL lay the card detail screen out, top to bottom, as: the player as a large title in the slab face with the serial stamp beside it, a 1 px rule, a quiet subtitle "year set · #number", a plain list of facts separated by 1 px rules with the label in uppercase label type at the left and the value right-aligned (Manufacturer, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has), a strip of photo thumbnails in trading-card frames, a muted last-edited line, Edit as a full-width primary button, and Delete set apart below a rule. The list SHALL NOT sit in a box.
 
 #### Scenario: Fact list
 - **WHEN** a card with a team, a serial-numbered parallel, a grade and quantity 3 is opened
@@ -74,7 +74,7 @@ The system SHALL lay the card detail screen out, top to bottom, as: the player a
 - **THEN** the front sits in a portrait trading-card frame and the back in a landscape one, and tapping either opens the zoom view
 
 ### Requirement: Sync state is always visible
-The system SHALL show the sync state on the title row of the dashboard and the collection list, between the title and the Settings gear, as the state dot and a short word at label size, covering every state `SyncIndicator` has: "Syncing…", "Sync problem", "Sync paused", "Waiting for your choice", "Synced", and "Unsynced: N" with the pending count. It SHALL be a status region (`role="status"`) so a screen reader announces it. In the error state the full wording "Sync problem, retrying (N unsynced)" (without the count when nothing is pending) SHALL show whole, in the danger colour at body size, on a full-width line under the stitch; that line is plain text and not a second live region, so an error is announced once. The Sign in again button and the missing-file choice SHALL appear beneath the title row while their state lasts.
+The system SHALL show the sync state on the title row of the dashboard and the collection list, between the title and the Settings gear, as the state dot and a short word at label size, covering every state `SyncIndicator` has: "Syncing…", "Sync problem", "Sync paused", "Waiting for your choice", "Synced", and "Unsynced: N" with the pending count. It SHALL be a status region (`role="status"`) so a screen reader announces it. In the error state the full wording "Sync problem, retrying (N unsynced)" (without the count when nothing is pending) SHALL show whole, in the danger colour at body size, on a full-width line under the title rule; that line is plain text and not a second live region, so an error is announced once. The Sign in again button and the missing-file choice SHALL appear beneath the title row while their state lasts.
 
 #### Scenario: Each state in words
 - **WHEN** the sync state is any of those six
@@ -86,8 +86,8 @@ The system SHALL show the sync state on the title row of the dashboard and the c
 
 #### Scenario: Long wording is not cut
 - **WHEN** the sync state is "error" with 3 unsynced changes on a 360 by 800 phone
-- **THEN** the title row shows "Sync problem" and the line under the stitch shows "Sync problem, retrying (3 unsynced)" whole, on at most two lines, in the danger colour, and the title and gear keep their size
+- **THEN** the title row shows "Sync problem" and the line under the title rule shows "Sync problem, retrying (3 unsynced)" whole, on at most two lines, in the danger colour, and the title and gear keep their size
 
 #### Scenario: Screen reader
 - **WHEN** the sync state changes from "Syncing…" to "Synced", or to the error state
-- **THEN** the title-row element has `role="status"` and its accessible text is the new short wording, and the line under the stitch has no role of its own
+- **THEN** the title-row element has `role="status"` and its accessible text is the new short wording, and the line under the title rule has no role of its own

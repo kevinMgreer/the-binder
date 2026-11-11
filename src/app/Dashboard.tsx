@@ -29,7 +29,7 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
           <SyncIndicator />
           <SettingsButton onClick={onSettings} />
         </div>
-        <div className="stitch" aria-hidden="true" />
+        <div className="title-rule" aria-hidden="true" />
         <SyncActions />
       </header>
       {update && <UpdateLink update={update} />}
@@ -46,7 +46,6 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
       </div>
       {recent.length > 0 && (
         <div className="group">
-          <div className="stitch" aria-hidden="true" />
           <h2>Recently added</h2>
           <div className="recent">
             {recent.map((card) => (
@@ -66,7 +65,6 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
       )}
       {teams.length > 0 && (
         <div className="group">
-          <div className="stitch" aria-hidden="true" />
           <h2>Top teams</h2>
           <div className="teams">
             {teams.map((team) => (

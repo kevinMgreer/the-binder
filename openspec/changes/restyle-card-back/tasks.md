@@ -35,8 +35,15 @@
 ## 5. Phone checks (moved to docs/device-checklist.md; they do not block archive)
 
 - [ ] 5.1 Install the debug build and, in light and dark (`adb shell cmd uimode night yes|no`), open the app cold: verify no white or cream flash in dark, the ground is cream in light and navy in dark, and switching the setting with the app open restyles it
-- [ ] 5.2 Screenshot dashboard, list, detail, form, Settings and the filter sheet in both themes: verify the stitch draws as two even dashed lines, the fonts are Roboto Slab and Inter in airplane mode, 12 px labels read at arm's length, the frames show real photos whole, and the bar sits above the gesture bar
-- [ ] 5.3 Owner review on the phone of the whole look, including the open questions in design.md (gold on every primary action, Night Game without Oswald, nav icons kept); verify the owner accepts or lists changes, applied in one batch
+- [ ] 5.2 Screenshot dashboard, list, detail, form, Settings and the filter sheet in both themes: verify the spacing feels open, the fonts are Roboto Slab and Inter in airplane mode, 12 px labels read at arm's length, the frames show real photos whole, and the bar sits above the gesture bar
+- [ ] 5.3 Owner review on the phone of the whole look, including the open questions in design.md (ink-filled primary action, Night Game without Oswald, nav icons kept); verify the owner accepts or lists changes, applied in one batch
+
+## 7. Owner phone review (applied after the first phone test; supersedes tasks 2 and 3 where they differ)
+
+- [x] 7.1 Spacing tokens (`--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8) in `tokens.css` and used by every screen; verify the "Generous spacing" e2e and the 100 dp rows and 5,000-card perf tests pass
+- [x] 7.2 Remove the stitch (`--color-stitch`, `--stitch-line`, `--stitch-gap`, `.stitch`) everywhere; a 1 px rule under titles only; red is the Rookies flag alone, renamed `--color-flag`; verify "Rule under the title" and "Red stays rare"
+- [x] 7.3 Bottom navigation without underline: ink label and icon when active, muted when not; verify the nav e2e
+- [x] 7.4 Ink-filled primary button (ground-coloured text, 6 px, 48 dp) for Add card, Save, Edit, Show cards, Sign in with Google; remove `--color-gold` and `--color-on-gold`; verify the primary scenarios and the Add card band
 
 ## 6. Archive
 

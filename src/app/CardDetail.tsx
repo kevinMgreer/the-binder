@@ -45,7 +45,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         <h2>{card.player}</h2>
         {serial && <span className="tag">{serial}</span>}
       </div>
-      <div className="stitch" aria-hidden="true" />
+      <div className="title-rule" aria-hidden="true" />
       <p className="subtitle" data-testid="subtitle">
         {card.year} {card.set}
         {card.cardNumber && ` · #${card.cardNumber}`}

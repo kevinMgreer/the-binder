@@ -106,7 +106,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
           <SyncIndicator />
           <SettingsButton onClick={onSettings} />
         </div>
-        <div className="stitch" aria-hidden="true" />
+        <div className="title-rule" aria-hidden="true" />
         <SyncActions />
       </header>
       {update && <UpdateLink update={update} />}

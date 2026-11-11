@@ -95,6 +95,10 @@ The dashboard's six tiles stay six `<button>`s with their accessible names; the 
 
 One branch, no data change. Tokens and fonts land first, then screens one by one, each with its tests green. Rollback is reverting the merge; nothing on the device or in Drive depends on the look.
 
+## Update after the owner's phone review
+
+Supersedes D3, D5 and D8 where they differ: the stitch (D5) is removed with `--color-stitch`, `--stitch-line` and `--stitch-gap`, and the Rookies flag keeps its red as `--color-flag`; sections are separated by whitespace and a single 1 px `--color-rule` line under titles only; the active tab has no underline. The primary action (D8) is ink-filled with ground-coloured text, so `--color-gold` and `--color-on-gold` are removed. Spacing is opened up by tokens: `--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8. List rows stay 100 dp.
+
 ## Open Questions
 
 - Gold on every primary action (D8) or only on Add card? Recorded as the assumption above; the owner can confirm at the phone review. Changing it touches CSS and one scenario.
