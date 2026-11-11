@@ -53,6 +53,10 @@ board.jsonl
 .github/agent-desk-manifest.json
 PRODUCT.md
 
+# Desk working state (agent-desk rewrites these on every todo or decision edit; never pushed)
+todo.jsonl
+decisions.jsonl
+
 # Local scratch: phone screenshots (they can show personal photos), logs and temp files
 scratch/
 
