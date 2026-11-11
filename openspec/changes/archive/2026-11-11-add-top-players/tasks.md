@@ -11,4 +11,4 @@
 ## 3. Close out
 
 - [x] 3.1 Run `openspec validate add-top-players --strict` and the repo check; verify both exit 0
-- [ ] 3.2 Archive with `/opsx:archive` after refine-card-fields and restyle-card-back are archived; also rewrite the Purpose line of the main dashboard spec by hand (archiving does not touch it) to name Top teams, Top players, then Recently added last; verify `openspec validate --specs --strict` passes and the main dashboard spec holds the Top players requirement
+- [x] 3.2 Archive with `/opsx:archive` after refine-card-fields and restyle-card-back are archived; also rewrite the Purpose line of the main dashboard spec by hand (archiving does not touch it) to name Top teams, Top players, then Recently added last; verify `openspec validate --specs --strict` passes and the main dashboard spec holds the Top players requirement

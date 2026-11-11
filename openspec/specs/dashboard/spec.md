@@ -1,12 +1,12 @@
 # dashboard Specification
 
 ## Purpose
-The first screen of the app: a summary of the collection as six stat tiles (Cards, Distinct, Autos, Relics, Serial-numbered, Rookies), each of which opens the collection list filtered to the cards it counts, then a Recently added group, whose cards each open that card, and a Top teams group, whose entries each open the list filtered to that team.
+The first screen of the app: a summary of the collection as six stat tiles (Cards, Distinct, Autos, Relics, Serial-numbered, Rookies), each of which opens the collection list filtered to the cards it counts, then a Top teams group, whose entries each open the list filtered to that team, a Top players group, whose entries each open the list filtered to that player, and a Recently added group last, whose cards each open that card.
 
 ## Requirements
 
 ### Requirement: The app opens on the dashboard
-The system SHALL show the dashboard as the first screen after sign-in, with a header whose one row holds the title, the sync state and Settings, then the stat tiles, then the Recently added group and the Top teams group when they have content; adding a card is done with the Add item of the bottom navigation, the same on the collection list. It SHALL NOT have a Browse collection button: the bottom navigation's Cards destination opens the list.
+The system SHALL show the dashboard as the first screen after sign-in, with a header whose one row holds the title, the sync state and Settings, then the stat tiles, then the Top teams group, the Top players group and last the Recently added group, each when it has content; adding a card is done with the Add item of the bottom navigation, the same on the collection list. It SHALL NOT have a Browse collection button: the bottom navigation's Cards destination opens the list.
 
 #### Scenario: Launch
 - **WHEN** the signed-in user opens the app
@@ -20,8 +20,12 @@ The system SHALL show the dashboard as the first screen after sign-in, with a he
 - **WHEN** the user taps Add card (the Add item of the bottom navigation) on the dashboard and saves a card entered by hand
 - **THEN** the dashboard is shown again with its counts including the new card, and the new card first in Recently added
 
+#### Scenario: Recently added is last
+- **WHEN** the dashboard is shown with cards that have teams and players
+- **THEN** the groups appear in the order Top teams, Top players, Recently added, below the tiles
+
 ### Requirement: The dashboard stays fast on a large collection
-The system SHALL compute all tile numbers, the Recently added cards and the Top teams in one pass over the cards, only when the list of cards it is given changes, and SHALL show the dashboard with its numbers within 1 second of the page starting to load (navigation start to the Cards tile reading the full count, not the first render with zeros) for a collection of 5,000 cards on a mid-range Android phone.
+The system SHALL compute all tile numbers, the Recently added cards, the Top teams and the Top players in one pass over the cards, only when the list of cards it is given changes, and SHALL show the dashboard with its numbers within 1 second of the page starting to load (navigation start to the Cards tile reading the full count, not the first render with zeros) for a collection of 5,000 cards on a mid-range Android phone.
 
 #### Scenario: Large collection
 - **GIVEN** a collection of 5,000 cards
@@ -30,14 +34,14 @@ The system SHALL compute all tile numbers, the Recently added cards and the Top 
 
 #### Scenario: No recount without a change
 - **WHEN** the dashboard re-renders for a sync state change while the cards list is unchanged
-- **THEN** the tile numbers, the Recently added cards and the Top teams are not recomputed
+- **THEN** the tile numbers, the Recently added cards, the Top teams and the Top players are not recomputed
 
 ### Requirement: The dashboard follows the design system
-The system SHALL draw the dashboard only from the design tokens, in both the light and the dark theme, as a card back: the title row with a 1 px rule below it, and 32 px of whitespace between the sections; the six tiles as one ruled stat table of two columns and three rows (1 px rules around and between the cells, each cell at least 56 dp high, the label in uppercase label type above the number in the slab face at stat size (32 px); cell padding 16 px; no flag or other mark on any cell, the Rookies cell included); Recently added as one even row of four trading-card frames 12 px apart, each with the player's name beneath as its caption 8 px below the frame; Top teams as a ruled stat table, one row per team, at least 56 dp high, the team name at the left and its number in the slab face at the right; and the bottom navigation with its Add item. In the dark theme both stat tables sit on the panel colour with a 6 px radius. Each tile, each Recently added card and each Top teams entry SHALL be a tappable control at least 48 by 48 dp whose text is readable with the contrast the theme requires, with no background gradient, translucency or shadow. A tile's accessible name SHALL hold its label and its number.
+The system SHALL draw the dashboard only from the design tokens, in both the light and the dark theme, as a card back: the title row with a 1 px rule below it, and 32 px of whitespace between the sections; the six tiles as one ruled stat table of two columns and three rows (1 px rules around and between the cells, each cell at least 56 dp high, the label in uppercase label type above the number in the slab face at stat size (32 px); cell padding 16 px; no flag or other mark on any cell, the Rookies cell included); Top teams and Top players each as a ruled stat table, one row per entry, at least 56 dp high, the name at the left and its number in the slab face at the right; Recently added as one even row of four trading-card frames 12 px apart, each with the player's name beneath as its caption 8 px below the frame; and the bottom navigation with its Add item. In the dark theme the stat tables sit on the panel colour with a 6 px radius. Each tile, each Top teams entry, each Top players entry and each Recently added card SHALL be a tappable control at least 48 by 48 dp whose text is readable with the contrast the theme requires, with no background gradient, translucency or shadow. A tile's accessible name SHALL hold its label and its number.
 
 #### Scenario: Both themes
 - **WHEN** the dashboard is shown with the phone in dark mode and then in light mode
-- **THEN** the tiles, the Recently added cards and the Top teams entries render in that theme with legible text and no colour literal outside the tokens file
+- **THEN** the tiles, the Top teams and Top players entries and the Recently added cards render in that theme with legible text and no colour literal outside the tokens file
 
 #### Scenario: Ruled stat table
 - **WHEN** the dashboard is shown
@@ -147,3 +151,34 @@ The system SHALL show on the dashboard, under the heading "Top teams", up to fiv
 #### Scenario: No teams
 - **WHEN** no card in the collection has a team
 - **THEN** no Top teams heading or placeholder is shown
+
+### Requirement: Top players
+The system SHALL show on the dashboard, under the heading "Top players", up to five players with the most distinct cards, most first, with ties in alphabetical order. Player names SHALL be compared ignoring case, accents and surrounding spaces, so spellings of one player make one entry, shown with the first spelling met; a card's player is its whole player string, so a team card or a card of two players is its own entry. A player's number SHALL count distinct cards, not quantity. Each entry SHALL be a tappable control showing the player name and its number, with the accessible name "player, number". Tapping an entry SHALL open the collection list with the Player filter set to that name and a Player chip, earlier search and filters cleared. Because the Player filter matches part of a name, the list SHALL show at least as many cards as the entry's number. The group SHALL NOT be shown when no card has a player.
+
+#### Scenario: Order, merged spellings and distinct count
+- **GIVEN** 3 cards of "Ronald Acuña Jr." (one of them with quantity 3 and one saved as "ronald acuna jr."), 2 cards of "Mookie Betts", 2 cards of "Aaron Judge" and 1 card of "Shohei Ohtani"
+- **WHEN** the dashboard is shown
+- **THEN** Top players lists Ronald Acuña Jr. reading 3, then Aaron Judge 2, then Mookie Betts 2, then Shohei Ohtani 1
+
+#### Scenario: At most five
+- **GIVEN** cards from seven players
+- **WHEN** the dashboard is shown
+- **THEN** Top players lists exactly five entries
+
+#### Scenario: Quantity does not count
+- **GIVEN** one card of "Aaron Judge" with quantity 3
+- **WHEN** the dashboard is shown
+- **THEN** the Aaron Judge entry reads 1
+
+#### Scenario: Tap a player
+- **GIVEN** the Top players entry for Aaron Judge reads 2 and the list was filtered to Autograph
+- **WHEN** the user taps that entry
+- **THEN** the collection list shows 2 cards with a Player chip "Aaron Judge" and no Autograph chip
+
+#### Scenario: No cards
+- **WHEN** the collection has no cards
+- **THEN** no Top players heading or placeholder is shown
+
+#### Scenario: Ruled rows
+- **WHEN** the dashboard is shown with cards from three players
+- **THEN** Top players shows three rows separated by 1 px rules, each at least 48 dp high with the player name at the left and its number at the right in the slab face
