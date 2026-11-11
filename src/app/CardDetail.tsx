@@ -45,7 +45,8 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         {serial && <span className="tag">{serial}</span>}
       </div>
       <p className="subtitle" data-testid="subtitle">
-        {card.year} {card.set} · #{card.cardNumber}
+        {card.year} {card.set}
+        {card.cardNumber && ` · #${card.cardNumber}`}
       </p>
       <dl className="facts" data-testid="facts">
         {facts.map(([label, value]) => (

@@ -20,7 +20,14 @@ export interface Card {
   subset?: string;
   insert?: string;
   cardNumber: string;
-  parallel: { name: string; serial: number | null; serialLegible: boolean; printRun: number | null } | null;
+  parallel: {
+    name: string;
+    /** Absent on cards saved before the mark existed: then a serial or a print run counts as serial-numbered. */
+    serialNumbered?: boolean;
+    serial: number | null;
+    serialLegible: boolean;
+    printRun: number | null;
+  } | null;
   flags: { rookie: boolean; autograph: boolean; relic: boolean };
   grading: Grading;
   quantity: number;
