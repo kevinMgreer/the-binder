@@ -18,6 +18,7 @@ export interface Card {
   manufacturer: string;
   set: string;
   subset?: string;
+  sortName?: string;
   insert?: string;
   cardNumber: string;
   parallel: {

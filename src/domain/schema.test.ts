@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { makeCard } from "./fixtures";
-import { validateCard } from "./schema";
+import { cardSchema, validateCard } from "./schema";
 
 const parallel = (serial: number | null, printRun: number | null, serialLegible = true) => ({
   name: "Gold",
@@ -39,6 +39,13 @@ test("serial equal to print run, and unreadable serial with a print run, are val
 test("subset and insert are optional", () => {
   expect(validateCard(makeCard())).toEqual({});
   expect(validateCard(makeCard({ subset: "Future Stars", insert: "Stars of MLB" }))).toEqual({});
+});
+
+test("sort name is optional and survives parsing", () => {
+  const withName = makeCard({ sortName: "Acuña" });
+  expect(validateCard(withName)).toEqual({});
+  expect(validateCard(makeCard())).toEqual({});
+  expect(cardSchema.parse(withName).sortName).toBe("Acuña");
 });
 
 test("graded needs a company and a grade", () => {

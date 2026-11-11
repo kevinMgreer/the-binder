@@ -73,10 +73,37 @@ export function matcher(f: Filters): (c: Card) => boolean {
 
 export const applyFilters = (cards: Card[], f: Filters): Card[] => cards.filter(matcher(f));
 
-export function sortCards(cards: Card[]): Card[] {
-  return [...cards].sort(
-    (a, b) => a.year - b.year || collator.compare(a.set, b.set) || collator.compare(a.cardNumber, b.cardNumber),
-  );
+export type SortBy = "lastName" | "year" | "team" | "set";
+export interface Sort {
+  by: SortBy;
+  descending: boolean;
+}
+export const defaultSort: Sort = { by: "lastName", descending: false };
+
+/** Sort name, else the player's last name; a team card keeps its whole text. */
+export function lastNameKey(c: Card): string {
+  const sortName = c.sortName?.trim();
+  if (sortName) return sortName;
+  const player = c.player.trim();
+  const team = normalize(c.team.trim());
+  if (team && normalize(player).includes(team)) return player;
+  let name = player.split(/\s*[/&]\s*|\s+and\s+/i)[0];
+  const suffix = /[\s,]+(?:jr|sr|ii|iii|iv)\.?$/i;
+  while (suffix.test(name)) name = name.replace(suffix, "");
+  return name.split(/\s+/).pop() || player;
+}
+
+const sortKey = (c: Card, by: SortBy): string | number =>
+  by === "year" ? c.year : by === "lastName" ? lastNameKey(c) : c[by];
+
+export function sortCards(cards: Card[], sort: Sort = defaultSort): Card[] {
+  const keys = new Map(cards.map((c) => [c, sortKey(c, sort.by)]));
+  const sign = sort.descending ? -1 : 1;
+  return [...cards].sort((a, b) => {
+    const [ka, kb] = [keys.get(a)!, keys.get(b)!];
+    const primary = typeof ka === "number" ? ka - (kb as number) : collator.compare(ka, kb as string);
+    return sign * (primary || a.year - b.year || collator.compare(a.set, b.set) || collator.compare(a.cardNumber, b.cardNumber));
+  });
 }
 
 export function distinctValues(cards: Card[], pick: (c: Card) => string | undefined): string[] {

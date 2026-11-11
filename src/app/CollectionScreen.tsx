@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
-import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters } from "../domain/query";
+import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, type Sort, type SortBy } from "../domain/query";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
 import { CardList } from "./CardList";
@@ -14,6 +14,8 @@ interface Props {
   cards: Card[];
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  sort: Sort;
+  onSortChange: (sort: Sort) => void;
   update: UpdateInfo | null;
   onAdd: () => void;
   onNavigate: (to: Destination) => void;
@@ -29,14 +31,17 @@ const FLAG_LABELS = {
   graded: "Graded",
 } as const;
 
+const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year", team: "Team", set: "Set" };
+
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
-  const shown = useMemo(() => sortCards(applyFilters(cards, filters)), [cards, filters]);
+  const shown = useMemo(() => sortCards(applyFilters(cards, filters), sort), [cards, filters, sort]);
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
@@ -95,6 +100,14 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
   ];
   const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
   const closeSheet = useCallback(() => setFilterOpen(false), []);
+  const closeSort = useCallback(() => setSortOpen(false), []);
+  const sortLabel = SORT_LABELS[sort.by];
+  const radio = (name: string, label: string, checked: boolean, onChange: () => void) => (
+    <label className="check" key={label}>
+      <input type="radio" name={name} checked={checked} onChange={onChange} />
+      {label}
+    </label>
+  );
   const countLabel = `${shown.length} ${shown.length === 1 ? "card" : "cards"}`;
 
   return (
@@ -133,9 +146,14 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
           ))}
         </div>
       )}
-      <p className="shown" data-testid="shown">
-        Showing {shown.length}
-      </p>
+      <div className="shown-row">
+        <p className="shown" data-testid="shown">
+          Showing {shown.length}
+        </p>
+        <button aria-label={`Sort: ${sortLabel}, ${sort.descending ? "descending" : "ascending"}`} onClick={() => setSortOpen(true)}>
+          Sort: {sortLabel} {sort.descending ? "↓" : "↑"}
+        </button>
+      </div>
       {shown.length > 0 ? (
         <CardList cards={shown} onOpen={onOpen} />
       ) : cards.length === 0 ? (
@@ -148,6 +166,21 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
         </p>
       )}
       <BottomNav active="list" onNavigate={onNavigate} onAdd={onAdd} />
+      {sortOpen && (
+        <Sheet label="Sort" onClose={closeSort}>
+          <div className="group">
+            <h3>Order</h3>
+            {(Object.keys(SORT_LABELS) as SortBy[]).map((by) =>
+              radio("sort-by", SORT_LABELS[by], sort.by === by, () => onSortChange({ ...sort, by })),
+            )}
+          </div>
+          <div className="group">
+            <h3>Direction</h3>
+            {radio("sort-direction", "Ascending", !sort.descending, () => onSortChange({ ...sort, descending: false }))}
+            {radio("sort-direction", "Descending", sort.descending, () => onSortChange({ ...sort, descending: true }))}
+          </div>
+        </Sheet>
+      )}
       {filterOpen && (
         <Sheet
           label="Filters"

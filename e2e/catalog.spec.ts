@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { openCollection } from "./helpers";
+import { hardwareBack, openCollection } from "./helpers";
 
 interface Draft {
   player?: string;
@@ -196,6 +196,23 @@ test("Combined filters list only cards matching all of them, with a count", asyn
   await page.getByLabel("Year to", { exact: true }).fill("2026");
   await expect(rows(page)).toHaveCount(2);
   await expect(page.getByTestId("shown")).toHaveText("Showing 2");
+});
+
+test("List order: last name by default, Year descending on request, kept after opening a card", async ({ page }) => {
+  await addCard(page, { ...base, player: "Mookie Betts", year: "2019", cardNumber: "1" });
+  await addCard(page, { ...base, year: "2024", cardNumber: "2" });
+  await addCard(page, { ...base, player: "Freddie Freeman", year: "2021", cardNumber: "3" });
+  await expect(rows(page)).toContainText(["Acuña", "Betts", "Freeman"]);
+  await page.getByRole("button", { name: "Sort: Last name, ascending" }).click();
+  await page.getByRole("radio", { name: "Year", exact: true }).check();
+  await page.getByRole("radio", { name: "Descending", exact: true }).check();
+  await page.getByRole("button", { name: "Close" }).click();
+  await expect(rows(page)).toContainText(["Acuña", "Freeman", "Betts"]);
+  await rows(page).first().click();
+  await page.getByRole("button", { name: "Edit" }).waitFor();
+  await hardwareBack(page);
+  await expect(page.getByRole("button", { name: "Sort: Year, descending" })).toBeVisible();
+  await expect(rows(page)).toContainText(["Acuña", "Freeman", "Betts"]);
 });
 
 test("Subset and insert", async ({ page }) => {

@@ -276,6 +276,8 @@ A ruled stat table: up to five rows of at least 56px (`--size-team-min`) separat
 ### Chips and badge
 Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
 
+The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a sheet with two radio groups, Order (Last name, Year, Team, Set) and Direction (Ascending, Descending).
+
 ### Tag
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.
 
@@ -295,7 +297,7 @@ Detail screen, top to bottom: the player as a Title with the Tag beside it, a 1p
 Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. Confirm and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
 
 ### Navigation
-The dashboard is the start destination: Android's back closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search and filters. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, Settings to where it was opened from). Forms keep Cancel and sheets keep Close.
+The dashboard is the start destination: Android's back closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search, filters and sort. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, Settings to where it was opened from). Forms keep Cancel and sheets keep Close.
 
 ## Do's and Don'ts
 
