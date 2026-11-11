@@ -1,5 +1,5 @@
 import type { Card } from "./card";
-import { emptyFilters, matcher, normalize, type Filters } from "./query";
+import { emptyFilters, lastNameKey, matcher, normalize, type Filters } from "./query";
 
 export interface Tile {
   label: string;
@@ -49,8 +49,21 @@ function tally(map: Map<string, TeamStat>, raw: string) {
   else map.set(key, { name, count: 1 });
 }
 
-const top = (map: Map<string, TeamStat>) =>
-  [...map.values()].sort((a, b) => b.count - a.count || collator.compare(a.name, b.name)).slice(0, TOP);
+/** Tie key per player: the first non-empty Sort name among the player's cards, else lastNameKey of the first card met. */
+function keyPlayer(keys: Map<string, { key: string; explicit: boolean }>, card: Card) {
+  const id = normalize(card.player.trim());
+  const explicit = !!card.sortName?.trim();
+  const cur = keys.get(id);
+  if (!cur || (explicit && !cur.explicit)) keys.set(id, { key: lastNameKey(card), explicit });
+}
+
+/** Count first; ties by the tie key (players) or the name (teams), then the name. */
+function top(map: Map<string, TeamStat>, keys?: Map<string, { key: string }>) {
+  const key = (s: TeamStat) => keys?.get(normalize(s.name))?.key ?? s.name;
+  return [...map.values()]
+    .sort((a, b) => b.count - a.count || collator.compare(key(a), key(b)) || collator.compare(a.name, b.name))
+    .slice(0, TOP);
+}
 
 /** One pass over the cards; the match tiles and team counts use the same predicate and key as the list they open. */
 export function collectionStats(cards: Card[]): CollectionStats {
@@ -59,6 +72,7 @@ export function collectionStats(cards: Card[]): CollectionStats {
   const recent: Card[] = [];
   const teams = new Map<string, TeamStat>();
   const players = new Map<string, TeamStat>();
+  const playerKeys = new Map<string, { key: string; explicit: boolean }>();
   for (const card of cards) {
     TILES.forEach((tile, i) => {
       if (tile.count === "total") values[i] += card.quantity;
@@ -68,6 +82,7 @@ export function collectionStats(cards: Card[]): CollectionStats {
 
     tally(teams, card.team);
     tally(players, card.player);
+    if (card.player.trim()) keyPlayer(playerKeys, card);
 
     if (recent.length < RECENT || card.createdAt > recent[RECENT - 1].createdAt) {
       recent.push(card);
@@ -79,6 +94,6 @@ export function collectionStats(cards: Card[]): CollectionStats {
     tiles: TILES.map((tile, i) => ({ ...tile, value: values[i] })),
     recent,
     teams: top(teams),
-    players: top(players),
+    players: top(players, playerKeys),
   };
 }
