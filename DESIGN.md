@@ -147,8 +147,8 @@ components:
     textColor: "{colors.ink-muted}"
     height: "64px"
   nav-add:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.ground}"
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.ink}"
     rounded: "{rounded.frame}"
     width: "40px"
     height: "24px"
@@ -179,7 +179,7 @@ The phone owns the theme. Light and dark both ship and follow `prefers-color-sch
 A cream-and-navy neutral world. Status is a single danger red.
 
 ### Primary
-- **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Save, Edit, Show cards in the sheet, Sign in with Google) and the Add frame in the bottom navigation, always with ground-coloured text (cream on navy in light, navy on cream in dark). There is no gold.
+- **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Save, Edit, Show cards in the sheet, Sign in with Google), always with ground-coloured text (cream on navy in light, navy on cream in dark). The Add frame in the bottom navigation is not filled: it is outlined (1px ink border, panel background, ink plus), so only the current destination is marked. There is no gold. On the card form Cancel (ink-outlined) sits left of Save, which takes the rest of the row.
 
 ### Neutral
 - **Cardboard Cream** (ground #f3ecdc / night-ground #101a30): app background.
@@ -229,7 +229,7 @@ Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm r
 
 The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). Add card is the middle item of that bar, so there is no separate button or band; the list scroller and the dashboard reserve the room beneath so their last row clears the bar.
 
-Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a single 1px rule; Sign in again, the missing-file choice and the full sync error line appear below the rule while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the rule under their title.
+Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a single 1px rule; Sign in again, the missing-file choice and the full sync error line appear below the rule while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the rule under their title. Cancel on the card form, or Android back, asks "Discard this card?" (add) or "Discard changes?" (edit) when the form holds a change or a photo; an untouched form closes at once.
 
 The dashboard is a six-tile stat table (two columns by three rows), a Top teams and a Top players stat table of up to five rows each, then a Recently added row of four trading-card frames. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
 
@@ -276,7 +276,7 @@ Two ruled stat tables of the same shape: up to five rows of at least 56px (`--si
 ### Chips and badge
 Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
 
-The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a sheet with two radio groups, Order (Last name, Year, Team, Set) and Direction (Ascending, Descending).
+The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a bottom sheet as tall as its content (the Filters sheet stays full height) with two radio groups, Order (Last name, Year, Team, Set; one column of 48dp rows on one left edge) and Direction (Ascending and Descending side by side), and a primary Done footer. A choice applies at once; Done and Close only close the sheet.
 
 ### Tag
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.

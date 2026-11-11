@@ -92,7 +92,7 @@ test.describe("theme", () => {
     await seed(page, CARDS);
     await applyYearFrom(page, "2000");
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
-    expect(await css(page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add"), "background-color")).toBe("rgb(1, 2, 3)");
+    expect(await css(page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add"), "border-top-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Filter/ }).click();
     expect(await css(page.getByRole("button", { name: /^Show \d+ cards?$/ }), "background-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
@@ -488,7 +488,7 @@ test.describe("polish after the second phone review", () => {
 });
 
 type Box = { x: number; y: number; width: number; height: number };
-const CONTROLS = "button, a[href], input:not([type=checkbox]), select, textarea, summary, label.check, [data-testid=card-row] > button";
+const CONTROLS = "button, a[href], input:not([type=checkbox]):not([type=radio]), select, textarea, summary, label.check, [data-testid=card-row] > button";
 
 async function controls(page: Page) {
   return page.evaluate((selector) => {
@@ -537,6 +537,9 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: /^Filter/ }).click();
     await expectTouchable(page, "filter sheet");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+    await page.getByRole("button", { name: /^Sort: / }).click();
+    await expectTouchable(page, "sort sheet");
+    await page.getByRole("button", { name: "Done" }).click();
     await applyYearFrom(page, "2000");
     await expectTouchable(page, "applied chip");
     await page.getByTestId("card-row").first().click();
@@ -903,7 +906,9 @@ test.describe("Bottom navigation and header", () => {
     expect(box.width).toBeGreaterThanOrEqual(47.5);
     expect(box.height).toBeGreaterThanOrEqual(47.5);
     const frame = add.locator(".nav-add");
-    expect(await css(frame, "background-color")).toBe("rgb(28, 43, 74)");
+    expect(await css(frame, "background-color")).toBe("rgb(243, 236, 220)");
+    expect(await css(frame, "border-top-width")).toBe("1px");
+    expect(await css(frame, "color")).toBe("rgb(28, 43, 74)");
     expect(await css(frame, "border-top-left-radius")).toBe("6px");
     await expect(add.locator("svg[aria-hidden=true]")).toHaveCount(1);
     await item(page, "Cards").click();
@@ -912,6 +917,48 @@ test.describe("Bottom navigation and header", () => {
     await hardwareBack(page);
     await expect(page.getByTestId("shown")).toBeVisible();
     await expect(item(page, "Cards")).toHaveAttribute("aria-current", "page");
+  });
+});
+
+test.describe("Form actions and Sort sheet", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test("Cancel sits left of a wider Save and a typed form asks before back leaves", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Add card", exact: true }).click();
+    const cancel = (await page.getByRole("button", { name: "Cancel" }).boundingBox())!;
+    const save = (await page.getByRole("button", { name: "Save" }).boundingBox())!;
+    expect(save.x - (cancel.x + cancel.width)).toBeGreaterThanOrEqual(8);
+    expect(save.width).toBeGreaterThan(cancel.width);
+    await page.getByLabel("Player").fill("Hank Aaron");
+    await hardwareBack(page);
+    await expect(page.getByRole("alertdialog", { name: "Discard this card?" })).toBeVisible();
+    await hardwareBack(page);
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+    await expect(page.getByLabel("Player")).toHaveValue("Hank Aaron");
+  });
+
+  test("the Sort sheet is compact and aligned; the Filters sheet stays full height", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const sort = page.getByRole("dialog", { name: "Sort" });
+    await page.getByRole("button", { name: /^Sort: / }).click();
+    const sheet = (await sort.boundingBox())!;
+    expect(sheet.height).toBeLessThan(800 * (2 / 3));
+    const rows = await sort.locator("label.check").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+    expect(rows.length).toBe(6);
+    for (const h of rows) expect(h).toBeGreaterThanOrEqual(47.5);
+    expect(Math.max(...rows) - Math.min(...rows)).toBeLessThan(1);
+    const left = async (name: string) => (await sort.getByRole("radio", { name, exact: true }).boundingBox())!;
+    const lefts = await Promise.all(["Last name", "Year", "Team", "Set", "Ascending"].map(async (n) => (await left(n)).x));
+    expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
+    expect((await left("Descending")).y).toBeCloseTo((await left("Ascending")).y, 0);
+    const done = (await sort.getByRole("button", { name: "Done" }).boundingBox())!;
+    expect(done.width).toBeGreaterThan(sheet.width - 80);
+    await page.getByRole("button", { name: "Done" }).click();
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    const filters = (await page.getByRole("dialog", { name: "Filters" }).boundingBox())!;
+    expect(filters.y + filters.height).toBeCloseTo(800, 0);
   });
 });
 
@@ -957,13 +1004,14 @@ test.describe("Card-back look", () => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
       const want = scheme === "light"
-        ? { bg: "rgb(243, 236, 220)", ink: "rgb(28, 43, 74)" }
-        : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)" };
+        ? { bg: "rgb(243, 236, 220)", ink: "rgb(28, 43, 74)", panel: "rgb(243, 236, 220)" }
+        : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)", panel: "rgb(23, 35, 63)" };
       expect(await pageBackground(page)).toBe(want.bg);
       expect(await css(page.getByRole("heading", { name: "Dashboard" }), "color")).toBe(want.ink);
       const frame = page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add");
-      expect(await css(frame, "background-color")).toBe(want.ink);
-      expect(await css(frame, "color")).toBe(want.bg);
+      expect(await css(frame, "background-color")).toBe(want.panel);
+      expect(await css(frame, "border-top-color")).toBe(want.ink);
+      expect(await css(frame, "color")).toBe(want.ink);
       if (scheme === "dark") expect(await css(page.locator(".tiles"), "background-color")).toBe("rgb(23, 35, 63)");
     });
 
