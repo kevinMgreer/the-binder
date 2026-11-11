@@ -107,8 +107,8 @@ test("a sort name wins, and a blank one falls back to the derived key", () => {
   expect(lastNameKey(makeCard({ player: "Mookie Betts" }))).toBe("Betts");
 });
 
-const acuna = makeCard({ player: "Ronald Acuña Jr.", year: 2024, team: "Atlanta Braves", set: "Topps Chrome" });
-const betts = makeCard({ player: "Mookie Betts", year: 2021, team: "Los Angeles Dodgers", set: "Bowman" });
+const acuna = makeCard({ player: "Ronald Acuña Jr.", year: 2024, team: "Los Angeles Dodgers", set: "Topps Chrome" });
+const betts = makeCard({ player: "Mookie Betts", year: 2021, team: "Atlanta Braves", set: "Bowman" });
 const freeman = makeCard({ player: "Freddie Freeman", year: 2019, team: "Texas Rangers", set: "Topps Chrome" });
 
 test("sortCards defaults to last name ascending, ignoring accents", () => {
@@ -123,7 +123,7 @@ test("ties in the sort key fall back to year", () => {
 test.each<[SortBy, typeof acuna[]]>([
   ["lastName", [acuna, betts, freeman]],
   ["year", [freeman, betts, acuna]],
-  ["team", [acuna, betts, freeman]],
+  ["team", [betts, acuna, freeman]],
   ["set", [betts, freeman, acuna]],
 ])("sort by %s, and descending is the exact reverse", (by, expected) => {
   const cards = [freeman, acuna, betts];

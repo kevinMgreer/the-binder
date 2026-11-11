@@ -77,7 +77,10 @@ test("choosing Year and Descending reorders the rows at once", async () => {
 
 test("the order applies to the filtered rows and leaves Showing N alone", async () => {
   await renderList();
-  fireEvent.change(screen.getByLabelText("Search"), { target: { value: "Atlanta" } });
+  fireEvent.click(screen.getByRole("button", { name: "Filter" }));
+  const sheet = within(screen.getByRole("dialog", { name: "Filters" }));
+  fireEvent.change(sheet.getByLabelText("Team"), { target: { value: "Atlanta Braves" } });
+  fireEvent.click(sheet.getByRole("button", { name: "Close" }));
   const before = screen.getByTestId("shown").textContent;
   choose("Year");
   expect(order()).toEqual(["Freddie Freeman", "Ronald Acuña Jr."]);

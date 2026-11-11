@@ -33,7 +33,7 @@ const FLAG_LABELS = {
 
 const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year", team: "Team", set: "Set" };
 
-const toNumber =(s: string) => (s.trim() === "" ? null : Number(s));
+const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
 export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
