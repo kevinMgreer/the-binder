@@ -82,6 +82,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
     ...(f.yearFrom !== null || f.yearTo !== null
       ? [{ name: "Year", text: `Year ${f.yearFrom ?? ""}–${f.yearTo ?? ""}`, clear: { yearFrom: null, yearTo: null } }]
       : []),
+    ...(f.player.trim() ? [{ name: "Player", text: f.player.trim(), clear: { player: "" } }] : []),
     ...(f.team ? [{ name: "Team", text: f.team, clear: { team: "" } }] : []),
     ...(f.manufacturer ? [{ name: "Manufacturer", text: f.manufacturer, clear: { manufacturer: "" } }] : []),
     ...(f.set ? [{ name: "Set", text: f.set, clear: { set: "" } }] : []),
@@ -168,6 +169,9 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
           </div>
           <div className="group">
             <h3>Card</h3>
+            <Field label="Player">
+              <input id={fieldId("Player")} value={filters.player} onChange={(e) => set("player", e.target.value)} />
+            </Field>
             {select("team", "Team", teams)}
             {select("manufacturer", "Manufacturer", manufacturers)}
             {select("set", "Set", sets)}
