@@ -7,7 +7,7 @@ export function Thumb({ card }: { card: Card }) {
   const url = useThumbUrl(card.id, "front", !!card.photos.front, card.updatedAt);
   return (
     <span className="thumb-slot" aria-hidden="true">
-      <Frame url={url}/>
+      <Frame url={url} cacheKey={`${card.id}:front:${card.updatedAt}`} />
     </span>
   );
 }

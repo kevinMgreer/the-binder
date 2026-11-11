@@ -25,7 +25,7 @@ The chosen look is recorded in the surface brief `.impeccable/surfaces/src-app.m
 - Keep every existing behaviour test green apart from the ones that assert the old look, which change with their requirement.
 
 **Non-Goals:**
-- Changing what any screen shows (the mock's Recently added captions "Hank Aaron 2025 Update" are not adopted; the caption stays the player name on one line).
+- Changing what any screen shows (the mock's Recently added captions "Hank Aaron 2025 Update" are not adopted; the caption stays the player name, on at most two lines then an ellipsis, by the owner's decision).
 - A theme toggle, a third theme, texture images, motion.
 - Replacing icons or the launcher icon and splash artwork.
 

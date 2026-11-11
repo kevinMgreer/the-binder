@@ -73,3 +73,14 @@ Old OpenSpec task ids are in brackets. Items above that already say the same are
 - [ ] Dashboard, light and dark: six tiles; Recently added and Top teams look clean and read well; a team tap opens Cards filtered to it; a recent card opens and back returns to the dashboard. [refine-cards-and-dashboard 4.1, T-24]
 - [ ] Landscape photo shows landscape in the Cards list, portrait shows portrait, nothing cropped, long list scrolls smoothly. [refine 4.2, T-24]
 - [ ] "Synced" sits beside the gear on both screens; airplane-mode error wording shows whole; TalkBack reads the sync state through one background sync and one offline retry; waiting through both is also to judge whether the announcements are too chatty to live with (design open question). [refine 4.3, T-24]
+
+### Card-Back look (restyle-card-back)
+
+Install the debug build; test in light and dark (`adb shell cmd uimode night yes|no`).
+
+- [ ] **No flash at launch.** Open the app cold in dark: no white or cream flash before the navy ground; in light the ground is cream. If a flash shows, the splash or window background needs a `values-night` colour (`#101a30`). Switching the phone setting with the app open restyles it live. [restyle-card-back 5.1 and 2.3, T-29]
+- [ ] **Stitch, fonts and labels.** On dashboard, list, detail, form, Settings and the filter sheet, in both themes: the stitch draws as two even dashed lines, titles and numbers are Roboto Slab and the rest Inter (also in airplane mode), and the 12 px uppercase Inter labels read at arm's length. [restyle-card-back 5.2, T-29]
+- [ ] **Real photos in frames.** A real landscape and a real portrait photo show whole (never cropped) in their frames on Recently added, in the list, on the detail strip and in the form, and long lists scroll smoothly. [restyle-card-back 5.2, T-29]
+- [ ] **Bar and band.** The bottom bar sits above the gesture bar, the Add card band hides content scrolling under it, and nothing sits under the system bars. [restyle-card-back 5.2, T-29]
+- [ ] **TalkBack.** The sync error is read once (the title-row status), the Rookies flag is not read out, and a tile reads "Autos, 12". [restyle-card-back 5.2, T-29]
+- [ ] **Owner review.** The owner looks at the whole look on the phone, including gold on every primary action, Night Game without Oswald and the nav icons kept, and accepts or lists changes for one batch. [restyle-card-back 5.3, T-29]

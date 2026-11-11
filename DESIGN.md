@@ -56,6 +56,10 @@ typography:
     fontSize: "0.75rem"
     fontWeight: 600
     letterSpacing: "0.08em"
+  tag:
+    fontFamily: "Roboto Slab, Georgia, serif"
+    fontSize: "0.75rem"
+    fontWeight: 600
 rounded:
   print: "3px"
   frame: "6px"
@@ -118,7 +122,7 @@ components:
     padding: "0 4px"
   tag:
     textColor: "{colors.ink}"
-    typography: "{typography.label}"
+    typography: "{typography.tag}"
     rounded: "{rounded.print}"
     padding: "0 6px"
   frame:
@@ -171,7 +175,7 @@ The phone owns the theme. Light and dark both ship and follow `prefers-color-sch
 A cream-and-navy neutral world with one seam colour and one button colour. Status is a single danger red.
 
 ### Primary
-- **Card Gold** (gold #f1c24a, same in both themes): the primary button fill only (Add card, Save, sheet apply), always with **Navy on Gold** text (on-gold #1c2b4a light, #101a30 dark).
+- **Card Gold** (gold #f1c24a, same in both themes): the primary button fill only (Add card, Save, Edit, Show cards in the sheet, Sign in with Google), always with **Navy on Gold** text (on-gold #1c2b4a light, #101a30 dark).
 
 ### Secondary
 - **Seam Red** (stitch #c8372d light, night-stitch #e0574b dark): the double-stitch rule under titles and between sections, the active bottom-nav underline, and the small Rookie flag on the Rookies tile. Decorative only; never text.
@@ -284,7 +288,7 @@ Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1
 Full-width borderless button with a keyline beneath, the frame slot at the left and two lines of text: player (body, weight 500, single-line ellipsis) with the Tag at the right end, and one quiet label-size line "year set, number" continuing with parallel, grade and quantity. The line never wraps: the extras shrink first, then the set, never the number. Row height 100px.
 
 ### Card facts
-Detail screen, top to bottom: the player as a Title with the Tag beside it, a muted subtitle, a stitch, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines above and between, 12px row padding, rows only for what the card has), the photo thumbnails, a muted last-edited line, Edit as the full-width primary button, then Delete apart under a keyline.
+Detail screen, top to bottom: the player as a Title with the Tag beside it, a stitch right under the title row, a muted subtitle, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines above and between, 12px row padding, rows only for what the card has), the photo thumbnails, a muted last-edited line, Edit as the full-width primary button, then Delete apart under a keyline.
 
 ### Sheets and dialogs
 Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. Confirm and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
@@ -314,4 +318,3 @@ The dashboard is the start destination: Android's back closes the app from there
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
 - Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 10x14 Rookie flag, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.
-- `font-variant-caps: normal` on the label rule in `app.css` is a no-op leftover and carries no meaning.

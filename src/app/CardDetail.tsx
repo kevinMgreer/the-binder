@@ -18,7 +18,7 @@ function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen
   const url = useThumbUrl(card.id, side, true, card.updatedAt);
   return (
     <button className="photo-thumb" aria-label={`View ${side} photo`} onClick={onOpen}>
-      <Frame url={url} />
+      <Frame url={url} cacheKey={`${card.id}:${side}:${card.updatedAt}`} />
     </button>
   );
 }

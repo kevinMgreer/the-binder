@@ -72,3 +72,22 @@ The system SHALL lay the card detail screen out, top to bottom, as: the player a
 #### Scenario: Photo strip framed
 - **WHEN** a card with a portrait front photo and a landscape back photo is opened
 - **THEN** the front sits in a portrait trading-card frame and the back in a landscape one, and tapping either opens the zoom view
+
+### Requirement: Sync state is always visible
+The system SHALL show the sync state on the title row of the dashboard and the collection list, between the title and the Settings gear, as the state dot and a short word at label size, covering every state `SyncIndicator` has: "Syncing…", "Sync problem", "Sync paused", "Waiting for your choice", "Synced", and "Unsynced: N" with the pending count. It SHALL be a status region (`role="status"`) so a screen reader announces it. In the error state the full wording "Sync problem, retrying (N unsynced)" (without the count when nothing is pending) SHALL show whole, in the danger colour at body size, on a full-width line under the stitch; that line is plain text and not a second live region, so an error is announced once. The Sign in again button and the missing-file choice SHALL appear beneath the title row while their state lasts.
+
+#### Scenario: Each state in words
+- **WHEN** the sync state is any of those six
+- **THEN** the title row shows its short wording (for example "Synced", "Sync problem" or "Unsynced: 3"), not colour alone
+
+#### Scenario: Beside the gear
+- **WHEN** the dashboard or the collection list is shown on a 360 by 800 phone with the sync state "Synced"
+- **THEN** the sync state sits on the same row as the level-one heading and the gear, left of the gear, and no separate line beneath the title holds it
+
+#### Scenario: Long wording is not cut
+- **WHEN** the sync state is "error" with 3 unsynced changes on a 360 by 800 phone
+- **THEN** the title row shows "Sync problem" and the line under the stitch shows "Sync problem, retrying (3 unsynced)" whole, on at most two lines, in the danger colour, and the title and gear keep their size
+
+#### Scenario: Screen reader
+- **WHEN** the sync state changes from "Syncing…" to "Synced", or to the error state
+- **THEN** the title-row element has `role="status"` and its accessible text is the new short wording, and the line under the stitch has no role of its own

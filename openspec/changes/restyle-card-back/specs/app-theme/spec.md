@@ -139,9 +139,9 @@ The system SHALL draw every screen on the ground colour with ink text, ruled tab
 - Sync error: the title row keeps only the dot and the short words "Sync problem"; the full wording ("Sync problem, retrying (N unsynced)") sits in a full-width status line under the stitch in the danger colour at 14 px.
 - Dialogs, banners and the empty state: the panel colour with a 1 px rule border, no gradient.
 
-#### Scenario: No pocket surface remains
+#### Scenario: No translucent surface remains
 - **WHEN** every button, input, select, textarea, dialog and banner on each screen is checked in both themes
-- **THEN** none has a background gradient, a box shadow or a translucent background, and none uses a removed pocket token
+- **THEN** none has a background gradient, a box shadow or a translucent background, and none uses a removed colour token
 
 #### Scenario: Secondary buttons are outlined in ink
 - **WHEN** the card form's Cancel and the filter sheet's Clear all are shown

@@ -5,7 +5,7 @@ The owner finds the current "Nine-Pocket Binder" look (see-through pockets on a 
 ## What Changes
 
 - New palettes per theme, replacing the grey page, white surface and pocket colours: Card-Back Calm (cream ground, navy ink and rules, red stitch, gold primary button) when the phone is light; Night Game (deep navy ground, lighter navy panels, cream text, lifted red stitch, the same gold) when the phone is dark.
-- Two bundled font faces, licence free, loaded from the app with no network: a slab face for titles and numbers (tabular figures) and a sans face for body and small-caps labels. New type scale: 12 label, 14 body, 16 button label, 18 table number, 24 stat number, 28 title (CSS px).
+- Two bundled font faces, licence free, loaded from the app with no network: a slab face for titles and numbers (tabular figures) and a sans face for body and uppercase labels. New type scale: 12 label, 14 body, 16 button label, 18 table number, 28 title, 32 stat number (CSS px).
 - New shared marks: the red double-stitch seam (under screen titles, between dashboard sections, under the active bottom-navigation tab), ruled stat tables with thin rules, and the trading-card frame (2.5:3.5, rotated for a landscape photo, 6 px radius, keyline, inner print border).
 - Red is held back: the stitch, the Rookies flag and error text only. Gold fills only the one primary action of a screen, never chips, tags or links.
 - Screens restyled: dashboard (six totals as a 2x3 ruled stat table, Recently added as four trading-card frames, Top teams as a ruled stat table, gold Add card), Cards list (ruled rows with framed thumbnails, ink chips, stamp-style serial tag), card detail (framed photo strip, ruled facts), card form, Settings, Filter sheet, dialogs and banners, bottom navigation (red stitch underline on the active tab).
@@ -29,7 +29,7 @@ Kept as they are: 48 dp touch targets with 8 dp between neighbours, 100 dp list 
 
 ## Out of scope
 
-- Any change to what a screen shows: labels, numbers, captions, field lists and order stay the same (the mock's longer Recently added captions are not adopted; the caption stays the player name on one line).
+- Any change to what a screen shows: labels, numbers, captions, field lists and order stay the same (the mock's longer Recently added captions are not adopted; the caption stays the player name, on at most two lines then an ellipsis, by the owner's decision).
 - Behaviour: navigation, back handling, filters, sync, photos, identification.
 - An in-app theme switch, more themes, animations or texture images.
 - New fonts beyond the two named faces, icon changes, the app launcher icon and splash artwork.

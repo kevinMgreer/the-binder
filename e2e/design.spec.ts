@@ -216,6 +216,9 @@ for (const size of PHONES) {
       await expect(page.locator("header .title-row").getByTestId("sync-status")).toHaveText("Sync problem");
       const status = page.locator("header").getByTestId("sync-detail");
       await expect(status).toHaveText("Sync problem, retrying (3 unsynced)");
+      // The title-row status is the one live region; the detail line is plain text, so an error is announced once.
+      await expect(status).not.toHaveAttribute("role", /.+/);
+      await expect(page.locator("header").getByRole("status")).toHaveCount(1);
       expect(await css(status, "color")).toBe(await page.evaluate(() => {
         const p = document.createElement("i");
         p.style.color = "var(--color-danger)";
@@ -945,7 +948,7 @@ test.describe("Card-back look", () => {
       if (scheme === "dark") expect(await css(page.locator(".tiles"), "background-color")).toBe("rgb(23, 35, 63)");
     });
 
-    test(`No pocket surface remains in ${scheme}`, async ({ page }) => {
+    test(`No translucent surface remains in ${scheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
       await seed(page, CARDS);

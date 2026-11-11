@@ -31,7 +31,6 @@ p { margin: 0 0 var(--space-2); }
 .tile-label, .field > label, .facts dt, .shown, .sync {
   font-size: var(--type-label);
   font-weight: 600;
-  font-variant-caps: normal;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }

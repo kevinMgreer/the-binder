@@ -29,7 +29,7 @@ export function SyncActions() {
   return (
     <>
       {state === "error" && (
-        <p className="sync-detail" role="status" data-testid="sync-detail">
+        <p className="sync-detail" data-testid="sync-detail">
           Sync problem, retrying{pending > 0 ? ` (${pending} unsynced)` : ""}
         </p>
       )}

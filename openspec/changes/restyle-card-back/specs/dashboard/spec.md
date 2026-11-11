@@ -30,3 +30,28 @@ The system SHALL draw the dashboard only from the design tokens, in both the lig
 #### Scenario: Rookies flag is not read out
 - **WHEN** a screen reader focuses the Rookies tile reading 58
 - **THEN** it announces "Rookies, 58" and nothing for the flag
+
+### Requirement: Recently added cards
+The system SHALL show on the dashboard, under the heading "Recently added", the four most recently added cards (by when each card was first saved, newest first; editing a card SHALL NOT move it), or all cards when there are fewer than four. Each SHALL be a tappable control showing the card's front thumbnail in a trading-card frame in the photo's own orientation (or the placeholder when it has none) and the player's name beneath it on at most two lines, then an ellipsis, with the accessible name "player, year set #number". Tapping one SHALL open that card's detail screen, and back from there SHALL return to the dashboard. The group SHALL NOT be shown when the collection has no cards.
+
+#### Scenario: Newest first
+- **GIVEN** six cards saved one after another, A first and F last
+- **WHEN** the dashboard is shown
+- **THEN** Recently added shows F, E, D, C in that order
+
+#### Scenario: Editing does not reorder
+- **GIVEN** the six cards above
+- **WHEN** the user edits card A and returns to the dashboard
+- **THEN** Recently added still shows F, E, D, C
+
+#### Scenario: Open a recent card
+- **WHEN** the user taps a card in Recently added and then presses back
+- **THEN** that card's detail screen is shown, and back shows the dashboard
+
+#### Scenario: Long names
+- **WHEN** a card's player name is longer than two lines at the column width
+- **THEN** the caption shows two lines and ends in an ellipsis
+
+#### Scenario: Empty collection
+- **WHEN** the collection has no cards
+- **THEN** no Recently added heading or placeholder is shown
