@@ -27,15 +27,15 @@ The system SHALL give body text a contrast ratio of at least 4.5 to 1 against ev
 - **THEN** every pair is at least 4.5 to 1
 
 #### Scenario: Non-text contrast in both themes
-- **WHEN** the flag colour and the frame keyline colour of each theme are measured against the ground and the panel
-- **THEN** every pair is at least 3 to 1
+- **WHEN** the frame keyline colour of each theme is measured against the ground and the panel
+- **THEN** every pair is at least 3 to 1 (the stitch and flag are gone, so the keyline is the only non-text mark held to it)
 
 #### Scenario: Touch targets
 - **WHEN** any button, chip, input or row is measured on a 360 dp wide phone
 - **THEN** it is at least 48 dp high and wide, with at least 8 dp to the next control
 
 ### Requirement: Destructive actions stay apart
-The system SHALL keep destructive actions (delete card, sign out) visually distinct and away from primary actions: drawn as danger-coloured text, never filled like a primary button and never in the flag colour.
+The system SHALL keep destructive actions (delete card, sign out) visually distinct and away from primary actions: drawn as danger-coloured text, never filled like a primary button and and the danger colour is used for nothing decorative.
 
 #### Scenario: Delete is not beside Edit
 - **WHEN** the card detail screen is shown
@@ -57,7 +57,6 @@ The system SHALL show the "Card-Back Calm" palette when the phone is light and t
 | ink (text, icons, rules) | #1c2b4a | #f3ecdc |
 | muted ink (secondary text) | #4a5670 | #c2bcae |
 | rule (row, fact and sheet rules; full ink stays for frames, buttons, field underlines and the stat and team table outlines) | #1c2b4a at 55 percent | #f3ecdc at 30 percent |
-| flag (the Rookies flag, the only red mark) | #c8372d | #e0574b |
 | danger (error text, Delete, Sign out) | #a82a22 | #ff8a80 |
 | frame print border | #f3ecdc | #f3ecdc |
 
@@ -112,8 +111,8 @@ The system SHALL space every screen from these spacing tokens: `--gutter` 24 px 
 - **WHEN** the dashboard and the card form are shown
 - **THEN** stat cell text starts 16 px inside its rule, Recently added frames are 12 px apart with the caption 8 px below, form fields are 24 px apart, and every cell and control keeps the 48 dp and 8 dp rules
 
-### Requirement: Red marks only the Rookies flag
-The system SHALL use the flag colour only for the small Rookies flag on the dashboard. There SHALL be no dashed or red seam anywhere: sections are separated by whitespace, and where a divider is needed by a single 1 px rule in the rule colour, including one under each screen title and none under the bottom-navigation tabs. Error text, Delete and Sign out SHALL use the danger colour, not the flag colour. The primary action is a button filled with the ink colour with ground-coloured text (cream on navy in light, navy on cream in dark), 6 px radius, sans 600 at 16 px, 48 dp high; gold is not used.
+### Requirement: Red is only the danger text colour
+The system SHALL use no decorative red: there is no flag, stitch or seam, and the only red is the danger colour, used for error text, the sync problem text, Delete and Sign out. Sections are separated by whitespace, and where a divider is needed by a single 1 px rule in the rule colour, including one under each screen title and none under the bottom-navigation tabs. The primary action is a button filled with the ink colour with ground-coloured text (cream on navy in light, navy on cream in dark), 6 px radius, sans 600 at 16 px, 48 dp high; gold is not used.
 
 #### Scenario: Rule under the title
 - **WHEN** the dashboard, the list, the card detail, the card form or Settings is shown
@@ -123,9 +122,9 @@ The system SHALL use the flag colour only for the small Rookies flag on the dash
 - **WHEN** Save, Edit, Show cards or Sign in with Google is shown
 - **THEN** its background computes to the ink colour, its text to the ground colour, its radius to 6 px and its height to at least 48 dp
 
-#### Scenario: Red stays rare
-- **WHEN** every element of the dashboard is checked for a computed colour, background or border equal to the flag colour
-- **THEN** the only match is the Rookies flag
+#### Scenario: No decorative red
+- **WHEN** every element and pseudo-element of the dashboard is checked for a computed colour, background or border equal to the danger colour, first with the sync state idle and then in the error state
+- **THEN** there is no match when idle, and in the error state the only matches are the sync status text and the sync detail line
 
 ### Requirement: Photos sit in trading-card frames
 The system SHALL show every card photo and the photo placeholder inside a trading-card frame: a 2.5 by 3.5 rectangle (3.5 by 2.5 when the photo is wider than tall), 6 px radius, a 1 px keyline in the ink colour, a 3 px inner print border in the frame print colour and a thin inner rule, with the whole photo shown inside (never cropped). This applies to the list thumbnails, Recently added, the detail photo strip and the form's photo slots.

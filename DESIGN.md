@@ -1,13 +1,12 @@
 ---
 name: The Binder
-description: A baseball-card collection app that looks like the back of a card, calm cream cardboard (Card-Back Calm) or night navy (Night Game), one ink, stat-line type, open spacing and one red flag.
+description: A baseball-card collection app that looks like the back of a card, calm cream cardboard (Card-Back Calm) or night navy (Night Game), one ink, stat-line type, open spacing and no decorative colour.
 colors:
   ground: "#f3ecdc"
   panel: "#f3ecdc"
   ink: "#1c2b4a"
   ink-muted: "#4a5670"
   rule: "#1c2b4a8c"
-  flag: "#c8372d"
   danger: "#a82a22"
   frame: "#f3ecdc"
   scrim: "#1c2b4a66"
@@ -17,7 +16,6 @@ colors:
   night-ink: "#f3ecdc"
   night-ink-muted: "#c2bcae"
   night-rule: "#f3ecdc4d"
-  night-flag: "#e0574b"
   night-danger: "#ff8a80"
   night-frame: "#f3ecdc"
   night-scrim: "#000000a6"
@@ -170,7 +168,7 @@ The phone owns the theme. Light and dark both ship and follow `prefers-color-sch
 
 **Key Characteristics:**
 - One ink (navy in light, cream in dark); rules and borders are that ink, thinned.
-- Red only as the Rookie flag; the primary button is ink-filled.
+- No decorative red; the only red is the danger text colour; the primary button is ink-filled.
 - Numbers in Roboto Slab with tabular figures; labels in uppercase 12 px Inter; body in Inter.
 - Secondary data in ruled stat tables, not boxed cards.
 - Fonts ship inside the app (woff2 under `fonts.css`), so nothing loads from the network.
@@ -178,13 +176,10 @@ The phone owns the theme. Light and dark both ship and follow `prefers-color-sch
 
 ## Colors
 
-A cream-and-navy neutral world with one flag colour. Status is a single danger red.
+A cream-and-navy neutral world. Status is a single danger red.
 
 ### Primary
 - **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Save, Edit, Show cards in the sheet, Sign in with Google) and the Add frame in the bottom navigation, always with ground-coloured text (cream on navy in light, navy on cream in dark). There is no gold.
-
-### Secondary
-- **Flag Red** (flag #c8372d light, night-flag #e0574b dark): the small Rookie flag on the Rookies tile and nothing else. Decorative only; never text.
 
 ### Neutral
 - **Cardboard Cream** (ground #f3ecdc / night-ground #101a30): app background.
@@ -202,9 +197,9 @@ A cream-and-navy neutral world with one flag colour. Status is a single danger r
 ### Named Rules
 **The Tokens Only Rule.** No colour literal is written outside `tokens.css`. Components reference `var(--color-*)`; a new colour is a new token with a light and a dark value.
 
-**The One Ink Rule.** Text, rules and borders are ink at full or thinned strength. The flag red is never used for text.
+**The One Ink Rule.** Text, rules and borders are ink at full or thinned strength. 
 
-**The Flag Is Rare Rule.** Red appears only as the Rookie flag (and the danger red for errors, Delete and Sign out). Do not use it for buttons, links, badges or emphasis.
+**The No Decorative Red Rule.** The only red is the danger colour, used for error text, the sync problem text, Delete and Sign out. Do not use it for buttons, links, badges, flags or emphasis.
 
 **The Phone Decides Rule.** Theme follows `prefers-color-scheme` only. Every token that differs in dark is overridden in the one dark block.
 
@@ -270,7 +265,7 @@ Fixed to the bottom of the two top-level screens only (never on detail, forms, S
 Icon-only 48x48 button for header actions (the Settings gear), borderless in the title row. Name from `aria-label`. Icons are inline SVG in `src/app/Icon.tsx` (gear, dashboard, cards, plus), `currentColor`, `aria-hidden`; no icon font or package.
 
 ### Stat table and tiles
-One ruled block: panel background, 1px ink border, frame radius. Six tiles in a two-column grid; each is a 48px-minimum button inset 4px, with keylines drawn between cells (right of the left column, below the first four). Label on top (uppercase label size, Muted Ink), number below (Slab 700 at 2rem, ink). Never gold-filled. The Rookies tile carries a small red flag notched at its top edge. Tapping opens the list filtered to what the tile counts; the accessible name is "label, number".
+One ruled block: panel background, 1px ink border, frame radius. Six tiles in a two-column grid; each is a 48px-minimum button inset 4px, with keylines drawn between cells (right of the left column, below the first four). Label on top (uppercase label size, Muted Ink), number below (Slab 700 at 2rem, ink). Never gold-filled. Tapping opens the list filtered to what the tile counts; the accessible name is "label, number".
 
 ### Recently added
 Heading in Table size, then four equal columns (`--gap-frame` 12px gap) of trading-card frames with the player's name beneath at label size, weight 500, clamped to two lines. Each is a button that opens the card.
@@ -310,17 +305,17 @@ The dashboard is the start destination: Android's back closes the app from there
 - **Do** put photos in a 2.5:3.5 frame (3.5:2.5 for landscape) and never crop the photo.
 - **Do** separate sections with whitespace, and set numbers in Roboto Slab.
 - **Do** build new data lists as ruled tables (1px keylines) and new fields as ruled lines.
-- **Do** keep the ink fill for the one primary action and red for the Rookie flag.
+- **Do** keep the ink fill for the one primary action and no decorative red.
 - **Do** let the phone pick light or dark, and bundle any new font inside the app.
 
 ### Don't:
 - **Don't** write colour literals (hex, rgb, hsl) outside `tokens.css`.
 - **Don't** add blur, backdrop-filter or any shadow.
 - **Don't** add an in-app theme toggle.
-- **Don't** use the flag red as text.
+- **Don't** use red for anything but danger text.
 - **Don't** wrap data in rounded filled cards; use rules, not boxes.
 - **Don't** add a second Add card control to a screen, or a centered modal where a sheet fits.
 
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
-- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 10x14 Rookie flag, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.
+- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.

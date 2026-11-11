@@ -68,7 +68,7 @@ Add `@fontsource/roboto-slab` and `@fontsource/inter` and import only the weight
 - $0: CSS and a few lines of TSX.
 
 ### D7. Stat tables keep one button per cell
-The dashboard's six tiles stay six `<button>`s with their accessible names; the grid container draws the outer rule and the cells draw inner rules (right on the first column, bottom on all but the last row), with no gap, so the table reads as one ruled block. Top teams rows are buttons with a bottom rule. The Rookies flag is a `::after` on the Rookies cell (a small clipped pennant in the stitch colour), so it never reaches the accessible name. The dashboard's computation and memoisation are untouched, so the 1 s budget for 5,000 cards holds.
+The dashboard's six tiles stay six `<button>`s with their accessible names; the grid container draws the outer rule and the cells draw inner rules (right on the first column, bottom on all but the last row), with no gap, so the table reads as one ruled block. Top teams rows are buttons with a bottom rule. (The Rookies flag pennant that this decision first had was removed after the owner's phone review.) The dashboard's computation and memoisation are untouched, so the 1 s budget for 5,000 cards holds.
 - Alternatives: a real `<table>` (rejected: cells must be buttons, and table semantics would add row and column announcements nobody asked for).
 - $0.
 
@@ -83,7 +83,7 @@ The dashboard's six tiles stay six `<button>`s with their accessible names; the 
 
 ## Risks / Trade-offs
 
-- [Cream ground and a slab face are a common vintage default; the app could read as a costume] → keep red rare (stitch and Rookies flag only, checked by the "Red stays rare" scenario), one ink, a strict grid: one `--gutter` on every screen, rules 1 px and aligned to the same column edges, no ornaments, badges or textures beyond the spec.
+- [Cream ground and a slab face are a common vintage default; the app could read as a costume] → no decorative red at all (checked by the "No decorative red" scenario), one ink, a strict grid: one `--gutter` on every screen, rules 1 px and aligned to the same column edges, no ornaments, badges or textures beyond the spec.
 - [12 px small-caps labels may be small for a glance at arm's length] → AA contrast holds, sizes are rem so the phone's text size setting scales them; the phone review (5.x) checks it, and a change would be a token value.
 - [Dark rules at 30 percent cream are below 3:1] → they are decorative; every cell is identified by its text and the cells are buttons with names. Keylines and the stitch, which carry meaning, are held to 3:1.
 - [Fonts arrive after first paint and the layout shifts] → local files load in milliseconds; fixed row and cell heights do not depend on the face; the perf tests still guard the 1 s budget.
@@ -97,7 +97,7 @@ One branch, no data change. Tokens and fonts land first, then screens one by one
 
 ## Update after the owner's phone review
 
-Supersedes D3, D5 and D8 where they differ: the stitch (D5) is removed with `--color-stitch`, `--stitch-line` and `--stitch-gap`, and the Rookies flag keeps its red as `--color-flag`; sections are separated by whitespace and a single 1 px `--color-rule` line under titles only; the active tab has no underline. The primary action (D8) is ink-filled with ground-coloured text, so `--color-gold` and `--color-on-gold` are removed. Spacing is opened up by tokens: `--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8. List rows stay 100 dp. Add card is no longer a button or band on the screens: it is the middle item of the bottom navigation (Dashboard, Add, Cards), an action never marked current, drawn as a plus in a 40 by 24 dp ink-filled frame with a 6 px radius. No token changes.
+Supersedes D3, D5 and D8 where they differ: the stitch (D5) is removed with `--color-stitch`, `--stitch-line` and `--stitch-gap`, and the Rookies flag, which first kept its red as `--color-flag`, is removed too, so `--color-flag` does not exist; sections are separated by whitespace and a single 1 px `--color-rule` line under titles only; the active tab has no underline. The primary action (D8) is ink-filled with ground-coloured text, so `--color-gold` and `--color-on-gold` are removed. Spacing is opened up by tokens: `--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8. List rows stay 100 dp. Add card is no longer a button or band on the screens: it is the middle item of the bottom navigation (Dashboard, Add, Cards), an action never marked current, drawn as a plus in a 40 by 24 dp ink-filled frame with a 6 px radius. No token changes.
 
 ## Open Questions
 

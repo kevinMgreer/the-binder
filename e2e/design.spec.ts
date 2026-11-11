@@ -1036,22 +1036,27 @@ test.describe("Card-back look", () => {
     await check(page.getByRole("heading", { name: "Settings" }));
   });
 
-  test("Red stays rare on the dashboard", async ({ page }) => {
+  test("No decorative red: the dashboard has none, and in an error only the sync text is danger red", async ({ page }) => {
     await page.goto("/");
     await seedDashboard(page);
-    const stray = await page.evaluate(() => {
-      const probe = document.createElement("i");
-      probe.style.color = "var(--color-flag)";
-      document.body.append(probe);
-      const red = getComputedStyle(probe).color;
-      probe.remove();
-      return [...document.querySelectorAll("body *")].flatMap((el) => {
-        const s = getComputedStyle(el);
-        const borders = (["Top", "Right", "Bottom", "Left"] as const).filter((d) => parseFloat(s[`border${d}Width`]) > 0).map((d) => s[`border${d}Color`]);
-        return [s.color, s.backgroundColor, ...borders].includes(red) ? [`${el.tagName}.${el.className}`] : [];
+    const reds = () =>
+      page.evaluate(() => {
+        const probe = document.createElement("i");
+        probe.style.color = "var(--color-danger)";
+        document.body.append(probe);
+        const red = getComputedStyle(probe).color;
+        probe.remove();
+        return [...document.querySelectorAll("body *")].flatMap((el) => {
+          const s = getComputedStyle(el);
+          const pseudo = ["::before", "::after"].map((p) => getComputedStyle(el, p).backgroundColor);
+          const borders = (["Top", "Right", "Bottom", "Left"] as const).filter((d) => parseFloat(s[`border${d}Width`]) > 0).map((d) => s[`border${d}Color`]);
+          return [s.color, s.backgroundColor, ...pseudo, ...borders].includes(red) ? [`${el.tagName}.${el.className}`] : [];
+        });
       });
-    });
-    expect(stray).toEqual([]);
+    expect(await reds()).toEqual([]);
+    await setStatus(page, { state: "error", pending: 2 });
+    expect((await reds()).sort()).toEqual(["P.sync-detail", "SPAN.sync"]);
+    expect(await page.evaluate(() => [...document.querySelectorAll("body *")].some((el) => getComputedStyle(el, "::after").clipPath !== "none"))).toBe(false);
   });
 
   test("Sizes on the dashboard", async ({ page }) => {
@@ -1158,12 +1163,13 @@ test.describe("Card-back look", () => {
         const cellBox = e.getBoundingClientRect();
         const s = getComputedStyle(e);
         const rule = getComputedStyle(e, "::before");
-        return { h: cellBox.height + 8, radius: s.borderTopLeftRadius, shadow: s.boxShadow, image: s.backgroundImage, right: rule.borderRightWidth, bottom: rule.borderBottomWidth };
+        return { h: cellBox.height + 8, radius: s.borderTopLeftRadius, shadow: s.boxShadow, image: s.backgroundImage, after: getComputedStyle(e, "::after").content, right: rule.borderRightWidth, bottom: rule.borderBottomWidth };
       });
       expect(cell.h).toBeGreaterThanOrEqual(56);
       expect(cell.radius).toBe("0px");
       expect(cell.shadow).toBe("none");
       expect(cell.image).toBe("none");
+      expect(cell.after).toBe("none");
       expect(cell.right).toBe(i % 2 === 0 ? "1px" : "0px");
       expect(cell.bottom).toBe(i < 4 ? "1px" : "0px");
     }

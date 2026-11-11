@@ -103,7 +103,6 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .tile:nth-child(-n + 4)::before { border-bottom-width: var(--rule); }
 .tile-label { color: var(--color-ink-muted); line-height: 1; }
 .tile-value { font-family: var(--font-slab); font-weight: 700; font-size: var(--type-stat); line-height: 1; color: var(--color-ink); }
-.rookies::after { content: ""; position: absolute; top: calc(var(--space-1) * -1); right: var(--pad-cell); width: 10px; height: 14px; background: var(--color-flag); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%); }
 .group h2 { margin: 0 0 var(--space-3); font-size: var(--type-table); }
 .recent { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-frame); }
 .recent-card { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--gap-caption); min-width: 0; padding: 0; border: 0; border-radius: 0; background: none; text-align: left; }

@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: The dashboard follows the design system
-The system SHALL draw the dashboard only from the design tokens, in both the light and the dark theme, as a card back: the title row with a 1 px rule below it, and 32 px of whitespace between the sections; the six tiles as one ruled stat table of two columns and three rows (1 px rules around and between the cells, each cell at least 56 dp high, the label in uppercase label type above the number in the slab face at stat size (32 px), the Rookies cell carrying a small flag in the flag colour that is hidden from screen readers; cell padding 16 px); Recently added as one even row of four trading-card frames 12 px apart, each with the player's name beneath as its caption 8 px below the frame; Top teams as a ruled stat table, one row per team, at least 56 dp high, the team name at the left and its number in the slab face at the right; and the bottom navigation with its Add item. In the dark theme both stat tables sit on the panel colour with a 6 px radius. Each tile, each Recently added card and each Top teams entry SHALL be a tappable control at least 48 by 48 dp whose text is readable with the contrast the theme requires, with no background gradient, translucency or shadow. A tile's accessible name SHALL hold its label and its number.
+The system SHALL draw the dashboard only from the design tokens, in both the light and the dark theme, as a card back: the title row with a 1 px rule below it, and 32 px of whitespace between the sections; the six tiles as one ruled stat table of two columns and three rows (1 px rules around and between the cells, each cell at least 56 dp high, the label in uppercase label type above the number in the slab face at stat size (32 px); cell padding 16 px; no flag or other mark on any cell, the Rookies cell included); Recently added as one even row of four trading-card frames 12 px apart, each with the player's name beneath as its caption 8 px below the frame; Top teams as a ruled stat table, one row per team, at least 56 dp high, the team name at the left and its number in the slab face at the right; and the bottom navigation with its Add item. In the dark theme both stat tables sit on the panel colour with a 6 px radius. Each tile, each Recently added card and each Top teams entry SHALL be a tappable control at least 48 by 48 dp whose text is readable with the contrast the theme requires, with no background gradient, translucency or shadow. A tile's accessible name SHALL hold its label and its number.
 
 #### Scenario: Both themes
 - **WHEN** the dashboard is shown with the phone in dark mode and then in light mode
@@ -27,9 +27,9 @@ The system SHALL draw the dashboard only from the design tokens, in both the lig
 - **WHEN** a screen reader focuses the Autos tile reading 12
 - **THEN** it announces "Autos, 12"
 
-#### Scenario: Rookies flag is not read out
-- **WHEN** a screen reader focuses the Rookies tile reading 58
-- **THEN** it announces "Rookies, 58" and nothing for the flag
+#### Scenario: Rookies tile is like the others
+- **WHEN** the Rookies tile reading 58 is shown and focused by a screen reader
+- **THEN** it carries no flag or pseudo-element mark, and announces "Rookies, 58"
 
 ### Requirement: Recently added cards
 The system SHALL show on the dashboard, under the heading "Recently added", the four most recently added cards (by when each card was first saved, newest first; editing a card SHALL NOT move it), or all cards when there are fewer than four. Each SHALL be a tappable control showing the card's front thumbnail in a trading-card frame in the photo's own orientation (or the placeholder when it has none) and the player's name beneath it on at most two lines, then an ellipsis, with the accessible name "player, year set #number". Tapping one SHALL open that card's detail screen, and back from there SHALL return to the dashboard. The group SHALL NOT be shown when the collection has no cards.

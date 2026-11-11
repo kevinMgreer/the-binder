@@ -36,7 +36,7 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
         {tiles.map((tile) => {
           const value = tile.value.toLocaleString();
           return (
-            <button key={tile.label} className={tile.label === "Rookies" ? "tile rookies" : "tile"} data-testid="tile" aria-label={`${tile.label}, ${value}`} onClick={() => onTile(tile)}>
+            <button key={tile.label} className="tile" data-testid="tile" aria-label={`${tile.label}, ${value}`} onClick={() => onTile(tile)}>
               <span className="tile-label">{tile.label}</span>
               <span className="tile-value">{value}</span>
             </button>

@@ -17,12 +17,12 @@ function themes() {
 }
 
 const COLOURS = [
-  "--color-ground", "--color-panel", "--color-ink", "--color-ink-muted", "--color-rule", "--color-flag",
+  "--color-ground", "--color-panel", "--color-ink", "--color-ink-muted", "--color-rule",
   "--color-danger", "--color-frame", "--color-scrim", "--color-placeholder",
 ];
 const HEX = {
-  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670", "--color-flag": "#c8372d", "--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
-  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae", "--color-flag": "#e0574b", "--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
+  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670","--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
+  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae","--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
 };
 
 type Rgba = [number, number, number, number];
@@ -64,8 +64,8 @@ describe("tokens.css", () => {
     for (const name of names) expect(css, name).toContain(name + ":");
   });
 
-  it("keeps no pocket, accent, mono, stitch or gold token", () => {
-    expect(read()).not.toMatch(/--color-pocket|--color-accent|--type-mono|--color-page|--color-surface|stitch|gold/);
+  it("keeps no pocket, accent, mono, stitch, gold or flag token", () => {
+    expect(read()).not.toMatch(/--color-pocket|--color-accent|--type-mono|--color-page|--color-surface|stitch|gold|flag/);
   });
 
   for (const theme of ["light", "dark"] as const) {
@@ -76,9 +76,7 @@ describe("tokens.css", () => {
         for (const fg of ["--color-ink", "--color-ink-muted", "--color-danger"]) {
           expect(ratio(c(fg), c(bg)), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
         }
-        for (const fg of ["--color-flag", "--color-ink"]) {
-          expect(ratio(c(fg), c(bg)), `${fg} (flag, keyline) on ${bg}`).toBeGreaterThanOrEqual(3);
-        }
+        expect(ratio(c("--color-ink"), c(bg)), `keyline on ${bg}`).toBeGreaterThanOrEqual(3);
       }
       expect(ratio(c("--color-ground"), c("--color-ink")), "ground text on the ink fill of a primary button or chip").toBeGreaterThanOrEqual(4.5);
     });
