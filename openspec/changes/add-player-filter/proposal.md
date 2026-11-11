@@ -7,6 +7,7 @@ The collection list has one Search box that matches player, team, set, subset, i
 - Add a "Player" text field to the Filter sheet, in the Card group. It keeps cards whose player name contains the text, ignoring case and accents.
 - Show an applied Player filter as a removable chip and count it in the Filter button's badge, like the other filters.
 - The Search box stays as it is.
+- Out of scope: autocomplete for names, a dashboard tile for a player, saved filters.
 
 ## Capabilities
 
