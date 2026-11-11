@@ -11,10 +11,10 @@
 - [x] 2.2 In `src/app/Sheet.tsx` add `compact?: boolean` that adds `compact` to the `.sheet` class. In `src/app/CollectionScreen.tsx` pass `compact` and `foot={<button className="primary" onClick={closeSort}>Done</button>}` to the Sort sheet, and wrap the two Direction radios in `<div className="pair">`. Verify 2.1 passes
 - [x] 2.3 In `src/app/app.css` with existing tokens only: `.sheet.compact { height: auto; max-height: 100%; }`; `.compact .group h3` with a smaller top margin and padding (`--space-2`), rule kept (`.check` keeps its `margin-bottom` for the 8 dp touch-target spacing; compact headings use `--space-2` instead); change the text-field selector `input:not([type="checkbox"])` to `input:not([type="checkbox"]):not([type="radio"])` and size `input[type="radio"]` with the checkbox rule. Verify `src/app/tokens.test.ts` stays green and `npx vitest run src/app` passes
 
-## 3. Bottom navigation: Add outlined
+## 3. Bottom navigation: Add frame larger
 
-- [x] 3.1 Update `e2e/design.spec.ts` first: the token test "overriding the ink token restyles Save, Show cards, Edit and the Add frame" reads the Add frame's `border-top-color` instead of `background-color`; "Add is an action between Dashboard and Cards" expects the frame's background to be the panel colour `rgb(243, 236, 220)`, `border-top-width` 1px and `color` ink; "Palette on the dashboard" expects background panel (light `rgb(243, 236, 220)`, dark `rgb(23, 35, 63)`), `border-top-color` and `color` the ink. Verify they fail where the e2e run is available (else note it and rely on CI)
-- [x] 3.2 In `src/app/app.css` change `.nav-add` to `background: var(--color-panel); color: var(--color-ink); border: var(--rule) solid var(--color-ink);` (keep size, radius, `box-sizing`). No change to `src/app/BottomNav.tsx`. Verify 3.1 passes and the "Active destination is not colour alone" e2e stays green
+- [x] 3.1 In `e2e/design.spec.ts`, "Add is an action between Dashboard and Cards": the frame is 48 by 32 and wider and taller than the 24 dp icon of the Dashboard item (the ink background and radius assertions stay). Verify it fails before 3.2
+- [x] 3.2 In `src/app/tokens.css` set `--size-nav-add-w` 48px, `--size-nav-add-h` 32px, `--size-nav-icon` 24px; `.nav-add` in `src/app/app.css` stays the solid ink frame. No change to `src/app/BottomNav.tsx`. Verify 3.1 passes and "Above the gesture bar" stays green
 
 ## 4. End-to-end tests
 
@@ -23,7 +23,13 @@
 
 ## 5. Docs, check and phone
 
-- [x] 5.1 Update `DESIGN.md` where it describes the form actions (Cancel left, Save right, the discard confirmation), the Sort sheet (compact, Done footer) and the Add frame (outlined, never filled). Verify the wording matches the shipped UI
-- [x] 5.2 Add to `docs/device-checklist.md` under "Per UI change on the phone": `- [ ] **Form, Sort sheet and Add.** On the add and edit forms Cancel is left and Save right; Cancel or back on a form with a typed field or a photo asks "Discard this card?" / "Discard changes?", Keep editing keeps everything, back again keeps editing, Discard leaves nothing saved; an untouched form closes at once. The Sort sheet sits low and is about half the screen or less, its rows line up and Done closes it. In both themes, only the current tab (Dashboard or Cards) looks selected and Add is an outlined frame. Owner says whether outlined Cancel and the Sort sheet height are right. [form-sort-polish 5.2, T-40]`. Verify the line renders as one checklist item
+- [x] 5.1 Update `DESIGN.md` where it describes the form actions (Cancel left, Save right, the discard confirmation), the Sort sheet (compact, Done footer), the Add frame (48 by 32 ink frame, token sizes) and the system navigation bar strip. Verify the wording matches the shipped UI
+- [x] 5.2 Add to `docs/device-checklist.md` under "Per UI change on the phone": `- [ ] **Form, Sort sheet and Add.** On the add and edit forms Cancel is left and Save right; Cancel or back on a form with a typed field or a photo asks "Discard this card?" / "Discard changes?", Keep editing keeps everything, back again keeps editing, Discard leaves nothing saved; an untouched form closes at once. The Sort sheet sits low and is about half the screen or less, its rows line up and Done closes it. Owner says whether outlined Cancel and the Sort sheet height are right. [form-sort-polish 5.2, T-40]`. Verify the line renders as one checklist item
 - [x] 5.3 Run the repo check (`npm run build && npx vitest run --exclude "**/startup*"`) and `openspec validate form-sort-polish --strict`. Verify both exit 0
-- [ ] 5.4 Verify on the phone (owner): the 5.2 checklist line
+- [ ] 5.4 Verify on the phone (owner): the 5.2 and 6.3 checklist lines
+
+## 6. System navigation bar strip
+
+- [x] 6.1 Add e2e tests in `e2e/design.spec.ts` at 360 by 800 with a 48 dp `--safe-area-inset-bottom` (as the bottom-navigation tests set it), in both colour schemes: on the add form `body::after` computes to fixed, 48px high, `pointer-events: none` and the ground colour, and scrolled to the end the Save button ends at least 48 dp above the viewport bottom; on the dashboard the bottom bar is the element painted at the bottom edge (`elementFromPoint` finds the nav). Verify they fail before 6.2
+- [x] 6.2 In `src/app/app.css` add `body::after` as in design.md. Verify 6.1 passes
+- [x] 6.3 Add to `docs/device-checklist.md`: on the add form, detail and Settings with Android 3-button navigation, scrolled content never shows behind the back, home and recents buttons in light and dark, the last control scrolls clear above them, and the bottom bar screens look unchanged. Verify the line renders as one checklist item

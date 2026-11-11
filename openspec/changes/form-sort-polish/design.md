@@ -5,7 +5,8 @@ See proposal.md for why. Today:
 - `src/app/CardForm.tsx` renders `.actions` with Save (`button.primary`, `flex: 1` from `.actions .primary` in `src/app/app.css`) before Cancel. `onCancel` comes from `App.tsx` and switches the view at once. The form keeps `draft` (initialised by `toDraft(card)`), `photos` (newly captured only), `preparing` and `suggested` in state. A role=dialog duplicate prompt already renders inside the form; `CardDetail.tsx` and `SettingsScreen.tsx` use `role="alertdialog"` confirmations styled by the shared `[role="dialog"]:not(.sheet), [role="alertdialog"]` rule.
 - Android back is handled in `App.tsx` `goBack`: it first calls the newest entry of `openSheets` (exported from `src/app/Sheet.tsx`; each `Sheet` pushes its `onClose` on mount), else moves up a screen. On the form it switches the view directly.
 - The Sort sheet in `src/app/CollectionScreen.tsx` reuses `Sheet` with two `.group` blocks of `label.check` radio rows and no `foot`. `.sheet` is `height: 100%`; `.group h3` carries a rule plus `--space-5` top margin and `--space-4` padding (made for the long Filters sheet); `.check` adds `margin-bottom: --space-2`. The radios also match `input:not([type="checkbox"])`, the text-field rule (`width: 100%`, tinted background, ink underline, `min-height`), which is the likely cause of the misaligned rows.
-- `src/app/BottomNav.tsx` wraps the plus in `span.nav-add`, styled in `app.css` as an ink-filled frame with a ground-coloured plus.
+- `src/app/BottomNav.tsx` wraps the plus in `span.nav-add`, styled in `app.css` as an ink-filled 40 by 24 frame with a ground-coloured 20 dp plus, next to 24 dp tab icons, so the frame is barely larger than they are.
+- `#root` pads the bottom inset and the scrolling screens add it again, so the last control clears the system navigation bar, but the page scrolls under the transparent bar: nothing paints the inset area.
 
 No other open change touches these requirements (`fix-top-players-ties` only touches the dashboard), so archive order does not matter.
 
@@ -14,7 +15,8 @@ No other open change touches these requirements (`fix-top-players-ties` only tou
 **Goals:**
 - Cancel left, Save right on both forms; a stray Cancel or back no longer loses entries.
 - A Sort sheet sized to its content with aligned rows and a Done footer, behaviour unchanged.
-- Only the current destination looks selected in the bottom bar.
+- The Add frame is clearly larger than its neighbours.
+- Content never shows behind the system navigation buttons.
 
 **Non-Goals:**
 - Undo, drafts, sort persistence, new sort fields, Filters sheet changes (see the proposal's Out of scope).
@@ -37,8 +39,11 @@ No other open change touches these requirements (`fix-top-players-ties` only tou
   Alternatives: a separate `SortSheet` component (duplicates focus, back and Escape handling); a native segmented control or `<select>` for Direction (not a house component; radios keep the tested semantics); two columns for the four orders to get the sheet under half the screen (breaks the one-left-edge request); a `height` prop with numbers (no other caller needs it). $0: CSS only.
   Estimated height at 360 by 800 with no inset: about 12 padding + 48 head + 8 gap + (32 heading + 4 by 48 rows) + 12 gap + (32 heading + 48 row) + 8 gap + 60 foot + 16 padding, roughly 470 dp, which is why the spec's bound is two thirds of the screen rather than half (see Open Questions).
 
-- **Add frame outlined in `app.css` only.** `.nav-add` changes from `background: var(--color-ink); color: var(--color-ground)` to `background: var(--color-panel); color: var(--color-ink); border: var(--rule) solid var(--color-ink)`, with `box-sizing: border-box` already set so the 40 by 24 frame keeps its size. `BottomNav.tsx` needs no change: `aria-current`, the "Add card" name and the 48 dp button target stay. The active destination keeps its existing marks (ink, weight 600, solid icon).
-  Alternatives: a transparent background (equal to the panel on the bar, but the spec names a role, and `panel` makes the computed value testable); filling the active tab instead (the spec forbids a pill under the tabs); dropping the frame for a bare plus (Add stops reading as an action). $0: none.
+- **Add frame stays solid ink, grows by tokens.** `--size-nav-add-w` 40px to 48px, `--size-nav-add-h` 24px to 32px, `--size-nav-icon` 20px to 24px. The frame is then twice the icon width of the 24 dp neighbours and 8 dp taller; with its 4 dp gap and the label it still fits the 64 dp bar and the 48 dp target. The owner rejected an outlined frame on the phone, so `.nav-add` keeps its ink fill. `BottomNav.tsx` needs no change.
+  Alternatives: only 44 by 28 (not clearly larger than a 24 dp icon cell); a bigger bar (moves every screen's bottom padding). $0: none.
+
+- **System navigation bar strip: `body::after`, fixed, ground colour.** `body::after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: var(--inset-bottom); background: var(--color-ground); pointer-events: none; z-index: 0 }`. The bottom bar has `z-index: 1`, so it paints over the strip and its own inset keeps the panel colour; sheets and dialogs sit above at `z-index: 10`. Pure CSS, no component, in both themes through the token. With a 0 inset the strip has no height. The existing screen padding already lets the last control scroll clear above it.
+  Alternatives: a `<SystemBarScrim>` component (markup for a CSS job); colouring the Capacitor system bar (the plugin makes it transparent for edge-to-edge); padding `body` and dropping edge-to-edge (changes every screen). $0: none.
 
 ## Risks / Trade-offs
 

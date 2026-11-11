@@ -92,7 +92,7 @@ test.describe("theme", () => {
     await seed(page, CARDS);
     await applyYearFrom(page, "2000");
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
-    expect(await css(page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add"), "border-top-color")).toBe("rgb(1, 2, 3)");
+    expect(await css(page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add"), "background-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Filter/ }).click();
     expect(await css(page.getByRole("button", { name: /^Show \d+ cards?$/ }), "background-color")).toBe("rgb(1, 2, 3)");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
@@ -906,10 +906,14 @@ test.describe("Bottom navigation and header", () => {
     expect(box.width).toBeGreaterThanOrEqual(47.5);
     expect(box.height).toBeGreaterThanOrEqual(47.5);
     const frame = add.locator(".nav-add");
-    expect(await css(frame, "background-color")).toBe("rgb(243, 236, 220)");
-    expect(await css(frame, "border-top-width")).toBe("1px");
-    expect(await css(frame, "color")).toBe("rgb(28, 43, 74)");
+    expect(await css(frame, "background-color")).toBe("rgb(28, 43, 74)");
     expect(await css(frame, "border-top-left-radius")).toBe("6px");
+    const frameBox = (await frame.boundingBox())!;
+    const neighbour = (await item(page, "Dashboard").locator("svg").boundingBox())!;
+    expect(frameBox.width).toBeCloseTo(48, 0);
+    expect(frameBox.height).toBeCloseTo(32, 0);
+    expect(frameBox.width).toBeGreaterThanOrEqual(neighbour.width * 2 - 0.5);
+    expect(frameBox.height).toBeGreaterThanOrEqual(neighbour.height + 8 - 0.5);
     await expect(add.locator("svg[aria-hidden=true]")).toHaveCount(1);
     await item(page, "Cards").click();
     await add.click();
@@ -917,6 +921,37 @@ test.describe("Bottom navigation and header", () => {
     await hardwareBack(page);
     await expect(page.getByTestId("shown")).toBeVisible();
     await expect(item(page, "Cards")).toHaveAttribute("aria-current", "page");
+  });
+});
+
+test.describe("System navigation bar strip", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  const inset = (page: Page) => page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
+  const strip = (page: Page) =>
+    page.evaluate(() => {
+      const s = getComputedStyle(document.body, "::after");
+      return { position: s.position, height: s.height, events: s.pointerEvents, background: s.backgroundColor };
+    });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`A solid ground strip sits under the system buttons on the form: ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await inset(page);
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      const ground = await pageBackground(page);
+      expect(await strip(page)).toEqual({ position: "fixed", height: "48px", events: "none", background: ground });
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      expect(await bottom(page.getByRole("button", { name: "Save" }))).toBeLessThanOrEqual(800 - 48);
+    });
+  }
+
+  test("The bottom bar is painted over the strip", async ({ page }) => {
+    await page.goto("/");
+    await inset(page);
+    const hit = await page.evaluate(() => document.elementFromPoint(180, 795)?.closest("nav")?.getAttribute("aria-label"));
+    expect(hit).toBe("Main");
   });
 });
 
@@ -1004,14 +1039,13 @@ test.describe("Card-back look", () => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
       const want = scheme === "light"
-        ? { bg: "rgb(243, 236, 220)", ink: "rgb(28, 43, 74)", panel: "rgb(243, 236, 220)" }
-        : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)", panel: "rgb(23, 35, 63)" };
+        ? { bg: "rgb(243, 236, 220)", ink: "rgb(28, 43, 74)" }
+        : { bg: "rgb(16, 26, 48)", ink: "rgb(243, 236, 220)" };
       expect(await pageBackground(page)).toBe(want.bg);
       expect(await css(page.getByRole("heading", { name: "Dashboard" }), "color")).toBe(want.ink);
       const frame = page.getByRole("button", { name: "Add card", exact: true }).locator(".nav-add");
-      expect(await css(frame, "background-color")).toBe(want.panel);
-      expect(await css(frame, "border-top-color")).toBe(want.ink);
-      expect(await css(frame, "color")).toBe(want.ink);
+      expect(await css(frame, "background-color")).toBe(want.ink);
+      expect(await css(frame, "color")).toBe(want.bg);
       if (scheme === "dark") expect(await css(page.locator(".tiles"), "background-color")).toBe("rgb(23, 35, 63)");
     });
 

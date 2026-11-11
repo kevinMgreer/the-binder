@@ -43,7 +43,7 @@ The system SHALL handle the Android back button by returning to the previous scr
 - **THEN** the collection list is shown and no card was added
 
 ### Requirement: Bottom navigation between Dashboard and Cards
-The system SHALL show a bottom navigation bar with three items in this order, Dashboard, Add and Cards, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Dashboard and Cards are destinations; Add is an action (a plus icon in a 40 by 24 dp outlined frame with a 6 px radius: a 1 px ink border, the bar's own panel-colour background and an ink plus, never filled with ink; label "Add", accessible name "Add card") that is never marked current and opens the add card form exactly as the former Add card button did, returning to the screen it was opened from on back, save or cancel. Each item SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The bar SHALL sit on the ground colour in the light theme and the panel colour in the dark theme, with a 1 px rule along its top. The active destination SHALL be marked by the ink colour, label weight 600, a solid icon and `aria-current="page"`, with no underline, pill or line under the tabs; inactive destinations SHALL use the muted ink colour, label weight 400 and an outline version of the same icon, and stay readable with the contrast the theme requires. No item other than the active destination SHALL be drawn filled. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
+The system SHALL show a bottom navigation bar with three items in this order, Dashboard, Add and Cards, on the dashboard and the collection list, and on no other screen (not on card detail, the add and edit forms or Settings); an open sheet covers it with its scrim. Dashboard and Cards are destinations; Add is an action (a 24 dp plus icon in a 48 by 32 dp ink-filled frame with a 6 px radius, plain ground-coloured plus, label "Add", accessible name "Add card"; the frame is larger than the 24 dp icons of Dashboard and Cards on either side) that is never marked current and opens the add card form exactly as the former Add card button did, returning to the screen it was opened from on back, save or cancel. Each item SHALL have an icon and a visible text label, a tap target at least 48 by 48 dp, and the bar SHALL sit above the system navigation or gesture bar using the same bottom inset as `#root`. The bar SHALL sit on the ground colour in the light theme and the panel colour in the dark theme, with a 1 px rule along its top. The active destination SHALL be marked by the ink colour, label weight 600, a solid icon and `aria-current="page"`, with no underline, pill or line under the tabs; inactive destinations SHALL use the muted ink colour, label weight 400 and an outline version of the same icon, and stay readable with the contrast the theme requires. The bar SHALL use design tokens only, in both themes. Tapping Cards SHALL show the collection list with its last search and filters kept; tapping Dashboard SHALL show the dashboard; tapping the active destination SHALL do nothing.
 
 #### Scenario: Shown on the top-level screens
 - **WHEN** the dashboard or the collection list is showing
@@ -62,9 +62,9 @@ The system SHALL show a bottom navigation bar with three items in this order, Da
 - **WHEN** the dashboard is showing, in the light and in the dark theme
 - **THEN** the Dashboard item is in the ink colour with no pseudo-element underline while the Cards item is in the muted ink colour, its label weight is 600 against the Cards label's 400, its icon is solid while the Cards icon is an outline (and they swap when Cards is the screen), the Add label stays at weight 500, its label is readable text, and no colour literal is used outside the tokens file
 
-#### Scenario: Add is outlined, not filled
-- **WHEN** the dashboard or the collection list is showing, in the light and in the dark theme
-- **THEN** the Add frame's background computes to the panel colour, its border to 1 px in the ink colour and its plus to the ink colour, and its background is not the ink colour
+#### Scenario: Add frame is larger than its neighbours
+- **WHEN** the dashboard or the collection list is showing
+- **THEN** the Add frame is 48 by 32 dp with an ink background, wider and taller than the 24 dp icon of the Dashboard and Cards items, while all three items stay at least 48 by 48 dp
 
 #### Scenario: Inactive label is readable
 - **WHEN** the dashboard is showing, in the light and in the dark theme
@@ -73,3 +73,20 @@ The system SHALL show a bottom navigation bar with three items in this order, Da
 #### Scenario: Above the gesture bar
 - **WHEN** the bottom inset is 48 dp and the dashboard is showing on a 360 by 800 phone
 - **THEN** all three items are at least 48 by 48 dp, at least 8 dp apart, and end at least 48 dp above the bottom edge of the screen
+
+## ADDED Requirements
+
+### Requirement: System navigation bar area has a solid background
+The system SHALL paint the area under the system navigation bar (the bottom inset) with a solid background in the theme's ground colour on every screen that has no bottom navigation bar (card detail, the add and edit forms, Settings), in the light and the dark theme, so that scrolling content never shows behind the back, home and recents buttons. The strip SHALL be exactly the height of the bottom inset, SHALL not intercept touches, SHALL not cover the bottom navigation bar (which draws its own inset in the panel colour) or a sheet, and SHALL be absent when the inset is 0. The last control of a scrolled screen SHALL still end fully above the inset.
+
+#### Scenario: Strip under the system buttons on the form
+- **WHEN** the bottom inset is 48 dp and the add form is showing on a 360 by 800 phone, in the light and in the dark theme
+- **THEN** a fixed strip 48 dp high sits at the bottom edge with the ground colour as its background and `pointer-events: none`
+
+#### Scenario: Last control clears the strip
+- **WHEN** the user scrolls the add form to its end with a 48 dp bottom inset
+- **THEN** the Save button ends at least 48 dp above the bottom edge of the screen
+
+#### Scenario: Bottom navigation is not covered
+- **WHEN** the bottom inset is 48 dp and the dashboard is showing
+- **THEN** the bottom navigation bar is painted over the strip, so its inset shows the panel colour
