@@ -66,6 +66,23 @@ test("insert filter matches only that insert", () => {
   expect(applyFilters([a, b, c], { ...emptyFilters, subset: "Stars of MLB" })).toEqual([]);
 });
 
+test("a card with no number sorts before a numbered card of the same set", () => {
+  const numbered = makeCard({ cardNumber: "5" });
+  const bare = makeCard({ cardNumber: "" });
+  expect(sortCards([numbered, bare])).toEqual([bare, numbered]);
+});
+
+test("two numberless cards with the same other fields are duplicates", () => {
+  const existing = makeCard({ cardNumber: "" });
+  expect(findDuplicate([existing], makeCard({ cardNumber: "" }))).toBe(existing);
+});
+
+test("print run 99 without the serial-numbered mark matches the print run filter, not serial-numbered", () => {
+  const plain = makeCard({ parallel: { name: "Gold", serial: null, serialLegible: true, printRun: 99, serialNumbered: false } });
+  expect(applyFilters([plain], { ...emptyFilters, printRun: 99 })).toEqual([plain]);
+  expect(applyFilters([plain], { ...emptyFilters, serialNumbered: true })).toEqual([]);
+});
+
 test("duplicate match uses player, year, set, number, parallel and grade, and ignores tombstones", () => {
   const existing = makeCard();
   expect(findDuplicate([existing], makeCard({ player: "ronald acuna jr." }))).toBe(existing);

@@ -52,6 +52,59 @@ test("the condition is a pick list with a Not set choice", () => {
   ]);
 });
 
+const fillMinimum = () => {
+  type("Player", "Hank Aaron");
+  type("Year", "2025");
+  type("Set", "Topps");
+};
+
+test("Serial and Serial unreadable show only once Serial-numbered is checked; Print run is always there", () => {
+  renderForm();
+  expect(screen.queryByLabelText("Serial")).toBeNull();
+  expect(screen.queryByLabelText("Serial unreadable")).toBeNull();
+  expect(screen.getByLabelText("Print run")).toBeTruthy();
+  fireEvent.click(screen.getByLabelText("Serial-numbered"));
+  expect(screen.getByLabelText("Serial")).toBeTruthy();
+  expect(screen.getByLabelText("Serial unreadable")).toBeTruthy();
+});
+
+test("print run 99 unchecked saves serialNumbered false and no serial, even after a serial was typed", async () => {
+  const onSave = renderForm();
+  fillMinimum();
+  fireEvent.click(screen.getByLabelText("Serial-numbered"));
+  type("Serial", "5");
+  fireEvent.click(screen.getByLabelText("Serial-numbered"));
+  type("Print run", "99");
+  save();
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].parallel).toMatchObject({ serialNumbered: false, serial: null, serialLegible: true, printRun: 99 });
+});
+
+test("checked with an unreadable serial and print run 99 stores serialNumbered true", async () => {
+  const onSave = renderForm();
+  fillMinimum();
+  fireEvent.click(screen.getByLabelText("Serial-numbered"));
+  fireEvent.click(screen.getByLabelText("Serial unreadable"));
+  type("Print run", "99");
+  save();
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].parallel).toMatchObject({ serialNumbered: true, serial: null, serialLegible: false, printRun: 99 });
+});
+
+test("editing an old print-run-only card opens with Serial-numbered checked", () => {
+  renderForm(makeCard({ parallel: { name: "", serial: null, serialLegible: true, printRun: 99 } }));
+  expect((screen.getByLabelText("Serial-numbered") as HTMLInputElement).checked).toBe(true);
+  expect(screen.getByLabelText("Serial")).toBeTruthy();
+});
+
+test("a card without a number saves", async () => {
+  const onSave = renderForm();
+  fillMinimum();
+  save();
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].cardNumber).toBe("");
+});
+
 test("a condition saved in other case opens as the list entry", () => {
   renderForm(makeCard({ grading: { kind: "raw", condition: "near mint" } }));
   expect((screen.getByLabelText("Condition") as HTMLSelectElement).value).toBe("Near Mint");

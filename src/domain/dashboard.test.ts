@@ -24,6 +24,11 @@ test("Counts", () => {
   expect(values(collectionStats(cards))).toEqual({ Cards: 4, Distinct: 3, Autos: 1, Relics: 1, "Serial-numbered": 1, Rookies: 1 });
 });
 
+test("the Serial-numbered tile skips a print run that is not serial-numbered", () => {
+  const plain = makeCard({ parallel: { name: "Gold", serial: null, serialLegible: true, printRun: 99, serialNumbered: false } });
+  expect(values(collectionStats([plain]))["Serial-numbered"]).toBe(0);
+});
+
 test("an empty list gives zeros and no groups", () => {
   const stats = collectionStats([]);
   expect(values(stats)).toEqual(zero);
