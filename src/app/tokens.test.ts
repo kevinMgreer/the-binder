@@ -17,9 +17,13 @@ function themes() {
 }
 
 const COLOURS = [
-  "--color-page", "--color-surface", "--color-pocket", "--color-pocket-top", "--color-pocket-edge", "--color-text",
-  "--color-text-muted", "--color-accent", "--color-on-accent", "--color-accent-text", "--color-ok", "--color-danger",
+  "--color-ground", "--color-panel", "--color-ink", "--color-ink-muted", "--color-rule",
+  "--color-danger", "--color-frame", "--color-scrim", "--color-placeholder",
 ];
+const HEX = {
+  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670", "--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
+  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae", "--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
+};
 
 type Rgba = [number, number, number, number];
 function rgba(hex: string): Rgba {
@@ -27,7 +31,6 @@ function rgba(hex: string): Rgba {
   const n = (i: number) => parseInt(h.slice(i, i + 2), 16);
   return [n(0), n(2), n(4), h.length === 8 ? n(6) / 255 : 1];
 }
-const over = (top: Rgba, base: Rgba): Rgba => [0, 1, 2].map((i) => top[i] * top[3] + base[i] * (1 - top[3])).concat(1) as Rgba;
 function luminance([r, g, b]: Rgba) {
   const f = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
@@ -46,34 +49,36 @@ describe("tokens.css", () => {
     }
   });
 
-  it("declares color-scheme light dark and the scales", () => {
+  for (const theme of ["light", "dark"] as const) {
+    it(`uses the ${theme} palette from the spec`, () => {
+      const t = themes()[theme];
+      for (const [role, hex] of Object.entries(HEX[theme])) expect((t[role] ?? "").toLowerCase(), `${theme} ${role}`).toBe(hex);
+    });
+  }
+
+  it("declares color-scheme light dark, fonts, the type scale, the frame and the spacing rhythm", () => {
     const css = read();
     expect(css).toMatch(/color-scheme:\s*light dark/);
-    for (const name of ["--space-1", "--space-8", "--radius-s", "--radius-m", "--radius-l", "--type-title", "--type-body", "--type-label", "--type-mono", "--target-min"]) {
-      expect(css, name).toContain(name + ":");
-    }
+    const names = ["--space-1", "--space-8", "--radius-print", "--radius-frame", "--radius-pill", "--target-min", "--font-slab", "--font-sans", "--frame-ratio", "--gutter", "--gap-section", "--gap-field", "--gap-label", "--pad-cell", "--pad-row", "--gap-frame", "--gap-caption", "--size-tile-min", "--size-team-min", "--size-nav-add-w", "--size-nav-add-h", "--size-nav-icon"];
+    for (const size of ["label", "body", "button", "table", "stat", "title"]) names.push(`--type-${size}`);
+    for (const name of names) expect(css, name).toContain(name + ":");
+  });
+
+  it("keeps no pocket, accent, mono, stitch, gold or flag token", () => {
+    expect(read()).not.toMatch(/--color-pocket|--color-accent|--type-mono|--color-page|--color-surface|stitch|gold|flag/);
   });
 
   for (const theme of ["light", "dark"] as const) {
-    it(`meets contrast in the ${theme} theme, with the pocket blended over the page`, () => {
+    it(`meets contrast in the ${theme} theme`, () => {
       const t = themes()[theme];
-      const resolve = (v: string): string => (v.startsWith("var(") ? resolve(t[v.slice(4, -1)]) : v);
-      const c = (role: string) => rgba(resolve(t[role]));
-      const page = c("--color-page");
-      const backgrounds = {
-        page,
-        surface: c("--color-surface"),
-        "pocket on page": over(c("--color-pocket"), page),
-        "pocket-top on page": over(c("--color-pocket-top"), page),
-        "pocket on surface": over(c("--color-pocket"), c("--color-surface")),
-        "pocket-top on surface": over(c("--color-pocket-top"), c("--color-surface")),
-      };
-      for (const [name, bg] of Object.entries(backgrounds)) {
-        for (const fg of ["--color-text", "--color-text-muted", "--color-accent-text", "--color-ok", "--color-danger"]) {
-          expect(ratio(c(fg), bg), `${fg} on ${name}`).toBeGreaterThanOrEqual(4.5);
+      const c = (role: string) => rgba(t[role]);
+      for (const bg of ["--color-ground", "--color-panel"]) {
+        for (const fg of ["--color-ink", "--color-ink-muted", "--color-danger"]) {
+          expect(ratio(c(fg), c(bg)), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
         }
+        expect(ratio(c("--color-ink"), c(bg)), `keyline on ${bg}`).toBeGreaterThanOrEqual(3);
       }
-      expect(ratio(c("--color-on-accent"), c("--color-accent")), "on-accent on accent").toBeGreaterThanOrEqual(4.5);
+      expect(ratio(c("--color-ground"), c("--color-ink")), "ground text on the ink fill of a primary button or chip").toBeGreaterThanOrEqual(4.5);
     });
   }
 });
@@ -85,10 +90,19 @@ describe("colour literals", () => {
     for (const name of readdirSync(dir)) {
       const p = join(dir, name);
       if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(css|tsx?)$/.test(name) && !/\.test\.tsx?$/.test(name) && p !== tokensPath) files.push(p);
+      else if (/\.(css|tsx?)$/.test(name) && !/\.test\.tsx?$/.test(name) && p !== tokensPath && name !== "fonts.css") files.push(p);
     }
   };
   walk(join(root, "src"));
+
+  it("name no font face outside the token file", () => {
+    const hits = files.flatMap((f) =>
+      [...readFileSync(f, "utf8").matchAll(/font(?:-family)?\s*:[^;{}]*\b(?:Roboto|Inter|Georgia|serif|sans-serif|system-ui|monospace|Arial|Helvetica)\b/gi)].map(
+        (m) => `${relative(root, f)}: ${m[0]}`,
+      ),
+    );
+    expect(hits).toEqual([]);
+  });
 
   it("appear only in the token file", () => {
     const hits = files.flatMap((f) =>

@@ -258,6 +258,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   return (
     <form onSubmit={submit} noValidate>
       <h2>{card ? "Edit card" : "Add card"}</h2>
+      <div className="title-rule" aria-hidden="true" />
       {(["front", "back"] as const).map((side) => (
         <PhotoSlot
           key={side}
@@ -269,7 +270,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
         />
       ))}
       {(photos.front || photos.back || card?.photos.front || card?.photos.back) && (
-        <button type="button" disabled={identifying} onClick={identify}>
+        <button type="button" className="identify" disabled={identifying} onClick={identify}>
           Identify with Claude
         </button>
       )}

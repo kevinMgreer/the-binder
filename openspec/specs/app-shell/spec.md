@@ -1,7 +1,7 @@
 # app-shell Specification
 
 ## Purpose
-Defines how the app sits inside Android's system bars and answers the hardware back button, and the shared chrome: the bottom navigation, screen titles, the settings gear and the Add card button, so every control is reachable and navigation behaves like an Android app.
+Defines how the app sits inside Android's system bars and answers the hardware back button, and the shared chrome: the bottom navigation, screen titles, the settings gear and the Add item in the bottom navigation, so every control is reachable and navigation behaves like an Android app.
 
 ## Requirements
 

@@ -7,7 +7,7 @@ export function SyncIndicator() {
 
   const label = {
     syncing: "Syncing…",
-    error: `Sync problem, retrying${pending > 0 ? ` (${pending} unsynced)` : ""}`,
+    error: "Sync problem",
     paused: "Sync paused",
     "needs-decision": "Waiting for your choice",
     idle: pending > 0 ? `Unsynced: ${pending}` : "Synced",
@@ -24,10 +24,15 @@ export function SyncIndicator() {
 export function SyncActions() {
   const sync = useSync();
   const session = useSession();
-  const { state } = useSyncStatus();
+  const { state, pending } = useSyncStatus();
 
   return (
     <>
+      {state === "error" && (
+        <p className="sync-detail" data-testid="sync-detail">
+          Sync problem, retrying{pending > 0 ? ` (${pending} unsynced)` : ""}
+        </p>
+      )}
       {state === "paused" && <button onClick={session.signInAgain}>Sign in again</button>}
       {state === "needs-decision" && (
         <div role="dialog" aria-modal="true" aria-label="Data file missing">

@@ -28,8 +28,9 @@ export function SettingsScreen({ update, onCheckForUpdates }: Props) {
   }
 
   return (
-    <section>
+    <section className="settings">
       <h2>Settings</h2>
+      <div className="title-rule" aria-hidden="true" />
       <p>Signed in as {session.email}</p>
 
       <p data-testid="version">{version}</p>

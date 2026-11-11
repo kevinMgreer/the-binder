@@ -2,27 +2,30 @@ import { Icon } from "./Icon";
 
 export type Destination = "dashboard" | "list";
 
-const ITEMS = [
-  { to: "dashboard", label: "Dashboard" },
-  { to: "list", label: "Cards" },
-] as const;
-
 interface Props {
   active: Destination;
   onNavigate: (to: Destination) => void;
+  onAdd: () => void;
 }
 
-export function BottomNav({ active, onNavigate }: Props) {
+/** Dashboard and Cards are destinations; Add sits between them as an action and is never the current tab. */
+export function BottomNav({ active, onNavigate, onAdd }: Props) {
+  const destination = (to: Destination, label: string) => (
+    <button aria-current={to === active ? "page" : undefined} onClick={() => to !== active && onNavigate(to)}>
+      <Icon name={to === "list" ? "cards" : "dashboard"} outline={to !== active} />
+      {label}
+    </button>
+  );
   return (
     <nav className="bottom-nav" aria-label="Main">
-      {ITEMS.map(({ to, label }) => (
-        <button key={to} aria-current={to === active ? "page" : undefined} onClick={() => to !== active && onNavigate(to)}>
-          <span className="nav-indicator">
-            <Icon name={to === "list" ? "cards" : "dashboard"} />
-          </span>
-          {label}
-        </button>
-      ))}
+      {destination("dashboard", "Dashboard")}
+      <button className="nav-action" aria-label="Add card" onClick={onAdd}>
+        <span className="nav-add">
+          <Icon name="plus" />
+        </span>
+        Add
+      </button>
+      {destination("list", "Cards")}
     </nav>
   );
 }

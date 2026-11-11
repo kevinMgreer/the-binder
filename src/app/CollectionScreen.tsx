@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters } from "../domain/query";
-import { AddCard } from "./AddCard";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
 import { CardList } from "./CardList";
@@ -106,6 +105,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
           <SyncIndicator />
           <SettingsButton onClick={onSettings} />
         </div>
+        <div className="title-rule" aria-hidden="true" />
         <SyncActions />
       </header>
       {update && <UpdateLink update={update} />}
@@ -147,8 +147,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
           No cards match. Clear the search or a filter.
         </p>
       )}
-      <AddCard onAdd={onAdd} />
-      <BottomNav active="list" onNavigate={onNavigate} />
+      <BottomNav active="list" onNavigate={onNavigate} onAdd={onAdd} />
       {filterOpen && (
         <Sheet
           label="Filters"
@@ -164,8 +163,10 @@ export function CollectionScreen({ cards, filters, onFiltersChange, update, onAd
         >
           <div className="group">
             <h3>Year</h3>
-            {number("yearFrom", "Year from")}
-            {number("yearTo", "Year to")}
+            <div className="pair">
+              {number("yearFrom", "Year from")}
+              {number("yearTo", "Year to")}
+            </div>
           </div>
           <div className="group">
             <h3>Card</h3>

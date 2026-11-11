@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { acquirePhoto } from "../photos/acquire";
 import { PermissionDeniedError, type CapturedPhoto } from "../ports";
+import { Frame } from "./Frame";
 import { useBlobUrl, useThumbUrl } from "./hooks";
 import { usePorts } from "./ports-context";
 
@@ -45,7 +46,7 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
 
   return (
     <div className="photo-slot">
-      {url ? <img src={url} alt={`${label} photo`} /> : <span className="thumb" aria-hidden="true" />}
+      <Frame url={url} alt={`${label} photo`} />
       <div className="actions">
         <button type="button" disabled={busy} onClick={() => take("camera")}>
           {captured || card?.photos[side] ? "Retake" : "Scan"} {side}

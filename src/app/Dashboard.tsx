@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import type { Card } from "../domain/card";
 import { collectionStats, type Tile } from "../domain/dashboard";
-import { AddCard } from "./AddCard";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
 import { SyncActions, SyncIndicator } from "./SyncIndicator";
@@ -29,6 +28,7 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
           <SyncIndicator />
           <SettingsButton onClick={onSettings} />
         </div>
+        <div className="title-rule" aria-hidden="true" />
         <SyncActions />
       </header>
       {update && <UpdateLink update={update} />}
@@ -81,8 +81,7 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
           </div>
         </div>
       )}
-      <AddCard onAdd={onAdd} />
-      <BottomNav active="dashboard" onNavigate={onNavigate} />
+      <BottomNav active="dashboard" onNavigate={onNavigate} onAdd={onAdd} />
     </section>
   );
 }

@@ -1,20 +1,19 @@
-/* The only place a colour value may be written. Light values sit in :root, dark ones follow the phone. */
+/* The only place a colour value or a font face may be written. Light is Card-Back Calm in :root; Night Game follows the phone. */
 :root {
   color-scheme: light dark;
 
-  --color-page: #f4f5f7;
-  --color-surface: #ffffff;
-  --color-pocket-top: var(--color-pocket);
-  --color-pocket: #e4e8f0cc;
-  --color-scrim: #14161a66;
-  --color-pocket-edge: #14161a1f;
-  --color-text: #14161a;
-  --color-text-muted: #4a5160;
-  --color-accent: #f1c24a;
-  --color-on-accent: #14161a;
-  --color-accent-text: #7a5200;
-  --color-ok: #17703d;
-  --color-danger: #b3261e;
+  --color-ground: #f3ecdc;
+  --color-panel: #f3ecdc;
+  --color-ink: #1c2b4a;
+  --color-ink-muted: #4a5670;
+  --color-rule: #1c2b4a8c;
+  --color-danger: #a82a22;
+  --color-frame: #f3ecdc;
+  --color-scrim: #1c2b4a66;
+  --color-placeholder: #d8d1bf;
+
+  --font-slab: "Roboto Slab", Georgia, serif;
+  --font-sans: Inter, system-ui, sans-serif;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -25,15 +24,32 @@
   --space-7: 40px;
   --space-8: 48px;
 
-  --radius-s: 4px;
-  --radius-m: 10px;
-  --radius-l: 16px;
+  --radius-print: 3px;
+  --radius-frame: 6px;
+  --radius-pill: 999px;
+  --rule: 1px;
+  --frame-ratio: 2.5 / 3.5;
+  --gutter: 24px;
+  --gap-section: 32px;
+  --gap-field: 24px;
+  --gap-label: 8px;
+  --pad-cell: 16px;
+  --pad-row: 16px;
+  --gap-frame: 12px;
+  --gap-caption: 8px;
 
-  --type-title: 1.375rem;
-  --type-body: 1rem;
-  --type-label: 0.875rem;
-  --type-mono: ui-monospace, monospace;
-  --type-text: Roboto, system-ui, sans-serif;
+  --type-label: 0.75rem;
+  --type-body: 0.875rem;
+  --type-button: 1rem;
+  --type-table: 1.125rem;
+  --type-stat: 2rem;
+  --type-title: 1.75rem;
+
+  --size-tile-min: 72px;
+  --size-team-min: 56px;
+  --size-nav-add-w: 40px;
+  --size-nav-add-h: 24px;
+  --size-nav-icon: 20px;
 
   --target-min: 48px;
   --nav-height: 64px;
@@ -41,18 +57,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-page: #101114;
-    --color-surface: #17181c;
-    --color-pocket-top: #ffffff14;
-    --color-pocket: #ffffff08;
-    --color-scrim: #000000a6;
-    --color-pocket-edge: #ffffff21;
-    --color-text: #eceff4;
-    --color-text-muted: #aab3c2;
-    --color-accent: #f1c24a;
-    --color-on-accent: #101114;
-    --color-accent-text: var(--color-accent);
-    --color-ok: #7ee0a0;
+    --color-ground: #101a30;
+    --color-panel: #17233f;
+    --color-ink: #f3ecdc;
+    --color-ink-muted: #c2bcae;
+    --color-rule: #f3ecdc4d;
     --color-danger: #ff8a80;
+    --color-frame: #f3ecdc;
+    --color-scrim: #000000a6;
+    --color-placeholder: #2a3756;
   }
 }
