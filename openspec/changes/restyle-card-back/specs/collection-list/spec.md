@@ -48,7 +48,7 @@ The system SHALL show each card as one fixed-height row of 100 dp on the ground 
 - **THEN** the set name is cut with an ellipsis on its one line and the card number stays visible
 
 ### Requirement: Serial-numbered cards stand out
-The system SHALL mark a serial-numbered card with its existing serial label (for example 13/150, or ?/99 when the serial is unreadable) as a stamp: ink text in the slab face with tabular figures inside a 1 px ink outline, on the list row and on the card detail screen, and SHALL NOT show a tag on a card without a serial number. The stamp SHALL NOT be filled or drawn in the flag colour.
+The system SHALL mark a serial-numbered card with its existing serial label (for example 13/150, or ?/99 when the serial is unreadable) as a stamp: ink text in the slab face with tabular figures inside a 1 px ink outline, on the list row and on the card detail screen, and SHALL NOT show a tag on a card without a serial number. The stamp is ink with an ink outline, SHALL NOT be filled, and is never drawn in the danger red.
 
 #### Scenario: Tag on a serial-numbered card
 - **WHEN** a card with serial 13 and print run 150 is listed

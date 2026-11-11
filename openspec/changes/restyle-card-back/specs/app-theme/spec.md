@@ -28,14 +28,13 @@ The system SHALL give body text a contrast ratio of at least 4.5 to 1 against ev
 
 #### Scenario: Non-text contrast in both themes
 - **WHEN** the frame keyline colour of each theme is measured against the ground and the panel
-- **THEN** every pair is at least 3 to 1 (the stitch and flag are gone, so the keyline is the only non-text mark held to it)
-
+- **THEN** every pair is at least 3 to 1
 #### Scenario: Touch targets
 - **WHEN** any button, chip, input or row is measured on a 360 dp wide phone
 - **THEN** it is at least 48 dp high and wide, with at least 8 dp to the next control
 
 ### Requirement: Destructive actions stay apart
-The system SHALL keep destructive actions (delete card, sign out) visually distinct and away from primary actions: drawn as danger-coloured text, never filled like a primary button and and the danger colour is used for nothing decorative.
+The system SHALL keep destructive actions (delete card, sign out) visually distinct and away from primary actions: drawn as danger-coloured text, never filled like a primary button, and the danger colour is used for nothing decorative.
 
 #### Scenario: Delete is not beside Edit
 - **WHEN** the card detail screen is shown
@@ -101,7 +100,7 @@ The system SHALL use these sizes and no others for text: 12 label (uppercase, le
 - **THEN** each font size is one of 12, 14, 16, 18, 28 or 32 px
 
 ### Requirement: Generous spacing from tokens
-The system SHALL space every screen from these spacing tokens: `--gutter` 24 px (page sides), `--gap-section` 32 px (between sections), `--gap-field` 24 px (between form fields), `--gap-label` 8 px (a label to its value or field), `--pad-cell` 16 px (stat cell, Top teams row, fact row and list row padding, and the gap between a list thumbnail and its text), `--gap-frame` 12 px (between Recently added frames) and `--gap-caption` 8 px (frame to caption). List rows SHALL stay 100 dp high.
+The system SHALL space every screen from these spacing tokens: `--gutter` 24 px (page sides), `--gap-section` 32 px (between sections), `--gap-field` 24 px (between form fields), `--gap-label` 8 px (a label to its value or field), `--pad-cell` 16 px (stat cell, Top teams row and fact row padding), `--pad-row` 16 px (the gap between a list thumbnail and its text; list rows themselves are padded 0 0 8 px so a row stays 100 dp), `--gap-frame` 12 px (between Recently added frames) and `--gap-caption` 8 px (frame to caption). List rows SHALL stay 100 dp high.
 
 #### Scenario: Gutter and sections
 - **WHEN** the dashboard is shown on a 360 by 800 phone

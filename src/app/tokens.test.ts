@@ -21,8 +21,8 @@ const COLOURS = [
   "--color-danger", "--color-frame", "--color-scrim", "--color-placeholder",
 ];
 const HEX = {
-  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670","--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
-  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae","--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
+  light: { "--color-ground": "#f3ecdc", "--color-panel": "#f3ecdc", "--color-ink": "#1c2b4a", "--color-ink-muted": "#4a5670", "--color-danger": "#a82a22", "--color-frame": "#f3ecdc" },
+  dark: { "--color-ground": "#101a30", "--color-panel": "#17233f", "--color-ink": "#f3ecdc", "--color-ink-muted": "#c2bcae", "--color-danger": "#ff8a80", "--color-frame": "#f3ecdc" },
 };
 
 type Rgba = [number, number, number, number];
@@ -59,7 +59,7 @@ describe("tokens.css", () => {
   it("declares color-scheme light dark, fonts, the type scale, the frame and the spacing rhythm", () => {
     const css = read();
     expect(css).toMatch(/color-scheme:\s*light dark/);
-    const names = ["--space-1", "--space-8", "--radius-print", "--radius-frame", "--radius-pill", "--target-min", "--font-slab", "--font-sans", "--frame-ratio", "--gutter", "--gap-section", "--gap-field", "--gap-label", "--pad-cell", "--pad-row", "--gap-frame", "--gap-caption"];
+    const names = ["--space-1", "--space-8", "--radius-print", "--radius-frame", "--radius-pill", "--target-min", "--font-slab", "--font-sans", "--frame-ratio", "--gutter", "--gap-section", "--gap-field", "--gap-label", "--pad-cell", "--pad-row", "--gap-frame", "--gap-caption", "--size-tile-min", "--size-team-min", "--size-nav-add-w", "--size-nav-add-h", "--size-nav-icon"];
     for (const size of ["label", "body", "button", "table", "stat", "title"]) names.push(`--type-${size}`);
     for (const name of names) expect(css, name).toContain(name + ":");
   });

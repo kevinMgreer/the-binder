@@ -12,7 +12,7 @@ interface Props {
 export function BottomNav({ active, onNavigate, onAdd }: Props) {
   const destination = (to: Destination, label: string) => (
     <button aria-current={to === active ? "page" : undefined} onClick={() => to !== active && onNavigate(to)}>
-      <Icon name={to === "list" ? "cards" : "dashboard"} />
+      <Icon name={to === "list" ? "cards" : "dashboard"} outline={to !== active} />
       {label}
     </button>
   );

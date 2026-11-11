@@ -13,7 +13,7 @@ The system SHALL draw the dashboard only from the design tokens, in both the lig
 
 #### Scenario: Recently added as trading cards
 - **WHEN** the dashboard is shown with four or more cards
-- **THEN** Recently added shows four trading-card frames of equal width in one row with 8 dp between them, each with the player's name beneath it on at most two lines
+- **THEN** Recently added shows four trading-card frames of equal width in one row with 12 dp between them, each with the player's name beneath it on at most two lines
 
 #### Scenario: Top teams as a ruled table
 - **WHEN** the dashboard is shown with cards from three teams

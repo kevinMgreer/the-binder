@@ -225,7 +225,7 @@ A cream-and-navy neutral world. Status is a single danger red.
 
 ## Layout
 
-Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm runs on the 4px scale plus named tokens: `--gap-section` 32 between sections, `--gap-field` 24 between form fields, `--gap-label` 8 from a label to its field, `--pad-cell` 16 inside stat cells, team and fact rows and between a list thumbnail and its text, `--gap-frame` 12 between Recently added frames, `--gap-caption` 8 from frame to caption. Related controls sit 8px apart; the danger zone is separated by 32px plus a keyline.
+Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm runs on the 4px scale plus named tokens: `--gap-section` 32 between sections, `--gap-field` 24 between form fields, `--gap-label` 8 from a label to its field, `--pad-cell` 16 inside stat cells, team rows and fact rows, `--pad-row` 16 between a list thumbnail and its text (list rows are padded 0 0 8px so they stay 100px), `--gap-frame` 12 between Recently added frames, `--gap-caption` 8 from frame to caption. Related controls sit 8px apart; the danger zone is separated by 32px plus a keyline.
 
 The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). Add card is the middle item of that bar, so there is no separate button or band; the list scroller and the dashboard reserve the room beneath so their last row clears the bar.
 
@@ -259,7 +259,7 @@ Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons,
 - **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a plus in a 40x24 ink-filled frame with the frame radius, ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
 
 ### Bottom navigation
-Fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px plus the bottom inset, panel background with a keyline top border. Dashboard, Add and Cards share the width with 8px gaps; each is a button of at least 48x48 with a 24px inline-SVG icon above a label. Active is ink text at weight 600 with an ink-filled icon and `aria-current="page"`; there is no underline or pill. Inactive items use Muted Ink. Tapping the active item does nothing. Settings stays a header action.
+Fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px plus the bottom inset, panel background with a keyline top border. Dashboard, Add and Cards share the width with 8px gaps; each is a button of at least 48x48 with a 24px inline-SVG icon above a label. Active is ink text at weight 600 with a solid icon and `aria-current="page"`; inactive destinations are Muted Ink at weight 400 with an outline icon (same shape, stroked), so the cue is weight and shape as well as colour; there is no underline or pill. Add keeps an ink label at weight 500. Tapping the active item does nothing. Settings stays a header action.
 
 ### Icon button
 Icon-only 48x48 button for header actions (the Settings gear), borderless in the title row. Name from `aria-label`. Icons are inline SVG in `src/app/Icon.tsx` (gear, dashboard, cards, plus), `currentColor`, `aria-hidden`; no icon font or package.
@@ -271,7 +271,7 @@ One ruled block: panel background, 1px ink border, frame radius. Six tiles in a 
 Heading in Table size, then four equal columns (`--gap-frame` 12px gap) of trading-card frames with the player's name beneath at label size, weight 500, clamped to two lines. Each is a button that opens the card.
 
 ### Top teams
-A ruled stat table: up to five 48px rows separated by keylines, team name at the left (ellipsis), count in Slab 700 at table size at the right.
+A ruled stat table: up to five rows of at least 56px (`--size-team-min`) separated by keylines, team name at the left (ellipsis), count in Slab 700 at table size at the right.
 
 ### Chips and badge
 Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
@@ -289,7 +289,7 @@ Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1
 Full-width borderless button with a keyline beneath, the frame slot at the left and two lines of text: player (body, weight 500, single-line ellipsis) with the Tag at the right end, and one quiet label-size line "year set, number" continuing with parallel, grade and quantity. The line never wraps: the extras shrink first, then the set, never the number. Row height 100px.
 
 ### Card facts
-Detail screen, top to bottom: the player as a Title with the Tag beside it, a 1px rule right under the title row, a muted subtitle, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines above and between, 12px row padding, rows only for what the card has), the photo thumbnails, a muted last-edited line, Edit as the full-width primary button, then Delete apart under a keyline.
+Detail screen, top to bottom: the player as a Title with the Tag beside it, a 1px rule right under the title row, a muted subtitle, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines above and between, 16px row padding (`--pad-cell`), rows only for what the card has), the photo thumbnails, a muted last-edited line, Edit as the full-width primary button, then Delete apart under a keyline.
 
 ### Sheets and dialogs
 Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. Confirm and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
@@ -318,4 +318,5 @@ The dashboard is the start destination: Android's back closes the app from there
 
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
+- Fixed sizes are tokens: `--size-tile-min` 72px (stat cell button), `--size-team-min` 56px (Top teams row), `--size-nav-add-w` 40px and `--size-nav-add-h` 24px (the Add frame), `--size-nav-icon` 20px (its plus).
 - Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.

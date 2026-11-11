@@ -20,10 +20,10 @@ Kept as they are: 48 dp touch targets with 8 dp between neighbours, 100 dp list 
 - none
 
 ### Modified Capabilities
-- `app-theme`: tokens gain the two named palettes, fonts, type scale, stitch, rules and frame ratio; contrast rule drops the pocket and covers the new pairs; new requirements for bundled fonts, the stitch seam, trading-card frames and the per-screen card-back look.
+- `app-theme`: tokens gain the two named palettes, fonts, type scale, spacing rhythm, rules and frame ratio; contrast rule drops the pocket and covers the new pairs; new requirements for bundled fonts, the spacing tokens, the ink-filled primary button, no decorative red, trading-card frames and the per-screen card-back look.
 - `dashboard`: the design-system requirement describes a ruled stat table, trading-card frames and a ruled Top teams table instead of tappable pockets.
 - `collection-list`: "Each card is a pocket row" becomes a ruled row with a framed thumbnail; the serial tag is an ink stamp instead of accent colour; the detail screen's photo strip uses trading-card frames.
-- `app-shell`: the active bottom-navigation tab is marked by ink colour, heavier weight and an ink-filled icon instead of a pill indicator in the accent colour; there is no line under the tabs.
+- `app-shell`: the active bottom-navigation tab is marked by ink colour at weight 600 and a solid icon, while the inactive destination is muted at weight 400 with an outline icon; there is no pill and no line under the tabs. Add joins the bar as a middle action item.
 
 `card-catalog` has no requirement that names the old look, so it is not changed.
 

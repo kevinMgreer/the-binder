@@ -770,7 +770,17 @@ test.describe("Bottom navigation and header", () => {
       expect(await css(item(page, "Cards"), "color")).not.toBe(ink);
       await expect(item(page, "Dashboard")).toContainText("Dashboard");
       await expect(item(page, "Dashboard").locator("svg[aria-hidden=true]")).toHaveCount(1);
-      expect(Number(await css(item(page, "Dashboard"), "font-weight"))).toBeGreaterThan(Number(await css(item(page, "Cards"), "font-weight")));
+      expect(await css(item(page, "Dashboard"), "font-weight")).toBe("600");
+      expect(await css(item(page, "Cards"), "font-weight")).toBe("400");
+      // The active icon is solid, the inactive one an outline: a shape cue, not colour alone.
+      await expect(item(page, "Dashboard").locator("svg")).toHaveAttribute("data-variant", "solid");
+      await expect(item(page, "Cards").locator("svg")).toHaveAttribute("data-variant", "outline");
+      await item(page, "Cards").click();
+      await expect(item(page, "Cards").locator("svg")).toHaveAttribute("data-variant", "solid");
+      await expect(item(page, "Dashboard").locator("svg")).toHaveAttribute("data-variant", "outline");
+      // Add is an action, not a destination: its label is ink at weight 500, never the active 600.
+      const addLabel = nav(page).getByRole("button", { name: "Add card", exact: true });
+      expect(await css(addLabel, "font-weight")).toBe("500");
     });
 
     test(`Inactive label is readable in ${scheme}`, async ({ page }) => {

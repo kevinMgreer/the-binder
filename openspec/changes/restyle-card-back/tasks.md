@@ -43,7 +43,7 @@
 - [x] 7.1 Spacing tokens (`--gutter` 24, `--gap-section` 32, `--gap-field` 24, `--gap-label` 8, `--pad-cell` 16, `--pad-row` 16, `--gap-frame` 12, `--gap-caption` 8) in `tokens.css` and used by every screen; verify the "Generous spacing" e2e and the 100 dp rows and 5,000-card perf tests pass
 - [x] 7.2 Remove the stitch (`--color-stitch`, `--stitch-line`, `--stitch-gap`, `.stitch`) everywhere; a 1 px rule under titles only; red is the Rookies flag alone, renamed `--color-flag` (the flag and `--color-flag` were removed again in 7.6); verify "Rule under the title"
 - [x] 7.3 Bottom navigation without underline: ink label and icon when active, muted when not; verify the nav e2e
-- [x] 7.4 Ink-filled primary button (ground-coloured text, 6 px, 48 dp) for Add card, Save, Edit, Show cards, Sign in with Google; remove `--color-gold` and `--color-on-gold`; verify the primary scenarios
+- [x] 7.4 Ink-filled primary button (ground-coloured text, 6 px, 48 dp) for Save, Edit, Show cards, Sign in with Google; remove `--color-gold` and `--color-on-gold`; verify the primary scenarios
 
 - [x] 7.5 Owner: Add card moves into the bottom navigation as the middle item (Dashboard, Add, Cards; plus in an ink-filled 40 by 24 frame, label "Add", accessible name "Add card"); remove `AddCard`, `.add-bar` and the extra bottom padding; verify "Add is an action between Dashboard and Cards", "One Add card control per screen" and the reachability tests
 

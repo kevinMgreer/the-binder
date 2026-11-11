@@ -45,6 +45,12 @@
   --type-stat: 2rem;
   --type-title: 1.75rem;
 
+  --size-tile-min: 72px;
+  --size-team-min: 56px;
+  --size-nav-add-w: 40px;
+  --size-nav-add-h: 24px;
+  --size-nav-icon: 20px;
+
   --target-min: 48px;
   --nav-height: 64px;
 }
