@@ -34,6 +34,7 @@ test("an empty list gives zeros and no groups", () => {
   expect(values(stats)).toEqual(zero);
   expect(stats.recent).toEqual([]);
   expect(stats.teams).toEqual([]);
+  expect(stats.players).toEqual([]);
 });
 
 test("every tile but Cards equals the list its filters open, and Cards is the quantity sum", () => {
@@ -71,4 +72,19 @@ test("Top teams merge spellings, count distinct cards, order ties by name, cap a
     ["Atlanta Braves", 3], ["Chicago Cubs", 2], ["New York Mets", 2], ["T4", 1], ["T5", 1],
   ]);
   for (const t of teams) expect(t.count).toBe(applyFilters(cards, { ...emptyFilters, team: t.name }).length);
+});
+
+test("Top players merge spellings, count distinct cards not quantity, order ties by name, cap at five", () => {
+  const mk = (player: string, n: number, quantity = 1) =>
+    Array.from({ length: n }, (_, i) => makeCard({ player, cardNumber: `${player}${i}`, quantity }));
+  const cards = [
+    ...mk("Ronald Acuña Jr.", 2, 3), ...mk(" ronald acuna jr. ", 1), ...mk("Mookie Betts", 2), ...mk("Aaron Judge", 2),
+    ...mk("P4", 1, 5), ...mk("P5", 1), ...mk("P6", 1), ...mk("P7", 1),
+  ];
+  const { players } = collectionStats(cards);
+  expect(players.map((p) => [p.name, p.count])).toEqual([
+    ["Ronald Acuña Jr.", 3], ["Aaron Judge", 2], ["Mookie Betts", 2], ["P4", 1], ["P5", 1],
+  ]);
+  for (const p of players) expect(applyFilters(cards, { ...emptyFilters, player: p.name }).length).toBe(p.count);
+  expect(collectionStats([]).players).toEqual([]);
 });
