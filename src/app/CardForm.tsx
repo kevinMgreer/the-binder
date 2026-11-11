@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CONDITIONS, type Card, type CardSide, type Suggestion } from "../domain/card";
+import { isSerialNumbered } from "../domain/format";
 import { findDuplicate } from "../domain/query";
 import { REQUIRED_FIELDS, validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
 import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
@@ -18,6 +19,7 @@ interface Draft {
   insert: string;
   cardNumber: string;
   parallel: string;
+  serialNumbered: boolean;
   serial: string;
   serialUnreadable: boolean;
   printRun: string;
@@ -47,6 +49,8 @@ function toDraft(c?: Card): Draft {
     insert: c?.insert ?? "",
     cardNumber: c?.cardNumber ?? "",
     parallel: c?.parallel?.name ?? "",
+    // An old card with only "Serial unreadable" ticked has no serial or print run but was serial-numbered.
+    serialNumbered: c ? isSerialNumbered(c) || c.parallel?.serialLegible === false : false,
     serial: c?.parallel?.serial?.toString() ?? "",
     serialUnreadable: c?.parallel ? !c.parallel.serialLegible : false,
     printRun: c?.parallel?.printRun?.toString() ?? "",
@@ -66,7 +70,9 @@ const num = (s: string) => (s.trim() === "" ? null : Number(s));
 
 function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): Card {
   const now = new Date().toISOString();
-  const hasParallel = d.parallel.trim() !== "" || d.serial !== "" || d.printRun !== "" || d.serialUnreadable;
+  const hasParallel = d.parallel.trim() !== "" || d.serialNumbered || d.printRun !== "";
+  // An unchecked box drops a serial typed earlier.
+  const unreadable = d.serialNumbered && d.serialUnreadable;
   return {
     ...existing,
     id: existing?.id ?? crypto.randomUUID(),
@@ -81,8 +87,9 @@ function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): C
     parallel: hasParallel
       ? {
           name: d.parallel.trim(),
-          serial: d.serialUnreadable ? null : num(d.serial),
-          serialLegible: !d.serialUnreadable,
+          serialNumbered: d.serialNumbered,
+          serial: d.serialNumbered && !unreadable ? num(d.serial) : null,
+          serialLegible: !unreadable,
           printRun: num(d.printRun),
         }
       : null,
@@ -276,8 +283,13 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       {text("insert", "Insert")}
       {text("cardNumber", "Card number", "cardNumber")}
       {text("parallel", "Parallel")}
-      {text("serial", "Serial", "serial", "number")}
-      {check("serialUnreadable", "Serial unreadable")}
+      {check("serialNumbered", "Serial-numbered")}
+      {draft.serialNumbered && (
+        <>
+          {text("serial", "Serial", "serial", "number")}
+          {check("serialUnreadable", "Serial unreadable")}
+        </>
+      )}
       {text("printRun", "Print run", "printRun", "number")}
       {check("rookie", "Rookie")}
       {check("autograph", "Autograph")}

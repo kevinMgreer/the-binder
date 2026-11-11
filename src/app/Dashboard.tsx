@@ -52,7 +52,7 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
                 key={card.id}
                 className="recent-card"
                 data-testid="recent"
-                aria-label={`${card.player}, ${card.year} ${card.set} #${card.cardNumber}`}
+                aria-label={`${card.player}, ${card.year} ${card.set}${card.cardNumber && ` #${card.cardNumber}`}`}
                 onClick={() => onOpenCard(card)}
               >
                 <Thumb card={card} />

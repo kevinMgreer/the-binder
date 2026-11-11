@@ -20,7 +20,7 @@ function renderForm() {
 
 const type = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
-test("an empty add form marks exactly player, year, set and card number as required", () => {
+test("an empty add form marks exactly player, year and set as required", () => {
   renderForm();
   const marked = screen
     .getAllByRole("textbox")
@@ -28,8 +28,8 @@ test("an empty add form marks exactly player, year, set and card number as requi
     .filter((el) => el.getAttribute("aria-required") === "true")
     .map((el) => el.id)
     .sort();
-  expect(marked).toEqual(["f-card-number", "f-player", "f-set", "f-year"]);
-  expect(screen.getAllByText("required")).toHaveLength(4);
+  expect(marked).toEqual(["f-player", "f-set", "f-year"]);
+  expect(screen.getAllByText("required")).toHaveLength(3);
 });
 
 test("the required list matches the fields the schema actually rejects", () => {

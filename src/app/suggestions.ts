@@ -8,6 +8,7 @@ export type DraftKey =
   | "set"
   | "cardNumber"
   | "parallel"
+  | "serialNumbered"
   | "serial"
   | "serialUnreadable"
   | "printRun";
@@ -27,6 +28,8 @@ export function suggestionPatch(s: Suggestion): SuggestionPatch {
     if (s.parallel.serial !== null) patch.serial = String(s.parallel.serial);
     if (s.parallel.printRun !== null) patch.printRun = String(s.parallel.printRun);
     if (!s.parallel.serialLegible) patch.serialUnreadable = true;
+    // A suggested serial would be hidden and dropped on save unless the box is checked.
+    if (s.parallel.serial !== null || !s.parallel.serialLegible) patch.serialNumbered = true;
   }
   return patch;
 }

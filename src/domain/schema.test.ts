@@ -15,7 +15,16 @@ test("a minimum card is valid", () => {
 
 test("missing required fields are reported", () => {
   const errors = validateCard(makeCard({ player: " ", set: "", cardNumber: "", year: Number.NaN }));
-  expect(Object.keys(errors).sort()).toEqual(["cardNumber", "player", "set", "year"]);
+  expect(Object.keys(errors).sort()).toEqual(["player", "set", "year"]);
+});
+
+test("a card without a number is valid", () => {
+  expect(validateCard(makeCard({ cardNumber: "" }))).toEqual({});
+});
+
+test("the serial-numbered mark is accepted and optional", () => {
+  expect(validateCard(makeCard({ parallel: { ...parallel(null, 99), serialNumbered: false } }))).toEqual({});
+  expect(validateCard(makeCard({ parallel: parallel(null, 99) }))).toEqual({});
 });
 
 test("serial above print run is an error on the serial field", () => {

@@ -44,8 +44,13 @@ export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
                   <span className="quiet">
                     <span className="set">
                       {c.year} {c.set}
-                    </span>{" "}
-                    <span className="num">· #{c.cardNumber}</span>
+                    </span>
+                    {c.cardNumber && (
+                      <>
+                        {" "}
+                        <span className="num">· #{c.cardNumber}</span>
+                      </>
+                    )}
                     {rest && (
                       <>
                         {" "}

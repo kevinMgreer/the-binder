@@ -16,10 +16,11 @@ export const cardSchema = z
     set: required,
     subset: z.string().optional(),
     insert: z.string().optional(),
-    cardNumber: required,
+    cardNumber: z.string(),
     parallel: z
       .object({
         name: z.string(),
+        serialNumbered: z.boolean().optional(),
         serial: count.nullable(),
         serialLegible: z.boolean(),
         printRun: count.nullable(),
@@ -46,7 +47,7 @@ export const cardSchema = z
   });
 
 /** Fields every card needs; the form marks these, and card-form-guidance.test.tsx checks the list against the schema. */
-export const REQUIRED_FIELDS = ["player", "year", "set", "cardNumber"] as const;
+export const REQUIRED_FIELDS = ["player", "year", "set"] as const;
 
 const fieldKeys = ["player", "year", "set", "cardNumber", "serial", "printRun", "grading", "quantity"] as const;
 export type FieldKey = (typeof fieldKeys)[number] | "card";

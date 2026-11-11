@@ -34,6 +34,7 @@ async function fillCard(page: Page, draft: Draft) {
   await fill(page, "Insert", draft.insert);
   await fill(page, "Card number", draft.cardNumber);
   await fill(page, "Parallel", draft.parallel);
+  if (draft.serial !== undefined || draft.serialUnreadable) await page.getByLabel("Serial-numbered", { exact: true }).check();
   await fill(page, "Serial", draft.serial);
   if (draft.serialUnreadable) await page.getByLabel("Serial unreadable", { exact: true }).check();
   await fill(page, "Print run", draft.printRun);
@@ -69,17 +70,47 @@ test.beforeEach(async ({ page }) => {
   await openCollection(page);
 });
 
-test("Minimum card: player, year, set and card number are enough", async ({ page }) => {
+test("Minimum card: player, year and set are enough", async ({ page }) => {
   await addCard(page, base);
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText("Ronald Acuña Jr.");
 });
 
+test("Card without a number saves and lists with no # and no dangling separator", async ({ page }) => {
+  await addCard(page, { ...base, cardNumber: undefined });
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page).first()).toContainText("2024 Series 1");
+  await expect(rows(page).first()).not.toContainText("#");
+  await rows(page).first().click();
+  await expect(page.getByTestId("subtitle")).toHaveText("2024 Series 1");
+});
+
+test("Print run without Serial-numbered shows no tag, matches Print run, not Serial-numbered", async ({ page }) => {
+  await addCard(page, { ...base, printRun: "99" });
+  await expect(rows(page).first()).not.toContainText("/99");
+  await openFilters(page);
+  await page.getByLabel("Print run", { exact: true }).fill("99");
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByLabel("Print run", { exact: true }).fill("");
+  await page.getByLabel("Serial-numbered", { exact: true }).check();
+  await expect(rows(page)).toHaveCount(0);
+});
+
+test("Serial fields are hidden until Serial-numbered is checked", async ({ page }) => {
+  await page.getByRole("button", { name: "Add card" }).click();
+  await expect(page.getByLabel("Serial", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Serial unreadable", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Print run", { exact: true })).toBeVisible();
+  await page.getByLabel("Serial-numbered", { exact: true }).check();
+  await expect(page.getByLabel("Serial", { exact: true })).toBeVisible();
+});
+
 test("Missing required field: card is not saved and the fields are highlighted", async ({ page }) => {
   await tryAddCard(page, {});
-  for (const label of ["Player", "Year", "Set", "Card number"]) {
+  for (const label of ["Player", "Year", "Set"]) {
     await expect(page.getByLabel(label, { exact: true })).toHaveAttribute("aria-invalid", "true");
   }
+  await expect(page.getByLabel("Card number", { exact: true })).not.toHaveAttribute("aria-invalid", "true");
   await page.getByRole("button", { name: "Cancel" }).click();
   await expect(rows(page)).toHaveCount(0);
 });

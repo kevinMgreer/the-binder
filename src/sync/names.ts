@@ -11,7 +11,7 @@ const slug = (s: string) =>
 export function photoFileName(card: Card, side: CardSide): string {
   const maker = card.manufacturer.trim() || card.set;
   const parts = [card.year, slug(maker), slug(card.cardNumber), slug(card.player), side, card.id.slice(0, 8)];
-  return `${parts.join("-")}.webp`;
+  return `${parts.filter(Boolean).join("-")}.webp`;
 }
 
 export function thumbFileName(card: Card, side: CardSide): string {
