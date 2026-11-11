@@ -21,7 +21,7 @@ Archive order: `refine-card-fields` first, then `restyle-card-back`, then this c
 
 - **Last-name key derived at read time by `lastNameKey(card)` in `query.ts`.** Rule, in order:
   1. A non-blank trimmed `sortName` wins.
-  2. Team card: when `team` is not blank and `normalize(player)` contains `normalize(team)`, the key is the whole player text ("Atlanta Braves Team Card" with team "Atlanta Braves").
+  2. Team card: when `team` is not blank and `normalize(player)` contains `normalize(team)` as a whole word, the key is the whole player text ("Atlanta Braves Team Card" with team "Atlanta Braves").
   3. Multi-player: split on `/`, `&` or the word `and` (spaces around it, any case) and keep the first part ("Mike Trout / Shohei Ohtani" gives "Mike Trout").
   4. Drop trailing suffixes `Jr`, `Sr`, `II`, `III`, `IV`, each with an optional period and an optional comma before it, ignoring case, repeatedly ("Ken Griffey, Jr." gives "Ken Griffey").
   5. Take the last whitespace-separated word; if nothing is left (player "Jr."), use the whole player text.

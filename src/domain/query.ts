@@ -86,7 +86,8 @@ export function lastNameKey(c: Card): string {
   if (sortName) return sortName;
   const player = c.player.trim();
   const team = normalize(c.team.trim());
-  if (team && normalize(player).includes(team)) return player;
+  // shortcut: the team is matched between spaces/edges, so punctuation next to it ("LA's") defeats the match.
+  if (team && ` ${normalize(player)} `.includes(` ${team} `)) return player;
   let name = player.split(/\s*[/&]\s*|\s+and\s+/i)[0];
   const suffix = /[\s,]+(?:jr|sr|ii|iii|iv)\.?$/i;
   while (suffix.test(name)) name = name.replace(suffix, "");
