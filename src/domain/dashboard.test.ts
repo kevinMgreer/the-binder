@@ -74,7 +74,31 @@ test("Top teams merge spellings, count distinct cards, order ties by name, cap a
   for (const t of teams) expect(t.count).toBe(applyFilters(cards, { ...emptyFilters, team: t.name }).length);
 });
 
-test("Top players merge spellings, count distinct cards not quantity, order ties by name, cap at five", () => {
+const names = (cards: ReturnType<typeof makeCard>[]) => collectionStats(cards).players.map((p) => [p.name, p.count]);
+
+test("Top players: equal counts sort by last name, not first name", () => {
+  const two = (player: string, sortName?: string) =>
+    [0, 1].map((i) => makeCard({ player, cardNumber: `${player}${i}`, ...(sortName ? { sortName } : {}) }));
+  expect(names([...two("Babe Ruth"), ...two("Hank Aaron")])).toEqual([["Hank Aaron", 2], ["Babe Ruth", 2]]);
+  expect(names([...two("Mookie Betts"), ...two("Ronald Acuña Jr.")])).toEqual([["Ronald Acuña Jr.", 2], ["Mookie Betts", 2]]);
+});
+
+test("Top players: a Sort name on any of the player's cards sets the tie order, the first one met wins", () => {
+  const cards = [
+    makeCard({ player: "Zack Judge", cardNumber: "1" }), makeCard({ player: "Zack Judge", cardNumber: "2", sortName: "Aaa" }),
+    makeCard({ player: "Zack Judge", cardNumber: "3", sortName: "Zzz" }), makeCard({ player: "Mookie Betts", cardNumber: "4" }),
+    makeCard({ player: "Mookie Betts", cardNumber: "5" }), makeCard({ player: "Mookie Betts", cardNumber: "6" }),
+    makeCard({ player: "Pete Alonso", cardNumber: "7" }), makeCard({ player: "Pete Alonso", cardNumber: "8" }),
+  ];
+  expect(names(cards)).toEqual([["Zack Judge", 3], ["Mookie Betts", 3], ["Pete Alonso", 2]]);
+});
+
+test("Top players: the count still ranks before the last name", () => {
+  const cards = ["Zack Wheeler", "Zack Wheeler", "Hank Aaron"].map((player, i) => makeCard({ player, cardNumber: String(i) }));
+  expect(names(cards)).toEqual([["Zack Wheeler", 2], ["Hank Aaron", 1]]);
+});
+
+test("Top players merge spellings, count distinct cards not quantity, order ties by last name, cap at five", () => {
   const mk = (player: string, n: number, quantity = 1) =>
     Array.from({ length: n }, (_, i) => makeCard({ player, cardNumber: `${player}${i}`, quantity }));
   const cards = [
@@ -83,7 +107,7 @@ test("Top players merge spellings, count distinct cards not quantity, order ties
   ];
   const { players } = collectionStats(cards);
   expect(players.map((p) => [p.name, p.count])).toEqual([
-    ["Ronald Acuña Jr.", 3], ["Aaron Judge", 2], ["Mookie Betts", 2], ["P4", 1], ["P5", 1],
+    ["Ronald Acuña Jr.", 3], ["Mookie Betts", 2], ["Aaron Judge", 2], ["P4", 1], ["P5", 1],
   ]);
   for (const p of players) expect(applyFilters(cards, { ...emptyFilters, player: p.name }).length).toBe(p.count);
   expect(collectionStats([]).players).toEqual([]);
