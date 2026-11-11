@@ -231,7 +231,7 @@ The app draws under the system bars: `#root` and scrolling screens add the safe-
 
 Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a single 1px rule; Sign in again, the missing-file choice and the full sync error line appear below the rule while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the rule under their title.
 
-The dashboard is a six-tile stat table (two columns by three rows), a Recently added row of four trading-card frames, a Top teams stat table of up to five rows. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
+The dashboard is a six-tile stat table (two columns by three rows), a Top teams and a Top players stat table of up to five rows each, then a Recently added row of four trading-card frames. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
 
 ### Named Rules
 **The 48 Rule.** Anything tappable is at least 48px (`--target-min`) in height and width, visually or through its row; table cells are inset 4px so neighbours stay 8px apart.
@@ -270,8 +270,8 @@ One ruled block: panel background, 1px ink border, frame radius. Six tiles in a 
 ### Recently added
 Heading in Table size, then four equal columns (`--gap-frame` 12px gap) of trading-card frames with the player's name beneath at label size, weight 500, clamped to two lines. Each is a button that opens the card.
 
-### Top teams
-A ruled stat table: up to five rows of at least 56px (`--size-team-min`) separated by keylines, team name at the left (ellipsis), count in Slab 700 at table size at the right.
+### Top teams and Top players
+Two ruled stat tables of the same shape: up to five rows of at least 56px (`--size-team-min`) separated by keylines, team or player name at the left (ellipsis), count in Slab 700 at table size at the right.
 
 ### Chips and badge
 Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
