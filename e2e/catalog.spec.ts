@@ -212,6 +212,37 @@ test("Filter by insert", async ({ page }) => {
   await expect(page.getByRole("button", { name: /^Remove Insert filter/ })).toBeVisible();
 });
 
+test("Filter by player", async ({ page }) => {
+  await addCard(page, base);
+  await addCard(page, { ...base, player: "Mookie Betts", cardNumber: "28", notes: "acuna lot" });
+  await openFilters(page);
+  await page.getByLabel("Player", { exact: true }).fill("acuna");
+  await expect(rows(page)).toHaveCount(1);
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Filter, 1 applied", exact: true })).toBeVisible();
+});
+
+test("A player filter of only spaces shows no chip and no badge", async ({ page }) => {
+  await addCard(page, base);
+  await openFilters(page);
+  await page.getByLabel("Player", { exact: true }).fill("   ");
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Filter", exact: true })).toBeVisible();
+});
+
+test("Clear all clears the player filter and keeps search", async ({ page }) => {
+  await addCard(page, base);
+  await page.getByPlaceholder("Search").fill("series");
+  await openFilters(page);
+  await page.getByLabel("Player", { exact: true }).fill("acuna");
+  await page.getByRole("button", { name: "Clear all" }).click();
+  await expect(page.getByLabel("Player", { exact: true })).toHaveValue("");
+  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+  await expect(page.getByPlaceholder("Search")).toHaveValue("series");
+});
+
 test("Filter by manufacturer", async ({ page }) => {
   await page.evaluate(async () => {
     const { makeCard } = await import("/src/domain/fixtures.ts");

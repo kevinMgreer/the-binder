@@ -37,6 +37,13 @@ test("search finds a card by subset and by insert", () => {
   expect(applyFilters([a, b, c], { ...emptyFilters, search: "future stars" })).toEqual([a, b]);
 });
 
+test("player filter matches the player only, ignoring case and accents", () => {
+  const a = makeCard({ player: "Ronald Acuña Jr." });
+  const b = makeCard({ player: "Mookie Betts", team: "Acuna Aces", notes: "acuna lot" });
+  expect(applyFilters([a, b], { ...emptyFilters, player: "acuna" })).toEqual([a]);
+  expect(applyFilters([a, b], { ...emptyFilters, player: "   " })).toEqual([a, b]);
+});
+
 test("team filter ignores case and surrounding spaces", () => {
   const a = makeCard({ team: "atlanta braves" });
   const b = makeCard({ team: " Atlanta Braves " });

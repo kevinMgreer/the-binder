@@ -7,6 +7,7 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "bas
 
 export interface Filters {
   search: string;
+  player: string;
   yearFrom: number | null;
   yearTo: number | null;
   team: string;
@@ -25,6 +26,7 @@ export interface Filters {
 
 export const emptyFilters: Filters = {
   search: "",
+  player: "",
   yearFrom: null,
   yearTo: null,
   team: "",
@@ -46,9 +48,11 @@ const key = (s: string | undefined) => normalize((s ?? "").trim());
 /** The one predicate behind the list, its chips and the dashboard tiles; filter values are normalized once. */
 export function matcher(f: Filters): (c: Card) => boolean {
   const search = key(f.search);
+  const player = key(f.player);
   const [team, manufacturer, set, subset, insert, parallel] = [f.team, f.manufacturer, f.set, f.subset, f.insert, f.parallel].map(key);
   return (c) => {
     if (search && !normalize(`${c.player} ${c.team} ${c.set} ${c.subset ?? ""} ${c.insert ?? ""} ${c.notes}`).includes(search)) return false;
+    if (player && !normalize(c.player).includes(player)) return false;
     if (f.yearFrom !== null && c.year < f.yearFrom) return false;
     if (f.yearTo !== null && c.year > f.yearTo) return false;
     if (team && key(c.team) !== team) return false;
