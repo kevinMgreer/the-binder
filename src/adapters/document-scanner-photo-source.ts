@@ -5,8 +5,8 @@ import type { PhotoSource } from "../ports";
 export class ScannerUnavailableError extends Error {}
 
 export interface DocumentScanner {
-  /** The cropped card image, or null when the user closed the scanner. `hint` is a short message shown over the scanner. Throws ScannerUnavailableError when it cannot run. */
-  scan(hint: string): Promise<Blob | null>;
+  /** Up to `pages` cropped card images in the order taken, empty when the user closed the scanner. `hint` is a short message shown over the scanner. Throws ScannerUnavailableError when it cannot run. */
+  scan(hint: string, pages: number): Promise<Blob[]>;
 }
 
 /** Captures through the document scanner and falls back to another source only when the scanner cannot run. */
@@ -16,12 +16,14 @@ export class ScannerPhotoSource implements PhotoSource {
     private readonly fallback: PhotoSource,
   ) {}
 
-  async capture(side: CardSide): Promise<Blob | null> {
+  async capture(side: CardSide, pages = 1): Promise<Blob[]> {
     try {
-      return await this.scanner.scan(`Scan the ${side} of the card`);
+      return await this.scanner.scan(pages === 2 ? "Scan the front of the card, then the back" : `Scan the ${side} of the card`, pages);
     } catch (error) {
-      if (error instanceof ScannerUnavailableError) return this.fallback.capture(side);
-      throw error;
+      if (!(error instanceof ScannerUnavailableError)) throw error;
+      // The system camera takes one photo per launch, so a two-page scan opens it again for the back.
+      const first = await this.fallback.capture(side);
+      return pages === 2 && first.length > 0 ? [...first, ...(await this.fallback.capture("back"))] : first;
     }
   }
 

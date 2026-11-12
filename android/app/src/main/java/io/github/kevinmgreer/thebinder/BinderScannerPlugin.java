@@ -1,12 +1,12 @@
 package io.github.kevinmgreer.thebinder;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -19,11 +19,11 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
 import java.util.List;
-import org.json.JSONObject;
 
 /**
  * Card scanner for the web layer: Google's ML Kit Document Scanner (rear camera, edge detection, crop).
- * scan({ hint }) shows the optional hint as a Toast over the scanner. It resolves with the cropped image's file uri, or a null uri when the user closes the scanner, and rejects with the
+ * scan({ hint, pages }) shows the optional hint as a Toast over the scanner and lets the user take up to `pages` pages
+ * (default 1). It resolves with { uris } holding each cropped page's file uri in order, empty when the user closes the scanner, and rejects with the
  * code UNAVAILABLE when the scanner cannot run (no Google Play services, or its module cannot be fetched), so the web
  * layer can fall back to the system camera.
  */
@@ -51,12 +51,12 @@ public class BinderScannerPlugin extends Plugin {
         // BASE mode: crop and rotate only; the default FULL mode adds filters and cleaning tools the app does not want.
         GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder()
             .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
-            .setPageLimit(1)
+            .setPageLimit(Math.max(1, call.getInt("pages", 1)))
             .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
             .setGalleryImportAllowed(false)
             .build();
         String hint = call.getString("hint");
-        GmsDocumentScanner scanner =GmsDocumentScanning.getClient(options);
+        GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
         pendingScan = call;
         scanner
             .getStartScanIntent(getActivity())
@@ -75,21 +75,16 @@ public class BinderScannerPlugin extends Plugin {
         PluginCall call = pendingScan;
         pendingScan = null;
         if (call == null) return;
-        JSObject response = new JSObject();
-        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {
-            response.put("uri", JSONObject.NULL);
-            call.resolve(response);
-            return;
-        }
-        GmsDocumentScanningResult scanned = GmsDocumentScanningResult.fromActivityResultIntent(result.getData());
+        JSArray uris = new JSArray();
+        GmsDocumentScanningResult scanned = result.getResultCode() == Activity.RESULT_OK && result.getData() != null
+            ? GmsDocumentScanningResult.fromActivityResultIntent(result.getData())
+            : null;
         List<GmsDocumentScanningResult.Page> pages = scanned == null ? null : scanned.getPages();
-        if (pages == null || pages.isEmpty()) {
-            response.put("uri", JSONObject.NULL);
-            call.resolve(response);
-            return;
+        if (pages != null) {
+            for (GmsDocumentScanningResult.Page page : pages) uris.put(page.getImageUri().toString());
         }
-        Uri image = pages.get(0).getImageUri();
-        response.put("uri", image.toString());
+        JSObject response = new JSObject();
+        response.put("uris", uris);
         call.resolve(response);
     }
 }

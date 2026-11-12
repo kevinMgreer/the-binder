@@ -2,7 +2,7 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 import { ScannerUnavailableError, type DocumentScanner } from "./document-scanner-photo-source";
 
 interface BinderScannerPlugin {
-  scan(options: { hint: string }): Promise<{ uri: string | null }>;
+  scan(options: { hint: string; pages: number }): Promise<{ uris: string[] }>;
 }
 
 /** The binding takes its plugin, URL converter and fetch so it can be tested without a device. */
@@ -12,11 +12,10 @@ export function createCapacitorScanner(
   fetchFn: typeof fetch,
 ): DocumentScanner {
   return {
-    async scan(hint) {
+    async scan(hint, pages) {
       try {
-        const { uri } = await plugin.scan({ hint });
-        if (!uri) return null;
-        return await (await fetchFn(toUrl(uri))).blob();
+        const { uris } = await plugin.scan({ hint, pages });
+        return await Promise.all(uris.map(async (uri) => (await fetchFn(toUrl(uri))).blob()));
       } catch (error) {
         const code = (error as { code?: string }).code;
         if (code === "UNAVAILABLE") throw new ScannerUnavailableError(error instanceof Error ? error.message : String(error));

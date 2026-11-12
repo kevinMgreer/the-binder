@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Card, CardSide } from "../domain/card";
-import { acquirePhoto } from "../photos/acquire";
+import { acquirePhotos } from "../photos/acquire";
 import { PermissionDeniedError, type CapturedPhoto } from "../ports";
 import { Frame } from "./Frame";
 import { useBlobUrl, useThumbUrl } from "./hooks";
@@ -16,17 +16,11 @@ interface Props {
   onChange: (photo: CapturedPhoto | null) => void;
   /** Lets the form hold Save while a photo is still being prepared. */
   onBusy?: (busy: boolean) => void;
-  /** After "Scan" (not Retake, not Pick) on an empty tile returned a photo. */
-  onScanned?: () => void;
-  ref?: Ref<PhotoSlotHandle>;
+  /** When set, "Scan" on the empty tile asks the scanner for a second page, the back, and hands it here. */
+  onBackPage?: (photo: CapturedPhoto) => void;
 }
 
-export interface PhotoSlotHandle {
-  /** Starts the camera scan as "Scan <side>" does, without the chooser. */
-  scan: () => void;
-}
-
-export function PhotoSlot({ side, card, captured, onChange, onBusy, onScanned, ref }: Props) {
+export function PhotoSlot({ side, card, captured, onChange, onBusy, onBackPage }: Props) {
   const { photoSource } = usePorts();
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -58,11 +52,10 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy, onScanned, r
     setBusy(true);
     onBusy?.(true);
     try {
-      const photo = await acquirePhoto(photoSource, side, how);
-      if (photo) {
-        onChange(photo);
-        if (how === "camera" && !filled) onScanned?.();
-      }
+      const pages = how === "camera" && !filled && onBackPage ? 2 : 1;
+      const [photo, back] = await acquirePhotos(photoSource, side, how, pages);
+      if (photo) onChange(photo);
+      if (back) onBackPage?.(back);
     } catch (error) {
       setMessage(
         error instanceof PermissionDeniedError
@@ -74,13 +67,6 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy, onScanned, r
       onBusy?.(false);
     }
   }
-
-  // Rebuilt each render so it reads committed state: a take already under way, or a photo already there, is left alone.
-  useImperativeHandle(ref, () => ({
-    scan: () => {
-      if (!busy && !filled) void take("camera");
-    },
-  }));
 
   return (
     <div className="photo-cell">

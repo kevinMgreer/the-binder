@@ -25,14 +25,14 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 
 ## Camera and photos (card-photos)
 
-- [ ] **Add card** opens the card form. **Scan front** opens the rear camera, takes the front and returns to the same form with the typed fields kept; then the back scanner opens by itself.
-- [ ] [scan-back-chain, T-47] **Add card**, **Scan front**, accept: the back scanner opens at once; accept the back and both tiles fill. Again, and press Android back (or close) in the back scanner: the form shows the front only, no message. **Pick front from photos** and **Retake front** open no back scanner; editing a card that has a back, **Scan front** opens no back scanner.
+- [ ] **Add card** opens the card form. **Scan front** opens the rear camera, takes the front, lets you add the back as a second page in the same scanner, and returns to the same form with the typed fields kept.
+- [ ] [scan-back-chain, T-47] **Add card**, **Scan front**: scan the front, add a second page for the back, accept: the form is not shown between the two pages, and both tiles fill. Again, accept after the front only: the form shows the front only, no message. Again, take the front and press Android back (or close) in the scanner: neither tile fills. **Retake front**, **Scan back**, and **Scan front** while editing a card that has a back take one page only.
 - [ ] Deny the camera permission: the app offers **Pick front from photos** (or back) instead and it works.
 - [ ] **Pick front from photos** uses the chosen image.
 - [ ] A 12 MP photo is stored at 500 KB or less and the serial number stamp is still readable when zoomed in.
 - [ ] Pinch-zoom and pan on the full photo are smooth.
 - [ ] The photos folder in Google Drive shows files named with year, manufacturer, card number, player and front/back.
-- [ ] [scan-back-chain, T-47] Every **Scan** and **Retake** (front, back, and the back scanner that opens by itself) shows a short message over the scanner naming the right side: "Scan the front of the card" or "Scan the back of the card". **Pick from photos** shows none.
+- [ ] [scan-back-chain, T-47] **Scan front** on an empty form shows a short message over the scanner: "Scan the front of the card, then the back". Every other **Scan** and **Retake** shows "Scan the front of the card" or "Scan the back of the card" for its side. **Pick from photos** shows none.
 - [ ] Front and Back tiles sit side by side on the add form; tapping an empty tile opens the chooser; **Scan front** opens the scanner and the photo lands in the Front tile; back closes the chooser without leaving the form. [photo-detail-polish, T-41]
 - [ ] On a filled tile, **Retake front**, **Pick front from photos** and **Remove front photo** work; after Remove and Save on a synced card, the photo is gone from the card and from the Drive photos folder after the next sync. [photo-detail-polish, T-41]
 - [ ] Remove a photo on a card added offline (not yet uploaded), save, go online: no photo for that side appears in Drive. [photo-detail-polish, T-41]
