@@ -262,7 +262,7 @@ test("no back scan follows a pick, a retake, a stored back or a back scan", asyn
 });
 
 test("after the chain Cancel then Discard saves nothing, and recognition ran once per side", async () => {
-  acquire.mockResolvedValueOnce(front).mockImplementationOnce(() => new Promise((r) => setTimeout(() => r(backPhoto), 50)));
+  acquire.mockResolvedValueOnce(front).mockImplementationOnce(() => new Promise((r) => setTimeout(() => r(backPhoto), 50))); // the delay stands in for the user taking the back photo
   const ports = createFakePorts();
   const recognize = vi.spyOn(ports.ocr, "recognize");
   const onCancel = vi.fn();
@@ -280,6 +280,19 @@ test("after the chain Cancel then Discard saves nothing, and recognition ran onc
   click("Discard");
   expect(onCancel).toHaveBeenCalledTimes(1);
   expect(onSave).not.toHaveBeenCalled();
+});
+
+test("a back take already under way is not doubled by the chain", async () => {
+  let resolveFront!: (p: CapturedPhoto) => void;
+  acquire.mockImplementationOnce(() => new Promise((r) => (resolveFront = r))).mockImplementationOnce(() => new Promise(() => {}));
+  renderForm();
+  scanFront();
+  click("Add back photo");
+  click("Scan back");
+  await vi.waitFor(() => expect(acquire).toHaveBeenCalledTimes(2));
+  await act(async () => resolveFront(front));
+  await screen.findByRole("button", { name: "Change front photo" });
+  expect(acquire).toHaveBeenCalledTimes(2);
 });
 
 test("back with the duplicate prompt open shows no discard dialog", async () => {
