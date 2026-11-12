@@ -91,11 +91,74 @@ test("a captured photo alone makes Cancel ask", async () => {
   const photo: CapturedPhoto = { full: new Blob(["f"]), thumb: new Blob(["t"]) };
   acquire.mockResolvedValue(photo);
   const onCancel = renderForm();
+  fireEvent.click(screen.getByRole("button", { name: "Add front photo" }));
   fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
-  await screen.findByRole("button", { name: "Retake front" });
+  await screen.findByRole("button", { name: "Change front photo" });
   cancel();
   expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
   expect(onCancel).not.toHaveBeenCalled();
+});
+
+test("removing a stored front photo then Cancel and Discard leaves the card unchanged", () => {
+  const stored = makeCard({ photos: { front: { fileId: "f", thumbId: "t", name: "front.jpg" }, back: null } });
+  const before = structuredClone(stored);
+  const onCancel = renderForm(stored);
+  fireEvent.click(screen.getByRole("button", { name: "Change front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove front photo" }));
+  expect(screen.getByRole("button", { name: "Add front photo" })).toBeTruthy();
+  cancel();
+  expect(screen.getByRole("alertdialog", { name: "Discard changes?" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  expect(onCancel).toHaveBeenCalledTimes(1);
+  expect(stored).toEqual(before);
+});
+
+test("removing a capture on the add form leaves the form not dirty", async () => {
+  acquire.mockResolvedValue({ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto);
+  const onCancel = renderForm();
+  fireEvent.click(screen.getByRole("button", { name: "Add front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Change front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove front photo" }));
+  cancel();
+  expect(onCancel).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+});
+
+test("saving after Remove hands null for that side to onSave", async () => {
+  const stored = makeCard({ photos: { front: { fileId: "f", thumbId: "t", name: "front.jpg" }, back: null } });
+  const onSave = vi.fn(async () => {});
+  render(
+    <PortsProvider ports={createFakePorts()}>
+      <CardForm card={stored} cards={[]} onSave={onSave} onCancel={() => {}} />
+    </PortsProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Change front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Save" }));
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalled());
+  expect((onSave.mock.calls[0] as unknown[])[1]).toEqual({ front: null });
+});
+
+test("Identify with Claude sends no front photo after the stored front was removed", async () => {
+  const stored = makeCard({ photos: { front: { fileId: "f", thumbId: "t", name: "front.jpg" }, back: null } });
+  const ports = createFakePorts();
+  const recognize = vi.spyOn(ports.claude, "recognize");
+  const back: CapturedPhoto = { full: new Blob(["b"]), thumb: new Blob(["bt"]) };
+  acquire.mockResolvedValue(back);
+  render(
+    <PortsProvider ports={ports}>
+      <CardForm card={stored} cards={[]} onSave={async () => {}} onCancel={() => {}} />
+    </PortsProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Change front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Add back photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Scan back" }));
+  await screen.findByRole("button", { name: "Change back photo" });
+  fireEvent.click(screen.getByRole("button", { name: "Identify with Claude" }));
+  await vi.waitFor(() => expect(recognize).toHaveBeenCalledTimes(1));
+  expect(recognize).toHaveBeenCalledWith({ front: undefined, back: back.full });
 });
 
 test("Keep editing returns focus to Cancel, by tap and by back", () => {
@@ -124,11 +187,12 @@ test("Discard on the edit form leaves the stored card unchanged", () => {
 test("the photo stays attached after Keep editing", async () => {
   acquire.mockResolvedValue({ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto);
   renderForm();
+  fireEvent.click(screen.getByRole("button", { name: "Add front photo" }));
   fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
-  await screen.findByRole("button", { name: "Retake front" });
+  await screen.findByRole("button", { name: "Change front photo" });
   cancel();
   fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
-  expect(screen.getByRole("button", { name: "Retake front" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Change front photo" })).toBeTruthy();
 });
 
 test("back with the duplicate prompt open shows no discard dialog", async () => {

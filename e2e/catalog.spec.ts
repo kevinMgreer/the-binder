@@ -154,6 +154,15 @@ test("Add a duplicate offers to increase the existing quantity", async ({ page }
   await expect(rows(page).first()).toContainText("×2");
 });
 
+test("The duplicate prompt is in view when Save is tapped at the top of the form", async ({ page }) => {
+  await addCard(page, base);
+  await page.getByRole("button", { name: "Add card" }).click();
+  await fillCard(page, base);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Increase quantity" })).toBeInViewport({ ratio: 1 });
+});
+
 test("Edit a card updates the notes and the last-edited time", async ({ page }) => {
   await addCard(page, base);
   await rows(page).first().click();
@@ -170,7 +179,7 @@ test("Delete a card removes it after confirmation", async ({ page }) => {
   await addCard(page, base);
   await rows(page).first().click();
   await page.getByRole("button", { name: "Delete" }).click();
-  await page.getByRole("button", { name: "Confirm delete" }).click();
+  await page.getByRole("alertdialog", { name: "Delete card" }).getByRole("button", { name: "Delete" }).click();
   await expect(rows(page)).toHaveCount(0);
   await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });

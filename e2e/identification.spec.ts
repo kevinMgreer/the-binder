@@ -22,6 +22,7 @@ async function configure(page: Page, which: "ocr" | "claude", result: object) {
 async function scanFront(page: Page) {
   await setNextPhoto(page);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByRole("button", { name: "Add front photo" }).click();
   await page.getByRole("button", { name: "Scan front" }).click();
   await expect(page.getByAltText("Front photo")).toBeVisible();
 }

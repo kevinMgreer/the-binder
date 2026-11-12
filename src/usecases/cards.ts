@@ -12,11 +12,12 @@ export async function saveCard({ collection, photos: store }: Deps, card: Card, 
   let next = card;
   for (const side of SIDES) {
     const photo = photos[side];
-    if (!photo) continue;
+    if (photo === undefined) continue;
     const old = (await collection.get(card.id))?.photos[side];
     for (const id of [old?.fileId, old?.thumbId]) if (id) await store.queueDelete(id);
-    await store.saveCaptured(card.id, side, photo);
-    next = { ...next, photos: { ...next.photos, [side]: { fileId: null, thumbId: null, name: null } } };
+    // shortcut: a removed photo's local blobs stay until eviction or sign-out; add PhotoStore.remove if they matter.
+    if (photo) await store.saveCaptured(card.id, side, photo);
+    next = { ...next, photos: { ...next.photos, [side]: photo && { fileId: null, thumbId: null, name: null } } };
   }
   await collection.put(next);
 }

@@ -186,7 +186,7 @@ A cream-and-navy neutral world. Status is a single danger red.
 - **Panel** (panel #f3ecdc / night-panel #17233f): stat tables, sheets, dialogs, banners, bottom nav, zoom view. In light it equals the ground; in dark it is one step lighter navy.
 - **Card Ink** (ink #1c2b4a / night-ink #f3ecdc): all text, borders, chips, badge fill and the focus ring.
 - **Muted Ink** (ink-muted #4a5670 / night-ink-muted #c2bcae): labels, placeholders, hints, inactive nav, secondary row text.
-- **Keyline** (rule #1c2b4a8c / night-rule #f3ecdc4d): thin rules between table cells, list rows, facts, sheet edges and the danger-zone divider.
+- **Keyline** (rule #1c2b4a8c / night-rule #f3ecdc4d): thin rules between table cells, list rows, facts, sheet edges and the divider above Sign out in settings.
 - **Frame Stock** (frame #f3ecdc, both themes): the matte of a photo frame.
 - **Print Placeholder** (placeholder #d8d1bf / night-placeholder #2a3756): the empty photo area and the keyline round a photo.
 - **Scrim** (scrim #1c2b4a66 / night-scrim #000000a6): the sheet backdrop only.
@@ -225,7 +225,7 @@ A cream-and-navy neutral world. Status is a single danger red.
 
 ## Layout
 
-Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm runs on the 4px scale plus named tokens: `--gap-section` 32 between sections, `--gap-field` 24 between form fields, `--gap-label` 8 from a label to its field, `--pad-cell` 16 inside stat cells, team rows and fact rows, `--pad-row` 16 between a list thumbnail and its text (list rows are padded 0 0 8px so they stay 100px), `--gap-frame` 12 between Recently added frames, `--gap-caption` 8 from frame to caption. Related controls sit 8px apart; the danger zone is separated by 32px plus a keyline.
+Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm runs on the 4px scale plus named tokens: `--gap-section` 32 between sections, `--gap-field` 24 between form fields, `--gap-label` 8 from a label to its field, `--pad-cell` 16 inside stat cells, team rows and fact rows, `--pad-row` 16 between a list thumbnail and its text (list rows are padded 0 0 8px so they stay 112px), `--gap-frame` 12 between Recently added frames, `--gap-caption` 8 from frame to caption. Related controls sit 8px apart; the danger zone is separated by 32px plus a keyline.
 
 The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). Add card is the middle item of that bar, so there is no separate button or band; the list scroller and the dashboard reserve the room beneath so their last row clears the bar. Where there is no bottom navigation (form, detail, Settings) a fixed, touch-through strip of the bottom-inset height in the ground colour (`body::after`) sits under the system navigation buttons so scrolled content never shows behind them; the bottom bar paints over it.
 
@@ -254,7 +254,7 @@ Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons,
 ### Buttons
 - **Shape:** frame radius (6px), min 48x48, 16px horizontal padding, transparent with a 1px ink border and ink text, weight 500.
 - **Primary:** Ink fill and border, ground-coloured text, Inter 600 at 1rem, frame radius, 48px high. One per screen footer or sheet footer; in a row it takes the remaining width.
-- **Danger:** no border, Danger text, weight 600; sits apart under a keyline in the danger zone, left-aligned.
+- **Danger:** Danger text, weight 600, no border by default (Sign out stays apart under a keyline in settings). On the card detail screen Delete is the outlined variant (`.danger.outline`: Danger text and 1px Danger border, transparent background) at the left of the action row, and Edit, the filled primary, at the right; both share the row equally with the same 48px height and frame radius, like Cancel left, Save right.
 - **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset.
 - **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a 24px plus in a 48x32 ink-filled frame with the frame radius (larger than the 24px icons beside it), ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
 
@@ -282,19 +282,19 @@ The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.
 
 ### Frames and photos
-Trading-card frame as described in Shapes. List rows use a 67px slot, dashboard recents fill their column, form photo slots are 96px high, detail thumbnails 140px high. Without a photo the frame shows the Print Placeholder. A tapped photo opens a 60vh zoom panel with the image contained.
+Trading-card frame as described in Shapes. List rows use a 96px slot, dashboard recents fill their column, the form holds one `.photo-tiles` row with a Front tile and a Back tile side by side, each a frame 96px high (an empty tile shows a camera icon and "Front" or "Back" over the placeholder; its name is "Add front photo" or "Change front photo" once filled), detail photos 200px high, showing the full photo once it is stored on the device (the thumbnail until then). Without a photo the frame shows the Print Placeholder. A tapped photo opens a 60vh zoom panel with the image contained.
 
 ### Inputs / Fields
-Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1px ink bottom border, no radius, no box, min 48px, 8px by 12px padding; textarea min 96px. Label above in the uppercase label style; placeholder in Muted Ink. Invalid fields get a Danger bottom border and a Danger label-size message. Checkbox is 24px with ink accent in a 48px row. The search label is visually hidden but present.
+Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1px ink bottom border, no radius, no box, min 48px, 8px by 12px padding; textarea min 96px. Label above in the uppercase label style; placeholder in Muted Ink. Invalid fields get a Danger bottom border and a Danger label-size message. Checkbox is 24px with ink accent in a 48px row. The search label is visually hidden but present. On the add and edit forms Cancel and Save live in a sticky form bar (`.form-bar`): panel background, 1px rule along its top, pinned above the system navigation bar (`--inset-bottom`) while the form scrolls, and back in the flow at the form's end so the last field clears it. The save-blocked message sits inside the bar directly above the buttons; `scroll-padding-bottom` keeps a focused field clear of the bar.
 
 ### List row
-Full-width borderless button with a keyline beneath, the frame slot at the left and two lines of text: player (body, weight 500, single-line ellipsis) with the Tag at the right end, and one quiet label-size line "year set, number" continuing with parallel, grade and quantity. The line never wraps: the extras shrink first, then the set, never the number. Row height 100px.
+Full-width borderless button with a keyline beneath, the frame slot at the left and two lines of text: player (body, weight 500, single-line ellipsis) with the Tag at the right end, and one quiet label-size line "year set, number" continuing with parallel, grade and quantity. The line never wraps: the extras shrink first, then the set, never the number. Row height 112px.
 
 ### Card facts
-Detail screen, top to bottom: the player as a Title with the Tag beside it, a 1px rule right under the title row, a muted subtitle, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines above and between, 16px row padding (`--pad-cell`), rows only for what the card has), the photo thumbnails, a muted last-edited line, Edit as the full-width primary button, then Delete apart under a keyline.
+Detail screen, top to bottom: a header block (`header.detail-head`, one left edge, room to breathe: 16px from the top of the content to the title, `--space-2` (8px) between the title and the line, `--space-4` (16px) before the rule): the player as a Title with the Tag at the right end of its first line (a long name wraps left of the Tag) and one muted "year set, number" line; then a 1px rule under the block, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines between rows and below, none above after the rule, 16px row padding (`--pad-cell`), rows only for what the card has, Team and Parallel among them, never a second subtitle line), the photo thumbnails, a muted last-edited line, then one action row: Delete at the left as a danger-outlined button and Edit at the right as the primary button, equal in width and height.
 
 ### Sheets and dialogs
-Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. Confirm and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
+Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. A photo tile opens a compact sheet titled "Front photo" or "Back photo" with full-width actions ("Scan front", "Pick front from photos"; once filled "Retake front", "Pick front from photos" and a danger "Remove front photo"); its Close button is the cancel. The Delete card confirmation is a centred panel (keyline border, frame radius, 320px wide at most) over the scrim, with Keep focused and a danger Delete; the scrim, Escape and Android back all mean Keep. Other confirm and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
 
 ### Navigation
 The dashboard is the start destination: Android's back closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search, filters and sort. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, Settings to where it was opened from). Forms keep Cancel and sheets keep Close.
@@ -307,7 +307,7 @@ The dashboard is the start destination: Android's back closes the app from there
 - **Do** put photos in a 2.5:3.5 frame (3.5:2.5 for landscape) and never crop the photo.
 - **Do** separate sections with whitespace, and set numbers in Roboto Slab.
 - **Do** build new data lists as ruled tables (1px keylines) and new fields as ruled lines.
-- **Do** keep the ink fill for the one primary action and no decorative red.
+- **Do** keep the ink fill for the one primary action and no decorative red, and keep the confirming action (Save) at the bottom, in the sticky form bar.
 - **Do** let the phone pick light or dark, and bundle any new font inside the app.
 
 ### Don't:
@@ -321,4 +321,4 @@ The dashboard is the start destination: Android's back closes the app from there
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
 - Fixed sizes are tokens: `--size-tile-min` 72px (stat cell button), `--size-team-min` 56px (Top teams row), `--size-nav-add-w` 48px and `--size-nav-add-h` 32px (the Add frame), `--size-nav-icon` 24px (its plus).
-- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.
+- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 200px detail photo, 96px photo slot, list slot and textarea, 60vh zoom, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.

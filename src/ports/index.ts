@@ -40,7 +40,8 @@ export interface CapturedPhoto {
   thumb: Blob;
 }
 
-export type Photos = Partial<Record<CardSide, CapturedPhoto>>;
+/** `undefined` leaves a side alone; `null` removes its stored photo. */
+export type Photos = Partial<Record<CardSide, CapturedPhoto | null>>;
 
 export interface PendingUpload extends CapturedPhoto {
   cardId: string;

@@ -200,7 +200,7 @@ export class SyncEngine {
     const { collection, remote, photos } = this.deps;
     for (const upload of await photos.pendingUploads()) {
       const card = await collection.get(upload.cardId);
-      if (!card || card.deletedAt !== null) {
+      if (!card || card.deletedAt !== null || card.photos[upload.side] === null) {
         await photos.markUploaded(upload.cardId, upload.side, upload.revision);
         continue;
       }
@@ -208,6 +208,13 @@ export class SyncEngine {
       const thumbId = await remote.uploadPhoto(thumbFileName(card, upload.side), upload.thumb, "thumb");
 
       const fresh = (await collection.get(upload.cardId)) ?? card;
+      if (fresh.deletedAt !== null || fresh.photos[upload.side] === null) {
+        // Removed or deleted while the upload ran: the new Drive files are orphans.
+        await photos.queueDelete(fileId);
+        await photos.queueDelete(thumbId);
+        await photos.markUploaded(upload.cardId, upload.side, upload.revision);
+        continue;
+      }
       const old = fresh.photos[upload.side];
       for (const id of [old?.fileId, old?.thumbId]) if (id) await photos.queueDelete(id);
       await collection.put({

@@ -263,6 +263,23 @@ for (const size of PHONES) {
       expect(ph.height).toBeGreaterThan(ph.width);
     });
 
+    test("Bigger thumbnail: a portrait frame is 96 dp tall", async ({ page }) => {
+      await page.evaluate(async () => {
+        const ports = (window as unknown as Win).__ports;
+        const { makeCard } = await import("/src/domain/fixtures.ts");
+        const card = makeCard({ player: "Portrait Pat", cardNumber: "9", photos: { front: { fileId: "f", thumbId: "t" }, back: null } });
+        const canvas = new OffscreenCanvas(320, 448);
+        canvas.getContext("2d")!.fillRect(0, 0, 320, 448);
+        await ports.photos.cacheThumb(card.id, "front", await canvas.convertToBlob({ type: "image/webp" }));
+        await ports.collection.putSynced([card]);
+      });
+      await page.reload();
+      await openCollection(page);
+      const row = page.getByTestId("card-row").filter({ hasText: "Portrait Pat" });
+      await expect(row.locator("img.thumb")).toBeVisible();
+      expect(Math.abs((await row.locator(".frame").boundingBox())!.height - 96)).toBeLessThanOrEqual(2);
+    });
+
     test("Each sync state shows its wording in the header", async ({ page }) => {
       const states: [object, string][] = [
         [{ state: "syncing", pending: 0 }, "Syncing…"],
@@ -344,17 +361,110 @@ test.describe("destructive actions stay apart", () => {
     return Math.max(y.y - (x.y + x.height), x.y - (y.y + y.height), y.x - (x.x + x.width), x.x - (y.x + y.width));
   };
 
-  test("Delete is not beside Edit", async ({ page }) => {
+  const danger = (page: Page) =>
+    page.evaluate(() => {
+      const probe = Object.assign(document.createElement("i"), { style: "color: var(--color-danger)" });
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Delete is a danger-outlined button left of Edit, matching Edit's size (${scheme})`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await seed(page, CARDS);
+      await page.getByTestId("card-row").filter({ hasText: "Acuña" }).click();
+      const edit = page.getByRole("button", { name: "Edit", exact: true });
+      const del = page.getByRole("button", { name: "Delete", exact: true });
+      const [e, d] = await Promise.all([edit.boundingBox(), del.boundingBox()]);
+      expect(Math.abs(e!.y + e!.height / 2 - (d!.y + d!.height / 2))).toBeLessThan(4);
+      expect(d!.x + d!.width).toBeLessThanOrEqual(e!.x);
+      expect(await gap(edit, del)).toBeGreaterThanOrEqual(8);
+      expect(Math.abs(e!.height - d!.height)).toBeLessThanOrEqual(1);
+      expect(Math.abs(e!.width - d!.width)).toBeLessThanOrEqual(1);
+      expect(await css(del, "border-top-left-radius")).toBe(await css(edit, "border-top-left-radius"));
+      const red = await danger(page);
+      expect(await css(del, "color")).toBe(red);
+      expect(await css(del, "border-top-color")).toBe(red);
+      expect(await css(del, "background-color")).toBe("rgba(0, 0, 0, 0)");
+      expect(await css(edit, "background-color")).not.toBe("rgba(0, 0, 0, 0)");
+      await notAccent(page, del);
+      await expect(page.getByText("13/150")).toBeVisible();
+    });
+  }
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Header breathes (${scheme})`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await seed(page, [{ ...CARDS[0], team: "Atlanta Braves" }]);
+      await page.getByTestId("card-row").first().click();
+      const title = page.getByRole("heading", { name: "Ronald Acuña Jr." });
+      const quiet = page.getByTestId("subtitle");
+      const [s, t, q, r] = await Promise.all(
+        [page.locator("section").first(), title, quiet, page.locator("section .title-rule")].map((l) => l.boundingBox()),
+      );
+      expect(Math.abs(t!.x - q!.x)).toBeLessThanOrEqual(1);
+      expect(t!.y - s!.y).toBeGreaterThanOrEqual(16);
+      expect(Math.abs(q!.y - (t!.y + t!.height) - 8)).toBeLessThanOrEqual(2);
+      expect(r!.y - (q!.y + q!.height)).toBeGreaterThanOrEqual(12);
+      await expect(page.getByTestId("team-line")).toHaveCount(0);
+    });
+  }
+
+  test("Team and Parallel are fact rows", async ({ page }) => {
     await page.goto("/");
-    await seed(page, CARDS);
-    await page.getByTestId("card-row").filter({ hasText: "Acuña" }).click();
-    const del = page.getByRole("button", { name: "Delete", exact: true });
-    expect(await gap(page.getByRole("button", { name: "Edit", exact: true }), del)).toBeGreaterThanOrEqual(24);
-    await notAccent(page, del);
-    await expect(page.getByText("13/150")).toBeVisible();
+    await seed(page, [{ ...CARDS[0], team: "Atlanta Braves" }]);
+    await page.getByTestId("card-row").first().click();
+    const facts = page.getByTestId("facts");
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel", "Quantity"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold", "1"]);
   });
 
-  test("Detail photos are thumbnails: Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {
+  test("Long names wrap cleanly", async ({ page }) => {
+    await page.goto("/");
+    const player = "Bartholomew Maximilian Featherstonehaugh-Villanueva III";
+    await seed(page, [{ ...CARDS[0], player, set: "Topps Chrome Update Series Sapphire Edition Anniversary", team: "Los Angeles Angels of Anaheim" }]);
+    await page.getByTestId("card-row").first().click();
+    const title = page.getByRole("heading", { name: player });
+    const [t, b] = await Promise.all([title, page.locator("section .tag")].map((l) => l.boundingBox()));
+    expect(t!.height).toBeGreaterThan(40);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const lineHeight = parseFloat(await css(title, "line-height"));
+    expect(b!.y + b!.height).toBeLessThanOrEqual(t!.y + lineHeight + 4);
+    expect(b!.x).toBeGreaterThanOrEqual(t!.x + t!.width - 1);
+  });
+
+  test("Header without team or parallel", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ player: "Plain Card", cardNumber: "1", team: "", parallel: null }]);
+    await page.getByTestId("card-row").first().click();
+    await expect(page.getByTestId("subtitle")).toBeVisible();
+    await expect(page.getByTestId("team-line")).toHaveCount(0);
+    expect(await page.getByTestId("facts").locator("dt").allTextContents()).not.toContain("Team");
+    expect(await page.getByTestId("facts").locator("dt").allTextContents()).not.toContain("Parallel");
+  });
+
+  test("Dialog over the screen", async ({ page }) => {
+    await page.goto("/");
+    const notes = "A long note about this card and where it came from. ".repeat(12);
+    await seed(page, [{ ...CARDS[0], notes, photos: { front: { fileId: "f", thumbId: "ft" }, back: { fileId: "b", thumbId: "bt" } } }]);
+    await page.getByTestId("card-row").first().click();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Delete card" });
+    await expect(dialog).toBeInViewport({ ratio: 1 });
+    const box = (await dialog.boundingBox())!;
+    expect(Math.abs(box.x + box.width / 2 - 360 / 2)).toBeLessThanOrEqual(8);
+    expect(Math.abs(box.y + box.height / 2 - 800 / 2)).toBeLessThanOrEqual(8);
+    await expect(dialog.getByRole("button", { name: "Keep" })).toBeFocused();
+    expect(await css(dialog.getByRole("button", { name: "Delete", exact: true }), "color")).toBe(await danger(page));
+  });
+
+  test("Two portrait photos fill the row: 200 dp photos, Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(async () => {
       const ports = (window as unknown as Win).__ports;
@@ -375,9 +485,15 @@ test.describe("destructive actions stay apart", () => {
     const thumb = page.getByRole("button", { name: "View front photo" });
     await expect(thumb).toBeVisible();
     const box = (await thumb.boundingBox())!;
-    expect(box.height).toBeGreaterThanOrEqual(130);
-    expect(box.height).toBeLessThanOrEqual(150);
+    expect(box.height).toBeGreaterThanOrEqual(190);
+    expect(box.height).toBeLessThanOrEqual(210);
     await expect(page.getByRole("button", { name: "View back photo" })).toBeVisible();
+    // Two portrait photos fill the row: 200 dp within 4 dp, side by side, no overlap.
+    const backBox = (await page.getByRole("button", { name: "View back photo" }).boundingBox())!;
+    expect(Math.abs(box.height - 200)).toBeLessThanOrEqual(4);
+    expect(Math.abs(backBox.height - 200)).toBeLessThanOrEqual(4);
+    expect(Math.abs(backBox.y - box.y)).toBeLessThanOrEqual(1);
+    expect(backBox.x).toBeGreaterThanOrEqual(box.x + box.width);
     await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
     const y = async (l: Locator) => (await l.boundingBox())!.y;
     expect(await y(page.getByTestId("facts"))).toBeLessThan(await y(thumb));
@@ -438,7 +554,7 @@ test.describe("polish after the second phone review", () => {
     const row = page.getByTestId("card-row").first();
     const quiet = row.locator(".quiet");
     expect((await quiet.boundingBox())!.height).toBeLessThan(24);
-    expect((await row.boundingBox())!.height).toBeLessThanOrEqual(100);
+    expect((await row.boundingBox())!.height).toBeLessThanOrEqual(112);
     const num = row.locator(".num");
     expect((await num.boundingBox())!.x + (await num.boundingBox())!.width).toBeLessThanOrEqual((await row.boundingBox())!.x + (await row.boundingBox())!.width);
     await expect(num).toBeVisible();
@@ -480,7 +596,7 @@ test.describe("polish after the second phone review", () => {
     expect(await y(subtitle)).toBeLessThan(await y(facts));
     expect(await y(facts)).toBeLessThan(await y(edited));
     expect(await y(edited)).toBeLessThan(await y(edit));
-    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 24 - 1);
+    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(140);
     expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
@@ -505,6 +621,9 @@ async function controls(page: Page) {
           const c = p.getBoundingClientRect();
           clipped ||= r.top < c.top - 0.5 || r.bottom > c.bottom + 0.5 || r.left < c.left - 0.5 || r.right > c.right + 0.5;
         }
+        // A field under the sticky form bar is covered, not tappable, until it scrolls clear.
+        const bar = el.closest(".form-bar") ? null : document.querySelector(".form-bar")?.getBoundingClientRect();
+        clipped ||= !!bar && r.bottom > bar.top && r.top < bar.bottom;
         return { name: (el.textContent || el.getAttribute("aria-label") || el.tagName).trim().slice(0, 24), x: r.x, y: r.y, width: r.width, height: r.height, clipped };
       });
   }, CONTROLS) as Promise<(Box & { name: string; clipped: boolean })[]>;
@@ -1074,7 +1193,7 @@ test.describe("Card-back look", () => {
       expect(await scan()).toEqual([]);
       await page.getByRole("button", { name: "Delete", exact: true }).click();
       expect(await scan()).toEqual([]);
-      await page.getByRole("button", { name: "Keep" }).click();
+      await page.getByRole("alertdialog", { name: "Delete card" }).getByRole("button", { name: "Keep" }).click();
       await page.getByRole("button", { name: "Edit", exact: true }).click();
       expect(await scan()).toEqual([]);
       await page.getByRole("button", { name: "Cancel" }).click();
@@ -1304,12 +1423,12 @@ test.describe("Card-back look", () => {
     expect(await teams.first().evaluate((e) => getComputedStyle(e, "::before").borderBottomWidth)).toBe("1px");
   });
 
-  test("Ruled, not boxed: list rows are 100 dp with a 1 px rule and no gradient", async ({ page }) => {
+  test("Ruled, not boxed: list rows are 112 dp with a 1 px rule and no gradient", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
     const rows = page.getByTestId("card-row");
     for (const r of [rows.nth(0), rows.nth(1)]) {
-      expect((await r.boundingBox())!.height).toBe(100);
+      expect((await r.boundingBox())!.height).toBe(112);
       expect(await r.evaluate((e) => getComputedStyle(e, "::after").borderBottomWidth)).toBe("1px");
       expect(await css(r.getByRole("button"), "background-image")).toBe("none");
       expect(await css(r.getByRole("button"), "box-shadow")).toBe("none");
@@ -1369,4 +1488,26 @@ test.describe("Card-back look", () => {
     });
     expect(rule).toMatch(/^rgba\(28, 43, 74, 0\.5\d*\)$/);
   });
+});
+
+test.describe("Photo tiles on the form", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Front and Back tiles share a row, 96 dp tall, with 48 dp chooser buttons in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      const [front, back] = await Promise.all(["Add front photo", "Add back photo"].map((n) => page.getByRole("button", { name: n }).boundingBox()));
+      expect(Math.abs(front!.y - back!.y)).toBeLessThanOrEqual(1);
+      expect(back!.x).toBeGreaterThan(front!.x + front!.width - 1);
+      for (const box of [front!, back!]) expect(Math.abs(box.height - 96)).toBeLessThanOrEqual(2);
+      for (const side of ["Front", "Back"]) {
+        await page.getByRole("button", { name: `Add ${side.toLowerCase()} photo` }).click();
+        const sheet = page.getByRole("dialog", { name: `${side} photo` });
+        for (const b of await sheet.getByRole("button").all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(47.5);
+        await sheet.getByRole("button", { name: "Close" }).click();
+      }
+    });
+  }
 });
