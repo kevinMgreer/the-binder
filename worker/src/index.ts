@@ -57,12 +57,15 @@ export default {
     if (images.reduce((sum, f) => sum + f.size, 0) > maxBytes) return reply(413, { error: "too_large" });
 
     const key = `count:${new Date().toISOString().slice(0, 10)}`;
-    const used = Number((await env.COUNTER.get(key)) ?? 0);
-    if (used >= Number(env.DAILY_LIMIT ?? DEFAULT_DAILY_LIMIT)) return reply(429, { error: "daily_limit" });
-    await env.COUNTER.put(key, String(used + 1), { expirationTtl: COUNTER_TTL_SECONDS });
+    const read = async () => Number((await env.COUNTER.get(key)) ?? 0);
+    if ((await read()) >= Number(env.DAILY_LIMIT ?? DEFAULT_DAILY_LIMIT)) return reply(429, { error: "daily_limit" });
 
     try {
-      return reply(200, await identifyCard(images, env));
+      const suggestion = await identifyCard(images, env);
+      // Charged only after Claude answered, so failures cost no slot. KV is eventually consistent and has no atomic
+      // increment: parallel requests can overshoot, so this cap is best-effort. The Anthropic spend limit is the hard cap.
+      await env.COUNTER.put(key, String((await read()) + 1), { expirationTtl: COUNTER_TTL_SECONDS });
+      return reply(200, suggestion);
     } catch {
       return reply(502, { error: "upstream" });
     }
