@@ -185,19 +185,26 @@ export class SyncEngine {
       photos.pendingDeletes(),
     ]);
     if (pending.length + uploads.length + deletes.length === 0 && version !== null && version === this.lastVersion) {
+      this.thumbs = this.fetchThumbs();
       return "done";
     }
 
-    await this.uploadPhotos();
+    // Merge before uploading: an upload stamps the card with now, so on a stale copy it would beat a newer edit from another device.
     const pulled = await this.pullMergePush();
     if (pulled === "needs-decision") return pulled;
+    if (await this.uploadPhotos()) {
+      const again = await this.pullMergePush();
+      if (again === "needs-decision") return again;
+    }
     await this.deleteTrashedPhotos();
-    this.thumbs = this.fetchThumbs(pulled);
+    this.thumbs = this.fetchThumbs();
     return "done";
   }
 
+  /** Returns whether any card was changed, so the caller pushes it. */
   private async uploadPhotos() {
     const { collection, remote, photos } = this.deps;
+    let changed = false;
     for (const upload of await photos.pendingUploads()) {
       const card = await collection.get(upload.cardId);
       if (!card || card.deletedAt !== null || card.photos[upload.side] === null) {
@@ -223,7 +230,9 @@ export class SyncEngine {
         updatedAt: this.now().toISOString(),
       });
       await photos.markUploaded(upload.cardId, upload.side, upload.revision);
+      changed = true;
     }
+    return changed;
   }
 
   private async pullMergePush(): Promise<Card[] | "needs-decision"> {
@@ -292,8 +301,10 @@ export class SyncEngine {
     }
   }
 
-  private async fetchThumbs(cards: Card[]) {
-    const { remote, photos } = this.deps;
+  /** Every live card with a thumbnail in Drive and none here: a failed download is retried by the next sync. */
+  private async fetchThumbs() {
+    const { collection, remote, photos } = this.deps;
+    const cards = (await collection.list()).filter((card) => card.deletedAt === null);
     const wanted = cards.flatMap((card) =>
       SIDES.map((side) => ({ cardId: card.id, side, thumbId: card.photos[side]?.thumbId })),
     );
