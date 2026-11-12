@@ -42,7 +42,7 @@ The system SHALL, when the user taps Cancel on a form that holds entries, show a
 #### Scenario: Centred over the bar
 - **GIVEN** the user typed "Hank Aaron" on the add form on a 360 by 800 phone with a 48 dp bottom inset, in the light theme and in the dark theme
 - **WHEN** the user taps Cancel
-- **THEN** the "Discard this card?" dialog is fully in the viewport with its centre within 8 dp of the viewport's centre, the point at the centre of the Save button belongs to the scrim and not to the bar, and the dialog's Discard text is in the danger colour
+- **THEN** the "Discard this card?" dialog is fully in the viewport with its centre within 8 dp of the centre of the area above the bottom inset, the point at the centre of the Save button belongs to the scrim and not to the bar, and the dialog's Discard text is in the danger colour
 
 #### Scenario: Scrim tap keeps editing
 - **GIVEN** the discard confirmation is showing on the add form with "Hank Aaron" typed
@@ -101,7 +101,7 @@ The system SHALL, when Save on the add form finds a card already in the collecti
 #### Scenario: Prompt centred over the bar
 - **GIVEN** a card matching the typed one is already in the collection, on a 360 by 800 phone, in the light theme and in the dark theme
 - **WHEN** the user taps Save at the top of the add form
-- **THEN** a "Duplicate card" alertdialog is fully in the viewport with its centre within 8 dp of the viewport's centre, its description reads "This card is already in your collection (1 owned).", its three buttons are in view with Increase quantity focused, and the point at the centre of the Save button belongs to the scrim
+- **THEN** a "Duplicate card" alertdialog is fully in the viewport with its centre within 8 dp of the centre of the area above the bottom inset, its description reads "This card is already in your collection (1 owned).", its three buttons are in view with Increase quantity focused, and the point at the centre of the Save button belongs to the scrim
 
 #### Scenario: Increase quantity still merges
 - **WHEN** the user taps Increase quantity in the prompt

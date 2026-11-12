@@ -25,6 +25,7 @@ async function openForm(page: Page, scheme: "light" | "dark", edit: boolean) {
 async function openDiscard(page: Page, scheme: "light" | "dark" = "light") {
   await openForm(page, scheme, false);
   await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.getByRole("button", { name: "Cancel" }).click();
   return page.getByRole("alertdialog", { name: "Discard this card?" });
 }
@@ -43,6 +44,7 @@ async function openDuplicate(page: Page, scheme: "light" | "dark" = "light") {
   for (const [label, value] of [["Player", "Ronald Acuña Jr."], ["Year", "2024"], ["Set", "Series 1"], ["Card number", "27"]]) {
     await page.getByLabel(label, { exact: true }).fill(value);
   }
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.getByRole("button", { name: "Save", exact: true }).click();
   return page.getByRole("alertdialog", { name: "Duplicate card" });
 }
@@ -112,6 +114,8 @@ test.describe("Form prompts are modal dialogs", () => {
   test("The form behind is out of reach", async ({ page }) => {
     const dialog = await openDiscard(page);
     await page.getByLabel("Player", { exact: true }).evaluate((el) => (el as HTMLElement).focus());
+    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    await page.locator(".form-bar").getByRole("button", { name: "Save", exact: true }).evaluate((el) => (el as HTMLElement).focus());
     expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
   });
 
