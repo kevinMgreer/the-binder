@@ -225,6 +225,7 @@ export class FakeAuthProvider implements AuthProvider {
     if (!this.user) throw new Error("Not signed in");
     return "fake-access-token";
   }
+  async dropAccessToken() {}
   async getIdToken() {
     if (!this.user) throw new Error("Not signed in");
     return "fake-id-token";

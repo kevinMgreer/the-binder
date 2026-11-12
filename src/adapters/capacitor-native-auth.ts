@@ -7,7 +7,7 @@ type Authorization = { accessToken: string; expiresInSeconds: number };
 interface BinderAuthPlugin {
   signIn(options: { serverClientId: string }): Promise<{ account: Account | null }>;
   silentSignIn(options: { serverClientId: string }): Promise<{ account: Account | null }>;
-  authorize(options: { scopes: string[]; interactive: boolean }): Promise<{ authorization: Authorization | null }>;
+  authorize(options: { scopes: string[]; interactive: boolean; email?: string }): Promise<{ authorization: Authorization | null }>;
   clearCredentialState(): Promise<void>;
   clearToken(options: { token: string }): Promise<void>;
 }

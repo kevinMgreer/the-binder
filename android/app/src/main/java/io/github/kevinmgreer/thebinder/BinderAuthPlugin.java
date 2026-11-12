@@ -1,5 +1,6 @@
 package io.github.kevinmgreer.thebinder;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.os.CancellationSignal;
@@ -97,7 +98,10 @@ public class BinderAuthPlugin extends Plugin {
             call.reject("Invalid scopes");
             return;
         }
-        AuthorizationRequest request = AuthorizationRequest.builder().setRequestedScopes(scopes).build();
+        AuthorizationRequest.Builder builder = AuthorizationRequest.builder().setRequestedScopes(scopes);
+        String email = call.getString("email", "");
+        if (!email.isEmpty()) builder.setAccount(new Account(email, "com.google"));
+        AuthorizationRequest request = builder.build();
         Identity.getAuthorizationClient(getActivity())
             .authorize(request)
             .addOnSuccessListener(result -> {

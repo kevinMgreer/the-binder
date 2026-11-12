@@ -85,6 +85,8 @@ Old OpenSpec task ids are in brackets. Items above that already say the same are
 - [ ] Dashboard, light and dark: six tiles; Recently added and Top teams look clean and read well; a team tap opens Cards filtered to it; a recent card opens and back returns to the dashboard. [refine-cards-and-dashboard 4.1, T-24]
 - [ ] Landscape photo shows landscape in the Cards list, portrait shows portrait, nothing cropped, long list scrolls smoothly. [refine 4.2, T-24]
 - [ ] "Synced" sits beside the gear on both screens; airplane-mode error wording shows whole; TalkBack reads the sync state through one background sync and one offline retry; waiting through both is also to judge whether the announcements are too chatty to live with (design open question). [refine 4.3, T-24]
+- [ ] Airplane-mode cold start: force-stop the app, open it offline; the dashboard and cards show and can be browsed, added and edited, without a sign-in screen (also note whether the launch waits noticeably on "checking"). Go online: the queued changes sync without signing in. [auth-resilience, T-51]
+- [ ] Two Google accounts on the phone: sign in with each in turn (sign out between); the Drive folder used is the signed-in account's, never the other one's. [auth-resilience, T-51]
 
 ### Card-Back look (restyle-card-back)
 

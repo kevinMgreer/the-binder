@@ -84,6 +84,8 @@ export interface AuthProvider {
   signOut(): Promise<void>;
   currentUser(): Promise<{ email: string } | null>;
   getAccessToken(): Promise<string>;
+  /** Forgets the cached access token so the next getAccessToken asks Google for a fresh one. */
+  dropAccessToken(): Promise<void>;
   getIdToken(): Promise<string>;
 }
 

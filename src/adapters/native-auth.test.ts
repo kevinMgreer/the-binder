@@ -55,7 +55,14 @@ beforeEach(() => {
     webClientId: "web-client-id",
     now: () => nowMs,
     fetch: fetchMock as unknown as typeof fetch,
+    storage: memoryStorage(new Map()),
   });
+});
+
+const memoryStorage = (map: Map<string, string>) => ({
+  getItem: (k: string) => map.get(k) ?? null,
+  setItem: (k: string, v: string) => void map.set(k, v),
+  removeItem: (k: string) => void map.delete(k),
 });
 
 async function signedIn() {
@@ -181,11 +188,6 @@ describe("sign out", () => {
 
 describe("remembered account (auth-resilience)", () => {
   let storage: Map<string, string>;
-  const mapStorage = () => ({
-    getItem: (k: string) => storage.get(k) ?? null,
-    setItem: (k: string, v: string) => void storage.set(k, v),
-    removeItem: (k: string) => void storage.delete(k),
-  });
 
   beforeEach(() => {
     storage = new Map();
@@ -193,7 +195,7 @@ describe("remembered account (auth-resilience)", () => {
       webClientId: "web-client-id",
       now: () => nowMs,
       fetch: fetchMock as unknown as typeof fetch,
-      storage: mapStorage(),
+      storage: memoryStorage(storage),
       silentTimeoutMs: 20,
     });
   });

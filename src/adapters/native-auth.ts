@@ -4,6 +4,7 @@ import { AuthExpiredError, type AuthProvider } from "../ports";
 export const DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive.file"];
 
 const REFRESH_MARGIN_MS = 60_000;
+const SILENT_TIMEOUT_MS = 4_000;
 
 export interface NativeAuthPlugin {
   /** Credential Manager account picker. Null when the user cancels. */
@@ -11,16 +12,22 @@ export interface NativeAuthPlugin {
   /** Sign in with an already authorized account and no UI. Null when there is none. */
   silentSignIn(opts: { serverClientId: string }): Promise<{ idToken: string; email: string } | null>;
   /** Drive authorization. `interactive` may show the consent screen. Null when refused. */
-  authorize(opts: { scopes: string[]; interactive: boolean }): Promise<{ accessToken: string; expiresInSeconds: number } | null>;
+  authorize(opts: { scopes: string[]; interactive: boolean; email: string }): Promise<{ accessToken: string; expiresInSeconds: number } | null>;
   clearCredentialState(): Promise<void>;
   /** Drops an access token from the Play services cache, which otherwise hands a revoked token back on the next authorize. */
   clearToken(opts: { token: string }): Promise<void>;
 }
 
+const EMAIL_KEY = "thebinder.email";
+
 interface Options {
   webClientId: string;
   now?: () => number;
   fetch?: typeof fetch;
+  /** Holds the signed-in email only, never a token. Defaults to localStorage. */
+  storage?: Pick<Storage, "getItem" | "setItem" | "removeItem">;
+  /** How long a launch waits for the silent path when an email is remembered. */
+  silentTimeoutMs?: number;
 }
 
 interface Token {
@@ -37,7 +44,7 @@ function jwtExpiry(token: string): number {
   }
 }
 
-/** Tokens live in memory only; nothing is written to storage. */
+/** Tokens live in memory only; storage holds just the email, so a launch without Google still knows the owner. */
 export class NativeGoogleAuthProvider implements AuthProvider {
   private user: { email: string } | null = null;
   private idToken?: Token;
@@ -47,12 +54,14 @@ export class NativeGoogleAuthProvider implements AuthProvider {
   private issued?: string;
   private now: () => number;
   private fetch: typeof fetch;
+  private storage: NonNullable<Options["storage"]>;
 
   constructor(
     private plugin: NativeAuthPlugin,
     private options: Options,
   ) {
     this.now = options.now ?? Date.now;
+    this.storage = options.storage ?? localStorage;
     this.fetch = options.fetch ?? ((...args) => fetch(...args));
   }
 
@@ -61,18 +70,37 @@ export class NativeGoogleAuthProvider implements AuthProvider {
     if (!account) return null;
     // After "Sign in again" the old token was rejected; without this the platform cache returns it again.
     await this.dropIssued();
-    const access = await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: true });
+    const access = await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: true, email: account.email });
     if (!access) return null;
     return this.startSession(account, access);
   }
 
   async currentUser() {
     if (this.user) return this.user;
+    const remembered = this.storage.getItem(EMAIL_KEY);
+    if (!remembered) return this.silentSession();
+    // Offline or refused: keep the owner signed in; getAccessToken renews lazily and raises AuthExpiredError if Google says no.
+    let timer: ReturnType<typeof setTimeout>;
+    const timeout = new Promise<null>((resolve) => {
+      timer = setTimeout(resolve, this.options.silentTimeoutMs ?? SILENT_TIMEOUT_MS, null);
+    });
+    const session = await Promise.race([this.silentSession(), timeout])
+      .catch(() => null)
+      .finally(() => clearTimeout(timer));
+    return session ?? (this.user = { email: remembered });
+  }
+
+  private async silentSession() {
     const account = await this.plugin.silentSignIn({ serverClientId: this.options.webClientId });
     if (!account) return null;
-    const access = await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: false });
+    const access = await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: false, email: account.email });
     if (!access) return null;
     return this.startSession(account, access);
+  }
+
+  async dropAccessToken() {
+    this.accessToken = undefined;
+    await this.dropIssued();
   }
 
   getAccessToken(): Promise<string> {
@@ -94,6 +122,7 @@ export class NativeGoogleAuthProvider implements AuthProvider {
   async signOut() {
     const token = this.accessToken?.value;
     this.user = null;
+    this.storage.removeItem(EMAIL_KEY);
     this.idToken = undefined;
     this.accessToken = undefined;
     if (token) {
@@ -127,6 +156,7 @@ export class NativeGoogleAuthProvider implements AuthProvider {
 
   private startSession(account: { idToken: string; email: string }, access: { accessToken: string; expiresInSeconds: number }) {
     this.user = { email: account.email };
+    this.storage.setItem(EMAIL_KEY, account.email);
     this.idToken = { value: account.idToken, expiresAt: jwtExpiry(account.idToken) };
     this.accessToken = { value: access.accessToken, expiresAt: this.now() + access.expiresInSeconds * 1000 };
     this.issued = access.accessToken;
@@ -134,7 +164,7 @@ export class NativeGoogleAuthProvider implements AuthProvider {
   }
 
   private async renewAccess(): Promise<string> {
-    const access = this.user && (await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: false }));
+    const access = this.user && (await this.plugin.authorize({ scopes: DRIVE_SCOPES, interactive: false, email: this.user.email }));
     if (!access) throw new AuthExpiredError("Sign in again");
     this.accessToken = { value: access.accessToken, expiresAt: this.now() + access.expiresInSeconds * 1000 };
     this.issued = access.accessToken;
