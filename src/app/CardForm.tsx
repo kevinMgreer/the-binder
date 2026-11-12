@@ -349,20 +349,6 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       <Field label="Notes">
         <textarea id={fieldId("Notes")} value={draft.notes} onChange={(e) => set("notes", e.target.value)} />
       </Field>
-      {errors.card && <p role="alert">{errors.card}</p>}
-      {blocked.length > 0 && (
-        <p role="alert" data-testid="save-blocked">
-          Can't save yet. Check: {blocked.join(", ")}.
-        </p>
-      )}
-      <div className="actions">
-        <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>
-          Cancel
-        </button>
-        <button type="submit" className="primary" disabled={preparing.front || preparing.back}>
-          Save
-        </button>
-      </div>
       {confirming && (
         <div role="alertdialog" aria-label={question}>
           <p>{question}</p>
@@ -379,6 +365,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
           <p>This card is already in your collection ({duplicate.existing.quantity} owned).</p>
           <button
             type="button"
+            autoFocus
             onClick={() =>
               onSave({
                 ...duplicate.existing,
@@ -397,6 +384,23 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
           </button>
         </div>
       )}
+      {/* Last in the flow, after the dialogs, so a dialog at the form's end scrolls fully above the sticky bar. */}
+      <div className="form-bar">
+        {errors.card && <p role="alert">{errors.card}</p>}
+        {blocked.length > 0 && (
+          <p role="alert" data-testid="save-blocked">
+            Can't save yet. Check: {blocked.join(", ")}.
+          </p>
+        )}
+        <div className="actions">
+          <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>
+            Cancel
+          </button>
+          <button type="submit" className="primary" disabled={preparing.front || preparing.back}>
+            Save
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

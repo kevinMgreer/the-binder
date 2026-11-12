@@ -31,6 +31,16 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 - [ ] A 12 MP photo is stored at 500 KB or less and the serial number stamp is still readable when zoomed in.
 - [ ] Pinch-zoom and pan on the full photo are smooth.
 - [ ] The photos folder in Google Drive shows files named with year, manufacturer, card number, player and front/back.
+- [ ] Front and Back tiles sit side by side on the add form; tapping an empty tile opens the chooser; **Scan front** opens the scanner and the photo lands in the Front tile; back closes the chooser without leaving the form. [photo-detail-polish, T-41]
+- [ ] On a filled tile, **Retake front**, **Pick front from photos** and **Remove front photo** work; after Remove and Save on a synced card, the photo is gone from the card and from the Drive photos folder after the next sync. [photo-detail-polish, T-41]
+- [ ] Remove a photo on a card added offline (not yet uploaded), save, go online: no photo for that side appears in Drive. [photo-detail-polish, T-41]
+- [ ] List thumbnails look sharp at the new size; detail photos look sharp once the full photo has been opened once. [photo-detail-polish, T-41]
+
+## Screens
+
+- [ ] Card detail: Delete beside Edit; Delete opens a centred dialog, Android back closes it, Keep keeps the card, Delete removes it. [photo-detail-polish, T-41]
+- [ ] Card detail header reads cleanly: title, one line "year set · #number", one line "team · parallel". [photo-detail-polish, T-41]
+- [ ] Add form: Save is visible without scrolling; with the keyboard open on Notes the field stays visible above the bar and the bar does not cover it; record whether the bar should hide while typing. [photo-detail-polish, T-41]
 
 ## Identification (card-identification)
 

@@ -77,6 +77,9 @@ input[type="checkbox"], input[type="radio"] { width: var(--space-5); height: var
 /* #root's padding does not extend the scroll area, so scrolling screens carry the bottom inset themselves. */
 form, section, main { padding: var(--space-3) var(--gutter) calc(var(--gap-field) + max(var(--safe-area-inset-bottom, 0px), env(safe-area-inset-bottom, 0px))); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
+.form-bar { position: sticky; bottom: var(--inset-bottom); z-index: 1; margin: 0 calc(-1 * var(--gutter)); padding: var(--space-3) var(--gutter) 0; background: var(--color-panel); border-top: var(--rule) solid var(--color-rule); }
+.form-bar .actions { margin-bottom: var(--space-3); }
+html { scroll-padding-bottom: calc(var(--target-min) + 2 * var(--space-3) + var(--inset-bottom)); }
 .danger-zone { margin-top: var(--space-6); padding-top: var(--space-4); border-top: var(--rule) solid var(--color-rule); }
 .danger-zone button { padding-left: 0; justify-content: flex-start; }
 .hint { color: var(--color-ink-muted); font-size: var(--type-label); }

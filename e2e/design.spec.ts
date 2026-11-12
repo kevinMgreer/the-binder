@@ -585,6 +585,9 @@ async function controls(page: Page) {
           const c = p.getBoundingClientRect();
           clipped ||= r.top < c.top - 0.5 || r.bottom > c.bottom + 0.5 || r.left < c.left - 0.5 || r.right > c.right + 0.5;
         }
+        // A field under the sticky form bar is covered, not tappable, until it scrolls clear.
+        const bar = el.closest(".form-bar") ? null : document.querySelector(".form-bar")?.getBoundingClientRect();
+        clipped ||= !!bar && r.bottom > bar.top && r.top < bar.bottom;
         return { name: (el.textContent || el.getAttribute("aria-label") || el.tagName).trim().slice(0, 24), x: r.x, y: r.y, width: r.width, height: r.height, clipped };
       });
   }, CONTROLS) as Promise<(Box & { name: string; clipped: boolean })[]>;

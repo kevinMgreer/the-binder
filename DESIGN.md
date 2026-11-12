@@ -285,7 +285,7 @@ The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink
 Trading-card frame as described in Shapes. List rows use a 96px slot, dashboard recents fill their column, the form holds one `.photo-tiles` row with a Front tile and a Back tile side by side, each a frame 96px high (an empty tile shows a camera icon and "Front" or "Back" over the placeholder; its name is "Add front photo" or "Change front photo" once filled), detail photos 200px high, showing the full photo once it is stored on the device (the thumbnail until then). Without a photo the frame shows the Print Placeholder. A tapped photo opens a 60vh zoom panel with the image contained.
 
 ### Inputs / Fields
-Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1px ink bottom border, no radius, no box, min 48px, 8px by 12px padding; textarea min 96px. Label above in the uppercase label style; placeholder in Muted Ink. Invalid fields get a Danger bottom border and a Danger label-size message. Checkbox is 24px with ink accent in a 48px row. The search label is visually hidden but present.
+Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1px ink bottom border, no radius, no box, min 48px, 8px by 12px padding; textarea min 96px. Label above in the uppercase label style; placeholder in Muted Ink. Invalid fields get a Danger bottom border and a Danger label-size message. Checkbox is 24px with ink accent in a 48px row. The search label is visually hidden but present. On the add and edit forms Cancel and Save live in a sticky form bar (`.form-bar`): panel background, 1px rule along its top, pinned above the system navigation bar (`--inset-bottom`) while the form scrolls, and back in the flow at the form's end so the last field clears it. The save-blocked message sits inside the bar directly above the buttons; `scroll-padding-bottom` keeps a focused field clear of the bar.
 
 ### List row
 Full-width borderless button with a keyline beneath, the frame slot at the left and two lines of text: player (body, weight 500, single-line ellipsis) with the Tag at the right end, and one quiet label-size line "year set, number" continuing with parallel, grade and quantity. The line never wraps: the extras shrink first, then the set, never the number. Row height 112px.
@@ -307,7 +307,7 @@ The dashboard is the start destination: Android's back closes the app from there
 - **Do** put photos in a 2.5:3.5 frame (3.5:2.5 for landscape) and never crop the photo.
 - **Do** separate sections with whitespace, and set numbers in Roboto Slab.
 - **Do** build new data lists as ruled tables (1px keylines) and new fields as ruled lines.
-- **Do** keep the ink fill for the one primary action and no decorative red.
+- **Do** keep the ink fill for the one primary action and no decorative red, and keep the confirming action (Save) at the bottom, in the sticky form bar.
 - **Do** let the phone pick light or dark, and bundle any new font inside the app.
 
 ### Don't:
