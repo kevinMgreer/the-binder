@@ -41,6 +41,19 @@ test("any other scanner error is rethrown, not hidden by the fallback", async ()
   expect(fallback.capture).not.toHaveBeenCalled();
 });
 
+test("each scan names its side in the hint it gives the scanner", async () => {
+  const { source, scanner } = setup(async () => scanned);
+  await source.capture("front");
+  await source.capture("back");
+  expect(vi.mocked(scanner.scan).mock.calls).toEqual([["Scan the front of the card"], ["Scan the back of the card"]]);
+});
+
+test("the Capacitor binding passes the hint to the plugin", async () => {
+  const plugin = { scan: vi.fn(async () => ({ uri: null })) };
+  await createCapacitorScanner(plugin, (u) => u, fetch).scan("Scan the back of the card");
+  expect(plugin.scan).toHaveBeenCalledWith({ hint: "Scan the back of the card" });
+});
+
 test("pick goes straight to the existing source and never to the scanner", async () => {
   const { source, scanner } = setup(async () => scanned);
   expect(await source.pick()).toBe(picked);
@@ -52,18 +65,18 @@ test("the Capacitor binding turns a file uri into a blob, a null uri into cancel
   const toUrl = (uri: string) => `https://localhost/_capacitor_file_${uri}`;
 
   const ok = createCapacitorScanner({ scan: async () => ({ uri: "/cache/a.jpg" }) }, toUrl, fetchFn);
-  expect(await (await ok.scan())!.text()).toBe("https://localhost/_capacitor_file_/cache/a.jpg");
+  expect(await (await ok.scan("hint"))!.text()).toBe("https://localhost/_capacitor_file_/cache/a.jpg");
 
   const cancelled = createCapacitorScanner({ scan: async () => ({ uri: null }) }, toUrl, fetchFn);
-  expect(await cancelled.scan()).toBeNull();
+  expect(await cancelled.scan("hint")).toBeNull();
 
   const unavailable = createCapacitorScanner(
     { scan: async () => Promise.reject(Object.assign(new Error("not available"), { code: "UNAVAILABLE" })) },
     toUrl,
     fetchFn,
   );
-  await expect(unavailable.scan()).rejects.toBeInstanceOf(ScannerUnavailableError);
+  await expect(unavailable.scan("hint")).rejects.toBeInstanceOf(ScannerUnavailableError);
 
   const other = createCapacitorScanner({ scan: async () => Promise.reject(Object.assign(new Error("x"), { code: "UNIMPLEMENTED" })) }, toUrl, fetchFn);
-  await expect(other.scan()).rejects.not.toBeInstanceOf(ScannerUnavailableError);
+  await expect(other.scan("hint")).rejects.not.toBeInstanceOf(ScannerUnavailableError);
 });
