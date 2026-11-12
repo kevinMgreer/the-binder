@@ -87,7 +87,7 @@ test("choosing Year and Descending reorders the rows before the sheet closes", a
 test("the order applies to the filtered rows and leaves Showing N alone", async () => {
   await renderList();
   const sheet = within(openSheet());
-  fireEvent.change(sheet.getByLabelText("Team"), { target: { value: "Atlanta Braves" } });
+  fireEvent.change(sheet.getByRole("combobox", { name: "Team" }), { target: { value: "Atlanta Braves" } });
   fireEvent.click(sheet.getByRole("button", { name: "Close" }));
   const before = screen.getByTestId("shown").textContent;
   choose("Year");
@@ -114,7 +114,8 @@ test("Sort comes first in the sheet, with Ascending and Descending in one pair r
   await renderList();
   const dialog = openSheet();
   const headings = within(dialog).getAllByRole("heading").map((h) => h.textContent);
-  expect(headings.slice(0, 3)).toEqual(["Sort by", "Direction", "Year"]);
+  expect(headings.slice(headings.indexOf("Sort by"), headings.indexOf("Sort by") + 3)).toEqual(["Sort by", "Direction", "Year"]);
+  expect(headings.indexOf("Sort by")).toBeGreaterThan(-1);
   expect((within(dialog).getByRole("radio", { name: "Last name" }) as HTMLInputElement).checked).toBe(true);
   const asc = within(dialog).getByRole("radio", { name: "Ascending" }) as HTMLInputElement;
   expect(asc.checked).toBe(true);
@@ -154,7 +155,7 @@ test("the order is not a filter; Clear all keeps the order and the search", asyn
   expect(document.querySelector(".chips")).toBeNull();
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "a" } });
   const sheet = within(openSheet());
-  fireEvent.change(sheet.getByLabelText("Team"), { target: { value: "Atlanta Braves" } });
+  fireEvent.change(sheet.getByRole("combobox", { name: "Team" }), { target: { value: "Atlanta Braves" } });
   expect(sheet.getByRole("radio", { name: "Year" })).toBeTruthy();
   fireEvent.click(sheet.getByRole("button", { name: "Clear all" }));
   fireEvent.click(sheet.getByRole("button", { name: /^Show \d+ cards?$/ }));

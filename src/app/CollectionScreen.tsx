@@ -44,7 +44,6 @@ const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
 export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
-  const [sortOpen, setSortOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
@@ -107,7 +106,6 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
   ];
   const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
   const closeSheet = useCallback(() => setFilterOpen(false), []);
-  const closeSort = useCallback(() => setSortOpen(false), []);
   const sortLabel = SORT_LABELS[sort.by];
   const radio = (name: string, label: string, checked: boolean, onChange: () => void) => (
     <label className="check" key={label}>
@@ -139,8 +137,8 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
             onChange={(e) => set("search", e.target.value)}
           />
         </Field>
-        <button aria-label={applied.length > 0 ? `Filter, ${applied.length} applied` : undefined} onClick={() => setFilterOpen(true)}>
-          Filter
+        <button aria-label={applied.length > 0 ? `Filter and sort, ${applied.length} applied` : "Filter and sort"} onClick={() => setFilterOpen(true)}>
+          Filter &amp; sort
           {applied.length > 0 && <span className="badge">{applied.length}</span>}
         </button>
       </div>
@@ -154,14 +152,15 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         </div>
       )}
       <div className="shown-row">
-        <p className="shown" data-testid="shown">
-          Showing {shown.length}
+        <p className="shown">
+          <span data-testid="shown">Showing {shown.length}</span>
+          <span data-testid="order">
+            <span aria-hidden="true"> · {sortLabel} {sort.descending ? "↓" : "↑"}</span>
+            <span className="visually-hidden">, sorted by {sortLabel}, {sort.descending ? "descending" : "ascending"}</span>
+          </span>
         </p>
         <button className="icon-button" aria-label={`${view === "grid" ? "List" : "Grid"} view`} onClick={() => onViewChange(view === "grid" ? "list" : "grid")}>
           <Icon name={view === "grid" ? "list" : "grid"} />
-        </button>
-        <button aria-label={`Sort: ${sortLabel}, ${sort.descending ? "descending" : "ascending"}`} onClick={() => setSortOpen(true)}>
-          Sort: {sortLabel} {sort.descending ? "↓" : "↑"}
         </button>
       </div>
       {shown.length > 0 ? (
@@ -176,10 +175,21 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         </p>
       )}
       <BottomNav active="list" onNavigate={onNavigate} onAdd={onAdd} />
-      {sortOpen && (
-        <Sheet label="Sort" onClose={closeSort} compact>
+      {filterOpen && (
+        <Sheet
+          label="Filter and sort"
+          onClose={closeSheet}
+          foot={
+            <>
+              <button className="primary" onClick={closeSheet}>
+                Show {countLabel}
+              </button>
+              <button onClick={clearAll}>Clear all</button>
+            </>
+          }
+        >
           <div className="group">
-            <h3>Order</h3>
+            <h3>Sort by</h3>
             {(Object.keys(SORT_LABELS) as SortBy[]).map((by) =>
               radio("sort-by", SORT_LABELS[by], sort.by === by, () => onSortChange({ ...sort, by })),
             )}
@@ -191,21 +201,6 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
               {radio("sort-direction", "Descending", sort.descending, () => onSortChange({ ...sort, descending: true }))}
             </div>
           </div>
-        </Sheet>
-      )}
-      {filterOpen && (
-        <Sheet
-          label="Filters"
-          onClose={closeSheet}
-          foot={
-            <>
-              <button className="primary" onClick={closeSheet}>
-                Show {countLabel}
-              </button>
-              <button onClick={clearAll}>Clear all</button>
-            </>
-          }
-        >
           <div className="group">
             <h3>Year</h3>
             <div className="pair">

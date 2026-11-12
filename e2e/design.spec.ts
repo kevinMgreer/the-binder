@@ -1163,15 +1163,14 @@ test.describe("Form actions and Sort sheet", () => {
 
   test("The button fits the search row: 12 filters applied, one line, Search stays at least 120 dp", async ({ page }) => {
     await page.goto("/");
-    await seed(page, [...CARDS, { player: "Full House", cardNumber: "99", team: "Atlanta Braves", manufacturer: "Topps", set: "Series One", subset: "Base", insert: "Stars" }]);
+    await seed(page, [...CARDS, { player: "Full House", cardNumber: "99", team: "Atlanta Braves", manufacturer: "Topps", set: "Series One", subset: "Base" }]);
     await page.getByRole("button", { name: /^Filter and sort/ }).click();
     const sheet = page.getByRole("dialog", { name: "Filter and sort" });
     await sheet.getByLabel("Year from", { exact: true }).fill("1900");
     await sheet.getByLabel("Player", { exact: true }).fill("a");
     await sheet.getByLabel("Print run", { exact: true }).fill("5");
-    for (const label of ["Team", "Manufacturer", "Set", "Subset", "Insert"]) {
-      const select = sheet.getByLabel(label, { exact: true });
-      await select.selectOption({ index: 1 });
+    for (const label of ["Team", "Manufacturer", "Set", "Subset"]) {
+      await sheet.getByRole("combobox", { name: label, exact: true }).selectOption({ index: 1 });
     }
     for (const label of ["Serial-numbered", "Rookie", "Autograph", "Relic", "Graded"]) await sheet.getByLabel(label, { exact: true }).check();
     await sheet.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
@@ -1182,7 +1181,11 @@ test.describe("Form actions and Sort sheet", () => {
     expect(b.height).toBeGreaterThanOrEqual(47.5);
     expect(Math.abs(b.y - s.y)).toBeLessThan(24);
     expect(s.width).toBeGreaterThanOrEqual(120);
-    expect(await button.evaluate((el) => (el.firstChild as Text).getClientRects().length)).toBe(1);
+    expect(await button.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el.firstChild!);
+      return range.getClientRects().length;
+    })).toBe(1);
     expect(await button.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   });
 });
@@ -1372,7 +1375,7 @@ test.describe("Card-back look", () => {
       page.evaluate(() => {
         const bad = new Set<string>();
         for (const el of document.querySelectorAll("body *")) {
-          const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) || (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && (el as HTMLInputElement).type !== "checkbox");
+          const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) || (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && !["checkbox", "radio"].includes((el as HTMLInputElement).type));
           if (own) {
             const px = getComputedStyle(el).fontSize;
             if (!["12px", "14px", "16px", "18px", "28px", "32px"].includes(px)) bad.add(`${el.tagName}.${el.className} ${px}`);

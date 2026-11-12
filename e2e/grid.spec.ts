@@ -113,7 +113,7 @@ test("Filters, search and sort apply in Grid view", async ({ page }) => {
   await gridView(page).click();
   await page.getByLabel("Search", { exact: true }).fill("acu");
   const sheet = await chooseOrder(page, "Year", "Descending");
-  await page.getByLabel("Team", { exact: true }).selectOption("Atlanta Braves");
+  await page.getByRole("combobox", { name: "Team", exact: true }).selectOption("Atlanta Braves");
   await sheet.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
   await expect(page.getByRole("button", { name: "Remove Team filter: Atlanta Braves" })).toBeVisible();
   await expect(tiles(page)).toHaveCount(2);

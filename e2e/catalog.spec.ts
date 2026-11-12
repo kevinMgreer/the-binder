@@ -200,7 +200,7 @@ test("Combined filters list only cards matching all of them, with a count", asyn
   await addCard(page, { ...braves, cardNumber: "30", team: "Boston Red Sox" });
   await addCard(page, { ...braves, cardNumber: "31", parallel: undefined, serial: undefined, printRun: undefined });
   await openFilters(page);
-  await page.getByLabel("Team", { exact: true }).selectOption({ label: "Atlanta Braves" });
+  await page.getByRole("combobox", { name: "Team", exact: true }).selectOption({ label: "Atlanta Braves" });
   await page.getByLabel("Serial-numbered", { exact: true }).check();
   await page.getByLabel("Year from", { exact: true }).fill("2020");
   await page.getByLabel("Year to", { exact: true }).fill("2026");
