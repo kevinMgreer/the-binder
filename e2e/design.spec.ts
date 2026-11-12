@@ -1120,7 +1120,7 @@ test.describe("System navigation bar strip", () => {
   });
 });
 
-test.describe("Form actions and Sort sheet", () => {
+test.describe("Form actions", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
   test("Cancel sits left of a wider Save and a typed form asks before back leaves", async ({ page }) => {
@@ -1152,6 +1152,7 @@ test.describe("Form actions and Sort sheet", () => {
     expect(rows.length).toBe(6);
     for (const h of rows) expect(h).toBeGreaterThanOrEqual(47.5);
     expect(Math.max(...rows.slice(0, 4)) - Math.min(...rows.slice(0, 4))).toBeLessThan(1);
+    expect(rows[4]).toBeCloseTo(rows[5], 0);
     const left = async (name: string) => (await sheet.getByRole("radio", { name, exact: true }).boundingBox())!;
     const lefts = await Promise.all(["Last name", "Year", "Team", "Set", "Ascending"].map(async (n) => (await left(n)).x));
     expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);

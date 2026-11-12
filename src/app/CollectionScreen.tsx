@@ -188,13 +188,13 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
             </>
           }
         >
-          <div className="group">
+          <div className="group" role="radiogroup" aria-label="Sort by">
             <h3>Sort by</h3>
             {(Object.keys(SORT_LABELS) as SortBy[]).map((by) =>
               radio("sort-by", SORT_LABELS[by], sort.by === by, () => onSortChange({ ...sort, by })),
             )}
           </div>
-          <div className="group">
+          <div className="group" role="radiogroup" aria-label="Direction">
             <h3>Direction</h3>
             <div className="pair">
               {radio("sort-direction", "Ascending", !sort.descending, () => onSortChange({ ...sort, descending: false }))}
