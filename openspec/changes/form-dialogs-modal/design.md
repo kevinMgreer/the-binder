@@ -29,7 +29,7 @@ The first version of this change made the discard question a centred modal too. 
 
 ## Overlap with `scan-back-chain` and `filter-sort-merge`
 
-`scan-back-chain` (PR #42) adds a `backSlot` ref beside `cancelButton` in `CardForm.tsx` and appends tests and a checklist line. `filter-sort-merge` (PR #45) edits `DESIGN.md`, `docs/device-checklist.md`, `e2e/catalog.spec.ts` and `e2e/design.spec.ts`. Conflicts are append-only or in different paragraphs: keep both. Rebase on `main` after either merges.
+`scan-back-chain` (PR #42) adds a `backSlot` ref beside `cancelButton` in `CardForm.tsx` and appends tests and a checklist line. `filter-sort-merge` (now on `main`) edits `DESIGN.md`, `docs/device-checklist.md`, `e2e/catalog.spec.ts` and `e2e/design.spec.ts`; the checklist lines were append-only and kept both. Both changes MODIFY the app-theme requirement "Every screen wears the card-back look", and a MODIFIED block replaces the whole requirement. This change's app-theme delta is therefore based on the text of `main` after `filter-sort-merge` merged, so it keeps that change's Filter and sort lines. If another change modifies the same requirement before this one archives, re-base the delta on the then-current text.
 
 ## Risks / Trade-offs
 
