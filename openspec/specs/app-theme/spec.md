@@ -60,17 +60,6 @@ The system SHALL style the empty collection, no matching cards, sync error, need
 - **WHEN** each of those states is shown at 360 by 800 in each theme
 - **THEN** its text is legible, its controls meet the touch-target rule and nothing sits under the system bars
 
-### Requirement: Destructive actions stay apart
-The system SHALL keep destructive actions (delete card, sign out) visually distinct and away from primary actions: drawn as danger-coloured text, never filled like a primary button, and the danger colour is used for nothing decorative.
-
-#### Scenario: Delete is not beside Edit
-- **WHEN** the card detail screen is shown
-- **THEN** Delete is separated from Edit by at least 24 dp or a rule, and is not drawn as a filled primary button
-
-#### Scenario: Sign out is apart in settings
-- **WHEN** the settings screen is shown
-- **THEN** Sign out is separated from the other settings by at least 24 dp or a rule, and is not drawn as a filled primary button
-
 ### Requirement: Light is Card-Back Calm and dark is Night Game
 The system SHALL show the "Card-Back Calm" palette when the phone is light and the "Night Game" palette when the phone is dark, with these colour roles:
 
@@ -125,7 +114,7 @@ The system SHALL use these sizes and no others for text: 12 label (uppercase, le
 - **THEN** each font size is one of 12, 14, 16, 18, 28 or 32 px
 
 ### Requirement: Generous spacing from tokens
-The system SHALL space every screen from these spacing tokens: `--gutter` 24 px (page sides), `--gap-section` 32 px (between sections), `--gap-field` 24 px (between form fields), `--gap-label` 8 px (a label to its value or field), `--pad-cell` 16 px (stat cell, Top teams row and fact row padding), `--pad-row` 16 px (the gap between a list thumbnail and its text; list rows themselves are padded 0 0 8 px so a row stays 100 dp), `--gap-frame` 12 px (between Recently added frames) and `--gap-caption` 8 px (frame to caption). List rows SHALL stay 100 dp high.
+The system SHALL space every screen from these spacing tokens: `--gutter` 24 px (page sides), `--gap-section` 32 px (between sections), `--gap-field` 24 px (between form fields), `--gap-label` 8 px (a label to its value or field), `--pad-cell` 16 px (stat cell, Top teams row and fact row padding), `--pad-row` 16 px (the gap between a list thumbnail and its text; list rows themselves are padded 0 0 8 px so a row stays 112 dp), `--gap-frame` 12 px (between Recently added frames) and `--gap-caption` 8 px (frame to caption). List rows SHALL stay 112 dp high.
 
 #### Scenario: Gutter and sections
 - **WHEN** the dashboard is shown on a 360 by 800 phone
@@ -134,6 +123,10 @@ The system SHALL space every screen from these spacing tokens: `--gutter` 24 px 
 #### Scenario: Cells, frames and fields
 - **WHEN** the dashboard and the card form are shown
 - **THEN** stat cell text starts 16 px inside its rule, Recently added frames are 12 px apart with the caption 8 px below, form fields are 24 px apart, and every cell and control keeps the 48 dp and 8 dp rules
+
+#### Scenario: Card detail header spacing
+- **WHEN** the card detail screen is shown
+- **THEN** the header uses spacing tokens only: `--space-4` above the title, `--space-2` between the title and the quiet line, `--space-4` between the quiet line and the rule, and the quiet line is in the muted ink colour
 
 ### Requirement: Red is only the danger text colour
 The system SHALL use no decorative red: there is no flag, stitch or seam, and the only red is the danger colour, used for error text, the sync problem text, Delete and Sign out. Sections are separated by whitespace, and where a divider is needed by a single 1 px rule in the rule colour, including one under each screen title and none under the bottom-navigation tabs. The primary action is a button filled with the ink colour with ground-coloured text (cream on navy in light, navy on cream in dark), 6 px radius, sans 600 at 16 px, 48 dp high; gold is not used.
@@ -151,14 +144,14 @@ The system SHALL use no decorative red: there is no flag, stitch or seam, and th
 - **THEN** there is no match when idle, and in the error state the only matches are the sync status text and the sync detail line
 
 ### Requirement: Photos sit in trading-card frames
-The system SHALL show every card photo and the photo placeholder inside a trading-card frame: a 2.5 by 3.5 rectangle (3.5 by 2.5 when the photo is wider than tall), 6 px radius, a 1 px keyline in the ink colour, a 3 px inner print border in the frame print colour and a thin inner rule, with the whole photo shown inside (never cropped). This applies to the list thumbnails, Recently added, the detail photo strip and the form's photo slots.
+The system SHALL show every card photo and the photo placeholder inside a trading-card frame: a 2.5 by 3.5 rectangle (3.5 by 2.5 when the photo is wider than tall), 6 px radius, a 1 px keyline in the ink colour, a 3 px inner print border in the frame print colour and a thin inner rule, with the whole photo shown inside (never cropped). This applies to the list thumbnails, the Cards grid tiles, Recently added, the detail photo strip and the form's photo slots.
 
 #### Scenario: Portrait frame ratio
-- **WHEN** a card with a portrait front photo is shown in Recently added and in the list
+- **WHEN** a card with a portrait front photo is shown in Recently added, in the list and in the Cards grid
 - **THEN** each frame's width-to-height ratio is 2.5 to 3.5 within 2 percent
 
 #### Scenario: Landscape frame
-- **WHEN** a card whose front photo is wider than tall is shown in Recently added and in the list
+- **WHEN** a card whose front photo is wider than tall is shown in Recently added, in the list and in the Cards grid
 - **THEN** each frame's width-to-height ratio is 3.5 to 2.5 within 2 percent and the image inside keeps the photo's ratio within 2 percent
 
 #### Scenario: Placeholder framed
@@ -172,7 +165,7 @@ The system SHALL draw every screen on the ground colour with ink text, ruled tab
 - Card form: fields as ruled lines with uppercase labels, framed photo slots each closed by a rule, Identify with Claude set apart from the Scan and Pick buttons, Cancel as an ink-outlined button at the left of the action row and Save as the primary button at its right, the discard confirmation as a dialog with Keep editing ink-outlined and Discard in danger text.
 - Settings: groups as ruled stat-table rows, Sign out in danger text apart below a rule.
 - Filter sheet: the full screen height, the panel colour, slab group headings above a rule (distinct from the uppercase field labels), Year from and Year to side by side, a rule above the foot, Show cards as the primary button, Clear all ink-outlined.
-- Sort sheet: the panel colour, only as tall as its content, slab group headings with tighter spacing than the filter sheet, option rows of one height with their radios in one column on one left edge, Ascending and Descending side by side in one row, a rule above the foot, Done as the primary button.
+- Sort sheet: the panel colour, only as tall as its content, slab group headings with tighter spacing than the filter sheet, option rows of one height with their radios in one column on one left edge, Ascending and Descending side by side in one row, no footer and no Done button (its header Close is the one close control).
 - Sync error: the title row keeps only the dot and the short words "Sync problem"; the full wording ("Sync problem, retrying (N unsynced)") sits in a full-width status line under the title rule in the danger colour at 14 px.
 - Dialogs, banners and the empty state: the panel colour with a 1 px rule border, no gradient.
 
@@ -191,3 +184,14 @@ The system SHALL draw every screen on the ground colour with ink text, ruled tab
 #### Scenario: Screens at phone size in both themes
 - **WHEN** the list, detail, form, Settings, filter sheet and sort sheet are shown at 360 by 800 in each theme
 - **THEN** the page background is the ground colour, text is legible, the touch-target rule holds and nothing scrolls sideways
+
+### Requirement: Destructive actions are distinct
+The system SHALL keep destructive actions (delete card, sign out) visually distinct from primary actions: never filled like the primary button, drawn in the danger colour (text, and on the card detail screen the border too), always confirmed before they take effect, and the danger colour is used for nothing decorative. On the card detail screen Delete SHALL be a danger-outlined button in the same row as Edit, left of it, with Edit's height, width share and radius; Sign out SHALL stay separated from the other settings.
+
+#### Scenario: Delete is a danger-outlined button left of Edit, matching Edit's size
+- **WHEN** the card detail screen is shown
+- **THEN** Delete is in the same row as Edit and left of it, at least 8 dp from it, with the same height, the same width within 1 dp and the same border radius as Edit, its text and its border compute to the danger colour and its background is transparent, while Edit is filled with the ink colour
+
+#### Scenario: Sign out is apart in settings
+- **WHEN** the settings screen is shown
+- **THEN** Sign out is separated from the other settings by at least 24 dp or a rule, and is not drawn as a filled primary button
