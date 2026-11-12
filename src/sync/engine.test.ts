@@ -274,6 +274,35 @@ describe("photos", () => {
     expect(remote.hasPhoto(second.fileId)).toBe(true);
   });
 
+  test("removing the front photo clears the side and queues both Drive files for deletion", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("a") });
+    await a.engine.syncNow();
+    const first = (await a.collection.get(c.id))!.photos.front!;
+
+    await saveCard(a.deps, (await a.collection.get(c.id))!, { front: null });
+    expect((await a.collection.get(c.id))!.photos.front).toBeNull();
+    expect((await a.photos.pendingDeletes()).sort()).toEqual([first.fileId!, first.thumbId!].sort());
+    await a.engine.syncNow();
+    expect(remote.hasPhoto(first.fileId)).toBe(false);
+    expect(remote.hasPhoto(first.thumbId)).toBe(false);
+    expect((await a.collection.get(c.id))!.photos.front).toBeNull();
+  });
+
+  test("a photo removed before it uploaded is not uploaded", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("a") });
+    await saveCard(a.deps, (await a.collection.get(c.id))!, { front: null });
+    await a.engine.syncNow();
+    expect(remote.photoNames()).toEqual([]);
+    expect(await a.photos.pendingUploads()).toEqual([]);
+    expect((await a.collection.get(c.id))!.photos.front).toBeNull();
+  });
+
   test("deleting a card removes its photos from Drive", async () => {
     const remote = new InMemoryRemoteStore();
     const a = install(remote);

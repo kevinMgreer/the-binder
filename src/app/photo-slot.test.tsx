@@ -1,8 +1,8 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
-import type { CapturedPhoto } from "../ports";
+import { PermissionDeniedError, type CapturedPhoto } from "../ports";
 import { CardForm } from "./CardForm";
 import { PhotoSlot } from "./PhotoSlot";
 import { PortsProvider } from "./ports-context";
@@ -22,35 +22,85 @@ const renderSlot = (props: Partial<Parameters<typeof PhotoSlot>[0]> = {}) =>
     </PortsProvider>,
   );
 
-test("an empty slot offers Scan and Pick", () => {
+const tile = (name: string) => screen.getByRole("button", { name }) as HTMLButtonElement;
+const choice = (name: string, sheet = "Front photo") =>
+  within(screen.getByRole("dialog", { name: sheet })).getByRole("button", { name });
+const stored = { fileId: "f", thumbId: "t", name: "front.jpg" };
+
+test("an empty tile reads Front and its chooser offers Scan and Pick", () => {
   renderSlot();
-  expect(screen.getByRole("button", { name: "Scan front" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Pick front from photos" })).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Retake front" })).toBeNull();
+  expect(tile("Add front photo").textContent).toContain("Front");
+  expect(screen.queryByRole("dialog")).toBeNull();
+  fireEvent.click(tile("Add front photo"));
+  expect(choice("Scan front")).toBeTruthy();
+  expect(choice("Pick front from photos")).toBeTruthy();
+  expect(within(screen.getByRole("dialog")).queryByRole("button", { name: "Retake front" })).toBeNull();
 });
 
-test("a stored photo whose thumbnail has not loaded already reads Retake", () => {
-  const photo = { fileId: "f", thumbId: "t", name: "front.jpg" };
-  renderSlot({ card: makeCard({ photos: { front: photo, back: null } }) });
-  expect(screen.getByRole("button", { name: "Retake front" })).toBeTruthy();
+test("a stored photo whose thumbnail has not loaded already reads Change, with Retake, Pick and Remove", () => {
+  renderSlot({ card: makeCard({ photos: { front: stored, back: null } }) });
+  fireEvent.click(tile("Change front photo"));
+  expect(choice("Retake front")).toBeTruthy();
+  expect(choice("Pick front from photos")).toBeTruthy();
+  expect(choice("Remove front photo")).toBeTruthy();
 });
 
-test("a captured photo reads Retake", () => {
+test("a captured photo reads Change with Retake", () => {
   const captured: CapturedPhoto = { full: new Blob(["f"]), thumb: new Blob(["t"]) };
   renderSlot({ captured });
-  expect(screen.getByRole("button", { name: "Retake front" })).toBeTruthy();
+  fireEvent.click(tile("Change front photo"));
+  expect(choice("Retake front")).toBeTruthy();
 });
 
-test("while a photo is being prepared a status line shows and the buttons are disabled", async () => {
+test("a side removed on the form shows an empty tile although a photo is stored", () => {
+  renderSlot({ card: makeCard({ photos: { front: stored, back: null } }), captured: null });
+  expect(tile("Add front photo")).toBeTruthy();
+});
+
+test("choosing Remove reports null and closes the chooser", () => {
+  const onChange = vi.fn();
+  renderSlot({ card: makeCard({ photos: { front: stored, back: null } }), onChange });
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(choice("Remove front photo"));
+  expect(onChange).toHaveBeenCalledWith(null);
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("choosing an action closes the chooser", async () => {
+  acquire.mockResolvedValue(null);
+  renderSlot();
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Pick front from photos"));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  await vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+});
+
+test("while a photo is being prepared a status line shows and the tile is disabled", async () => {
   acquire.mockReturnValue(new Promise(() => {}));
   renderSlot();
-  fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Scan front"));
   expect((await screen.findByRole("status")).textContent).toBe("Processing photo…");
-  expect((screen.getByRole("button", { name: "Scan front" }) as HTMLButtonElement).disabled).toBe(true);
-  expect((screen.getByRole("button", { name: "Pick front from photos" }) as HTMLButtonElement).disabled).toBe(true);
+  expect(tile("Add front photo").disabled).toBe(true);
 });
 
-test("Save is disabled while either slot is preparing a photo, and enabled again after", async () => {
+test("a permission-denied error still shows as an alert", async () => {
+  acquire.mockRejectedValue(new PermissionDeniedError());
+  renderSlot();
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Scan front"));
+  expect((await screen.findByRole("alert")).textContent).toContain("Camera permission denied");
+});
+
+test("a load error still shows as an alert", async () => {
+  acquire.mockRejectedValue(new Error("bad image"));
+  renderSlot();
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Pick front from photos"));
+  expect((await screen.findByRole("alert")).textContent).toBe("Could not load that photo.");
+});
+
+test("Save is disabled while either tile is preparing a photo, and enabled again after", async () => {
   let finish: (photo: CapturedPhoto | null) => void = () => {};
   acquire.mockReturnValue(new Promise((resolve) => (finish = resolve)));
   render(
@@ -60,7 +110,8 @@ test("Save is disabled while either slot is preparing a photo, and enabled again
   );
   const save = () => screen.getByRole("button", { name: "Save" }) as HTMLButtonElement;
   expect(save().disabled).toBe(false);
-  fireEvent.click(screen.getByRole("button", { name: "Scan back" }));
+  fireEvent.click(tile("Add back photo"));
+  fireEvent.click(choice("Scan back", "Back photo"));
   await vi.waitFor(() => expect(save().disabled).toBe(true));
   expect(screen.getByRole("status").textContent).toBe("Processing photo…");
   finish(null);
@@ -71,7 +122,8 @@ test("closing the scanner without a photo changes nothing and clears the status"
   acquire.mockResolvedValue(null);
   const onChange = vi.fn();
   renderSlot({ onChange });
-  fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Scan front"));
   await vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
   expect(onChange).not.toHaveBeenCalled();
 });
