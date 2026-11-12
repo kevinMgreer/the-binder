@@ -38,7 +38,7 @@ Archive after form-sort-polish (see design.md). The groups touch the same `src/a
   - Remove a photo on a card added offline (not yet uploaded), save, go online: no photo for that side appears in Drive.
   - List thumbnails look sharp at the new size; detail photos look sharp once the full photo has been opened once.
   - Card detail: Delete beside Edit; Delete opens a centred dialog, Android back closes it, Keep keeps the card, Delete removes it.
-  - Card detail header reads cleanly: title, one line "year set · #number", one line "team · parallel".
+  - Card detail header reads cleanly: title, one quiet line "year set · #number", Team and Parallel in the list below.
   - Add form: Save is visible without scrolling; with the keyboard open on Notes the field stays visible above the bar and the bar does not cover it; record whether the bar should hide while typing.
   Verify: the lines are in the file; ticking them is the owner's phone run.
 - [ ] 4.6 Phone run of the 4.5 lines on the debug build (owner). Verify: each line ticked in `docs/device-checklist.md` with the build version, or a desk todo opened for what fails (including hiding the bar while typing).
