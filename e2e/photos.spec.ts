@@ -42,7 +42,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-/** Sets what the back scanner returns, or `null` for closing it. */
+/** Sets the second page of a two-page scan (the back), or `null` for Done after the front. */
 async function setNextBack(page: Page, back: "photo" | null) {
   await page.evaluate(async (back) => {
     const source = (window as unknown as Win).__ports.photoSource;
@@ -79,7 +79,7 @@ test("Front then back: each tile's chooser offers its actions, and Scan front fi
   await expect(page.getByTestId("card-row").first().locator("img")).toBeVisible();
 });
 
-test("Front scan goes straight on to the back", async ({ page }) => {
+test("Front scan takes the back as its second page", async ({ page }) => {
   await setNextPhoto(page);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
   await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
@@ -90,7 +90,7 @@ test("Front scan goes straight on to the back", async ({ page }) => {
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
-test("Back scanner closed after the front: the front and the typed player survive", async ({ page }) => {
+test("Done after the front only: the front and the typed player survive", async ({ page }) => {
   await setNextPhoto(page);
   await setNextBack(page, null);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
@@ -104,7 +104,7 @@ test("Back scanner closed after the front: the front and the typed player surviv
   await expect(page.getByRole("heading", { name: "Add card" })).toBeVisible();
 });
 
-test("No chain after picking the front", async ({ page }) => {
+test("No back page after picking the front", async ({ page }) => {
   await setNextPhoto(page);
   await setNextBack(page, "photo");
   await page.getByRole("button", { name: "Add card", exact: true }).click();

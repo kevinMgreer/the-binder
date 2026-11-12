@@ -21,7 +21,7 @@ async function configure(page: Page, which: "ocr" | "claude", result: object) {
 
 async function scanFront(page: Page) {
   await setNextPhoto(page);
-  // These cases are about the front only: close the back scanner that opens after it.
+  // These cases are about the front only: the scan ends after its first page.
   await page.evaluate(() => {
     (window as unknown as Win).__ports.photoSource.nextBack = null;
   });

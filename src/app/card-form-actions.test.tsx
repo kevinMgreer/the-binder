@@ -8,7 +8,7 @@ import { PortsProvider } from "./ports-context";
 import { openSheets } from "./Sheet";
 
 const acquire = vi.hoisted(() => vi.fn());
-vi.mock("../photos/acquire", () => ({ acquirePhoto: acquire }));
+vi.mock("../photos/acquire", () => ({ acquirePhotos: acquire }));
 
 afterEach(() => {
   cleanup();
@@ -89,7 +89,7 @@ test("the edit form asks only after a change, with its own wording", () => {
 
 test("a captured photo alone makes Cancel ask", async () => {
   const photo: CapturedPhoto = { full: new Blob(["f"]), thumb: new Blob(["t"]) };
-  acquire.mockResolvedValueOnce(photo).mockResolvedValue(null);
+  acquire.mockResolvedValue([photo]);
   const onCancel = renderForm();
   fireEvent.click(screen.getByRole("button", { name: "Add front photo" }));
   fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
@@ -114,7 +114,7 @@ test("removing a stored front photo then Cancel and Discard leaves the card unch
 });
 
 test("removing a capture on the add form leaves the form not dirty", async () => {
-  acquire.mockResolvedValueOnce({ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto).mockResolvedValue(null);
+  acquire.mockResolvedValue([{ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto]);
   const onCancel = renderForm();
   fireEvent.click(screen.getByRole("button", { name: "Add front photo" }));
   fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
@@ -145,7 +145,7 @@ test("Identify with Claude sends no front photo after the stored front was remov
   const ports = createFakePorts();
   const recognize = vi.spyOn(ports.claude, "recognize");
   const back: CapturedPhoto = { full: new Blob(["b"]), thumb: new Blob(["bt"]) };
-  acquire.mockResolvedValue(back);
+  acquire.mockResolvedValue([back]);
   render(
     <PortsProvider ports={ports}>
       <CardForm card={stored} cards={[]} onSave={async () => {}} onCancel={() => {}} />
@@ -185,7 +185,7 @@ test("Discard on the edit form leaves the stored card unchanged", () => {
 });
 
 test("the photo stays attached after Keep editing", async () => {
-  acquire.mockResolvedValueOnce({ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto).mockResolvedValue(null);
+  acquire.mockResolvedValue([{ full: new Blob(["f"]), thumb: new Blob(["t"]) } satisfies CapturedPhoto]);
   renderForm();
   fireEvent.click(screen.getByRole("button", { name: "Add front photo" }));
   fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
@@ -203,66 +203,75 @@ const scanFront = () => {
   click("Scan front");
 };
 
-test("Scan front on an empty back goes straight into the back scan and fills both tiles", async () => {
-  acquire.mockResolvedValueOnce(front).mockResolvedValueOnce(backPhoto);
+const settled = () => vi.waitFor(() => expect(screen.queryByText("Processing photo…")).toBeNull());
+
+test("Scan front on an empty back takes both sides in one scan and fills both tiles", async () => {
+  acquire.mockResolvedValue([front, backPhoto]);
   renderForm();
   scanFront();
   await screen.findByRole("button", { name: "Change back photo" });
   expect(screen.getByRole("button", { name: "Change front photo" })).toBeTruthy();
-  expect(acquire.mock.calls.map((c) => c.slice(1))).toEqual([["front", "camera"], ["back", "camera"]]);
+  expect(acquire.mock.calls.map((c) => c.slice(1))).toEqual([["front", "camera", 2]]);
 });
 
-test("closing the back scanner keeps the front and shows nothing", async () => {
-  acquire.mockResolvedValueOnce(front).mockResolvedValueOnce(null);
+test("a two-page scan finished after the front keeps the front and shows nothing", async () => {
+  acquire.mockResolvedValue([front]);
   renderForm();
   scanFront();
-  await vi.waitFor(() => expect(acquire).toHaveBeenCalledTimes(2));
-  await vi.waitFor(() => expect(screen.queryByText("Processing photo…")).toBeNull());
-  expect(screen.getByRole("button", { name: "Change front photo" })).toBeTruthy();
+  await screen.findByRole("button", { name: "Change front photo" });
+  await settled();
   expect(screen.getByRole("button", { name: "Add back photo" })).toBeTruthy();
   expect(screen.queryByRole("alert")).toBeNull();
   expect(screen.getByRole("heading", { name: "Add card" })).toBeTruthy();
 });
 
-test("a denied back scan keeps the front and shows the Back tile message", async () => {
-  acquire.mockResolvedValueOnce(front).mockRejectedValueOnce(new PermissionDeniedError());
+test("a closed or denied two-page scan attaches nothing", async () => {
+  acquire.mockResolvedValue([]);
+  renderForm();
+  scanFront();
+  await settled();
+  expect(screen.getByRole("button", { name: "Add front photo" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Add back photo" })).toBeTruthy();
+  cleanup();
+  acquire.mockRejectedValue(new PermissionDeniedError());
   renderForm();
   scanFront();
   expect((await screen.findByRole("alert")).textContent).toContain("Camera permission denied");
-  expect(screen.getByRole("button", { name: "Change front photo" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Add front photo" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Add back photo" })).toBeTruthy();
 });
 
-test("no back scan follows a pick, a retake, a stored back or a back scan", async () => {
-  acquire.mockResolvedValue(front);
+test("Retake, a stored back and Scan back each take one page", async () => {
+  acquire.mockResolvedValue([front]);
   renderForm();
-  click("Add front photo");
-  click("Pick front from photos");
+  scanFront();
   await screen.findByRole("button", { name: "Change front photo" });
   click("Change front photo");
   click("Retake front");
   await vi.waitFor(() => expect(acquire).toHaveBeenCalledTimes(2));
-  await vi.waitFor(() => expect(screen.queryByText("Processing photo…")).toBeNull());
-  expect(acquire).toHaveBeenCalledTimes(2);
+  await settled();
   cleanup();
-  acquire.mockReset();
-  acquire.mockResolvedValue(front);
   const stored = { fileId: "f", thumbId: "t", name: "back.jpg" };
   renderForm(makeCard({ photos: { front: null, back: stored } }));
   scanFront();
   await screen.findByRole("button", { name: "Change front photo" });
-  expect(acquire).toHaveBeenCalledTimes(1);
   cleanup();
-  acquire.mockReset();
-  acquire.mockResolvedValue(backPhoto);
+  acquire.mockResolvedValue([backPhoto]);
   renderForm();
   click("Add back photo");
   click("Scan back");
   await screen.findByRole("button", { name: "Change back photo" });
-  expect(acquire).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("button", { name: "Add front photo" })).toBeTruthy();
+  expect(acquire.mock.calls.map((c) => c.slice(1))).toEqual([
+    ["front", "camera", 2],
+    ["front", "camera", 1],
+    ["front", "camera", 1],
+    ["back", "camera", 1],
+  ]);
 });
 
-test("after the chain Cancel then Discard saves nothing, and recognition ran once per side", async () => {
-  acquire.mockResolvedValueOnce(front).mockImplementationOnce(() => new Promise((r) => setTimeout(() => r(backPhoto), 50))); // the delay stands in for the user taking the back photo
+test("after a two-page scan Cancel then Discard saves nothing, and recognition ran once over both photos", async () => {
+  acquire.mockResolvedValue([front, backPhoto]);
   const ports = createFakePorts();
   const recognize = vi.spyOn(ports.ocr, "recognize");
   const onCancel = vi.fn();
@@ -274,25 +283,12 @@ test("after the chain Cancel then Discard saves nothing, and recognition ran onc
   );
   scanFront();
   await screen.findByRole("button", { name: "Change back photo" });
-  await vi.waitFor(() => expect(recognize).toHaveBeenCalledTimes(2));
-  expect(recognize.mock.calls).toEqual([[{ front: front.full }], [{ back: backPhoto.full }]]);
+  await vi.waitFor(() => expect(recognize).toHaveBeenCalledTimes(1));
+  expect(recognize.mock.calls).toEqual([[{ front: front.full, back: backPhoto.full }]]);
   cancel();
   click("Discard");
   expect(onCancel).toHaveBeenCalledTimes(1);
   expect(onSave).not.toHaveBeenCalled();
-});
-
-test("a back take already under way is not doubled by the chain", async () => {
-  let resolveFront!: (p: CapturedPhoto) => void;
-  acquire.mockImplementationOnce(() => new Promise((r) => (resolveFront = r))).mockImplementationOnce(() => new Promise(() => {}));
-  renderForm();
-  scanFront();
-  click("Add back photo");
-  click("Scan back");
-  await vi.waitFor(() => expect(acquire).toHaveBeenCalledTimes(2));
-  await act(async () => resolveFront(front));
-  await screen.findByRole("button", { name: "Change front photo" });
-  expect(acquire).toHaveBeenCalledTimes(2);
 });
 
 test("back with the duplicate prompt open shows no discard dialog", async () => {
