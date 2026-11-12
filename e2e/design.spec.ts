@@ -263,6 +263,23 @@ for (const size of PHONES) {
       expect(ph.height).toBeGreaterThan(ph.width);
     });
 
+    test("Bigger thumbnail: a portrait frame is 96 dp tall", async ({ page }) => {
+      await page.evaluate(async () => {
+        const ports = (window as unknown as Win).__ports;
+        const { makeCard } = await import("/src/domain/fixtures.ts");
+        const card = makeCard({ player: "Portrait Pat", cardNumber: "9", photos: { front: { fileId: "f", thumbId: "t" }, back: null } });
+        const canvas = new OffscreenCanvas(320, 448);
+        canvas.getContext("2d")!.fillRect(0, 0, 320, 448);
+        await ports.photos.cacheThumb(card.id, "front", await canvas.convertToBlob({ type: "image/webp" }));
+        await ports.collection.putSynced([card]);
+      });
+      await page.reload();
+      await openCollection(page);
+      const row = page.getByTestId("card-row").filter({ hasText: "Portrait Pat" });
+      await expect(row.locator("img.thumb")).toBeVisible();
+      expect(Math.abs((await row.locator(".frame").boundingBox())!.height - 96)).toBeLessThanOrEqual(2);
+    });
+
     test("Each sync state shows its wording in the header", async ({ page }) => {
       const states: [object, string][] = [
         [{ state: "syncing", pending: 0 }, "Syncing…"],
@@ -411,7 +428,7 @@ test.describe("destructive actions stay apart", () => {
     expect(await css(dialog.getByRole("button", { name: "Delete", exact: true }), "color")).toBe(await danger(page));
   });
 
-  test("Detail photos are thumbnails: Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {
+  test("Two portrait photos fill the row: 200 dp photos, Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(async () => {
       const ports = (window as unknown as Win).__ports;
@@ -432,9 +449,15 @@ test.describe("destructive actions stay apart", () => {
     const thumb = page.getByRole("button", { name: "View front photo" });
     await expect(thumb).toBeVisible();
     const box = (await thumb.boundingBox())!;
-    expect(box.height).toBeGreaterThanOrEqual(130);
-    expect(box.height).toBeLessThanOrEqual(150);
+    expect(box.height).toBeGreaterThanOrEqual(190);
+    expect(box.height).toBeLessThanOrEqual(210);
     await expect(page.getByRole("button", { name: "View back photo" })).toBeVisible();
+    // Two portrait photos fill the row: 200 dp within 4 dp, side by side, no overlap.
+    const backBox = (await page.getByRole("button", { name: "View back photo" }).boundingBox())!;
+    expect(Math.abs(box.height - 200)).toBeLessThanOrEqual(4);
+    expect(Math.abs(backBox.height - 200)).toBeLessThanOrEqual(4);
+    expect(Math.abs(backBox.y - box.y)).toBeLessThanOrEqual(1);
+    expect(backBox.x).toBeGreaterThanOrEqual(box.x + box.width);
     await expect(page.getByRole("button", { name: "Back", exact: true })).toHaveCount(0);
     const y = async (l: Locator) => (await l.boundingBox())!.y;
     expect(await y(page.getByTestId("facts"))).toBeLessThan(await y(thumb));
@@ -495,7 +518,7 @@ test.describe("polish after the second phone review", () => {
     const row = page.getByTestId("card-row").first();
     const quiet = row.locator(".quiet");
     expect((await quiet.boundingBox())!.height).toBeLessThan(24);
-    expect((await row.boundingBox())!.height).toBeLessThanOrEqual(100);
+    expect((await row.boundingBox())!.height).toBeLessThanOrEqual(112);
     const num = row.locator(".num");
     expect((await num.boundingBox())!.x + (await num.boundingBox())!.width).toBeLessThanOrEqual((await row.boundingBox())!.x + (await row.boundingBox())!.width);
     await expect(num).toBeVisible();
@@ -1361,12 +1384,12 @@ test.describe("Card-back look", () => {
     expect(await teams.first().evaluate((e) => getComputedStyle(e, "::before").borderBottomWidth)).toBe("1px");
   });
 
-  test("Ruled, not boxed: list rows are 100 dp with a 1 px rule and no gradient", async ({ page }) => {
+  test("Ruled, not boxed: list rows are 112 dp with a 1 px rule and no gradient", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
     const rows = page.getByTestId("card-row");
     for (const r of [rows.nth(0), rows.nth(1)]) {
-      expect((await r.boundingBox())!.height).toBe(100);
+      expect((await r.boundingBox())!.height).toBe(112);
       expect(await r.evaluate((e) => getComputedStyle(e, "::after").borderBottomWidth)).toBe("1px");
       expect(await css(r.getByRole("button"), "background-image")).toBe("none");
       expect(await css(r.getByRole("button"), "box-shadow")).toBe("none");
