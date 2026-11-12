@@ -46,7 +46,15 @@ test("Toggle shares the Showing line: 5,000 cards, the toggle left of Sort, noth
   await page.goto("/?seed=5000");
   await openCollection(page);
   const row = await box(page.locator(".shown-row"));
-  const parts = [await box(page.getByTestId("shown")), await box(page.getByRole("group", { name: "View" })), await box(sortButton(page))];
+  // The text's own extent, not the paragraph's box: a word wider than its box spills out of it.
+  const text = await page.getByTestId("shown").evaluate((p) => {
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    const rects = [...range.getClientRects()];
+    const x = Math.min(...rects.map((r) => r.left));
+    return { x, y: 0, width: Math.max(...rects.map((r) => r.right)) - x, height: 0 };
+  });
+  const parts = [text, await box(page.getByRole("group", { name: "View" })), await box(sortButton(page))];
   await expect(sortButton(page)).toHaveText(/^Sort: Last name ↑$/);
   for (const b of [parts[1], parts[2]]) {
     expect(b.y).toBeGreaterThanOrEqual(row.y - 0.5);

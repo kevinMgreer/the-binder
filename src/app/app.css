@@ -153,8 +153,13 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .sheet-foot .primary { flex: 1; }
 .photo-row { display: flex; gap: var(--space-3); margin-bottom: var(--space-4); }
 .photo-thumb { height: 200px; min-width: 0; max-width: calc(50% - var(--space-3) / 2); padding: 0; border: 0; border-radius: 0; background: none; }
-.shown { margin: 0; color: var(--color-ink-muted); }
-.shown-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.shown { flex: 1; min-width: 0; margin: 0; color: var(--color-ink-muted); }
+.shown-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.view-toggle { display: flex; flex: none; }
+.view-toggle button { width: var(--target-min); padding: 0; }
+.view-toggle button:first-child { border-radius: var(--radius-frame) 0 0 var(--radius-frame); }
+.view-toggle button:last-child { margin-left: calc(var(--rule) * -1); border-radius: 0 var(--radius-frame) var(--radius-frame) 0; }
+.view-toggle button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-ground); }
 .empty { color: var(--color-ink-muted); padding: var(--space-5) var(--space-3); background: var(--color-panel); border: var(--rule) solid var(--color-rule); border-radius: var(--radius-frame); }
 
 .list-scroller { flex: 1; overflow: auto; margin-bottom: calc(var(--nav-height) + var(--space-2)); }
@@ -163,6 +168,15 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .list li::after { content: ""; position: absolute; left: 0; right: 0; bottom: var(--space-1); border-bottom: var(--rule) solid var(--color-rule); pointer-events: none; }
 .list li button { justify-content: flex-start; gap: var(--pad-row); width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; background: none; text-align: left; }
 .list li button:focus-visible { outline-offset: -2px; }
+/* Tiles: `lanes` of the virtualizer give --lane; the column width and left edge come from --cols and the frame gap. */
+.grid li { --col-w: calc((100% - (var(--cols) - 1) * var(--gap-frame)) / var(--cols)); right: auto; width: var(--col-w); left: calc(var(--lane) * (var(--col-w) + var(--gap-frame))); padding-bottom: var(--gap-frame); }
+.grid li::after { content: none; }
+.grid .grid-card { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--gap-caption); height: auto; min-width: 0; }
+.grid .thumb-slot { width: 100%; height: auto; aspect-ratio: var(--frame-ratio); }
+.grid-caption { display: flex; flex-direction: column; min-width: 0; font-size: var(--type-label); line-height: 1.3; }
+.grid-name, .grid-meta { height: 1.3em; min-width: 0; }
+.grid-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.grid-meta { display: flex; align-items: center; color: var(--color-ink-muted); }
 
 /* Trading-card frame: 2.5 by 3.5, turned for a landscape photo; the photo keeps its own ratio inside, never cropped. */
 .thumb-slot { display: flex; align-items: center; justify-content: flex-start; width: 96px; height: 96px; flex: none; }

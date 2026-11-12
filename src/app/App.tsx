@@ -4,7 +4,7 @@ import type { Card } from "../domain/card";
 import { CardDetail } from "./CardDetail";
 import { CardForm } from "./CardForm";
 import { defaultSort, emptyFilters, type Filters, type Sort } from "../domain/query";
-import { CollectionScreen } from "./CollectionScreen";
+import { CollectionScreen, type CardsView } from "./CollectionScreen";
 import { Dashboard } from "./Dashboard";
 import { openSheets } from "./Sheet";
 import { SettingsScreen } from "./SettingsScreen";
@@ -26,6 +26,7 @@ export function App() {
   const [view, setView] = useState<View>({ name: "dashboard" });
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [sort, setSort] = useState<Sort>(defaultSort);
+  const [cardsView, setCardsView] = useState<CardsView>("list");
 
   // Android back: one screen up, and leave the app only from the dashboard.
   useEffect(() => {
@@ -117,6 +118,8 @@ export function App() {
       onFiltersChange={setFilters}
       sort={sort}
       onSortChange={setSort}
+      view={cardsView}
+      onViewChange={setCardsView}
       onOpen={(card) => setView({ name: "detail", id: card.id, from: "list" })}
     />
   );

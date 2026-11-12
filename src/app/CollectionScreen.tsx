@@ -3,12 +3,16 @@ import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, type Sort, type SortBy } from "../domain/query";
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
+import { CardGrid } from "./CardGrid";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
+import { Icon } from "./Icon";
 import { Sheet } from "./Sheet";
 import { SyncActions, SyncIndicator } from "./SyncIndicator";
 import { UpdateLink } from "./UpdateLink";
 import type { UpdateInfo } from "./useUpdates";
+
+export type CardsView = "list" | "grid";
 
 interface Props {
   cards: Card[];
@@ -16,6 +20,8 @@ interface Props {
   onFiltersChange: (filters: Filters) => void;
   sort: Sort;
   onSortChange: (sort: Sort) => void;
+  view: CardsView;
+  onViewChange: (view: CardsView) => void;
   update: UpdateInfo | null;
   onAdd: () => void;
   onNavigate: (to: Destination) => void;
@@ -35,7 +41,7 @@ const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
@@ -150,12 +156,19 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         <p className="shown" data-testid="shown">
           Showing {shown.length}
         </p>
+        <div role="group" aria-label="View" className="view-toggle">
+          {(["list", "grid"] as const).map((v) => (
+            <button key={v} className="icon-button" aria-label={`${v === "list" ? "List" : "Grid"} view`} aria-pressed={view === v} onClick={() => onViewChange(v)}>
+              <Icon name={v} />
+            </button>
+          ))}
+        </div>
         <button aria-label={`Sort: ${sortLabel}, ${sort.descending ? "descending" : "ascending"}`} onClick={() => setSortOpen(true)}>
           Sort: {sortLabel} {sort.descending ? "↓" : "↑"}
         </button>
       </div>
       {shown.length > 0 ? (
-        <CardList cards={shown} onOpen={onOpen} />
+        view === "grid" ? <CardGrid cards={shown} onOpen={onOpen} /> : <CardList cards={shown} onOpen={onOpen} />
       ) : cards.length === 0 ? (
         <p className="empty" data-testid="empty-state">
           Your binder is empty. Scan a card or add one by hand.
