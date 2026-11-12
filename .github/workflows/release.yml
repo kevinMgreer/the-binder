@@ -92,7 +92,9 @@ jobs:
           OUT=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK")
           echo "$OUT"
           if echo "$OUT" | grep -qi "Android Debug"; then echo "Signed with a debug key"; exit 1; fi
-          if ! echo "$OUT" | grep -qi "$EXPECTED_CERT_SHA256"; then
+          # keytool's AB:CD:.. form (as stored) vs apksigner's plain hex
+          want=$(printf '%s' "$EXPECTED_CERT_SHA256" | tr -d ': ')
+          if ! echo "$OUT" | grep -qi "SHA-256 digest: $want"; then
             echo "Signing certificate does not match RELEASE_CERT_SHA256"; exit 1
           fi
           mkdir -p out
