@@ -220,9 +220,38 @@ test("delete from a card opened on the dashboard shows the dashboard", async () 
   await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
   fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, \d{4} / }));
   fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
-  fireEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+  fireEvent.click(within(screen.getByRole("alertdialog", { name: "Delete card" })).getByRole("button", { name: "Delete" }));
   await onDashboard();
   expect(screen.queryByRole("button", { name: /^Hank Aaron, / })).toBeNull();
+});
+
+async function openDeleteDialog() {
+  await renderSignedIn([makeCard({ player: "Hank Aaron" })]);
+  fireEvent.click(await screen.findByRole("button", { name: /^Hank Aaron, \d{4} / }));
+  const del = await screen.findByRole("button", { name: "Delete" });
+  fireEvent.click(del);
+  return { del, dialog: screen.getByRole("alertdialog", { name: "Delete card" }) };
+}
+
+test("back with the Delete dialog open keeps the card, back again leaves the screen", async () => {
+  await openDeleteDialog();
+  await pressBack();
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(screen.getByRole("button", { name: "Edit" })).toBeTruthy();
+  await pressBack();
+  await onDashboard();
+});
+
+test("Keep returns focus to Delete, and the scrim also keeps the card", async () => {
+  const { del, dialog } = await openDeleteDialog();
+  expect(document.activeElement).toBe(within(dialog).getByRole("button", { name: "Keep" }));
+  fireEvent.click(within(dialog).getByRole("button", { name: "Keep" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(document.activeElement).toBe(del);
+  fireEvent.click(del);
+  fireEvent.click(screen.getByRole("alertdialog", { name: "Delete card" }).parentElement!);
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(screen.getByRole("button", { name: "Edit" })).toBeTruthy();
 });
 
 test("back from a card's detail view shows the list, and the detail view has no Back button", async () => {

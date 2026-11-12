@@ -344,14 +344,71 @@ test.describe("destructive actions stay apart", () => {
     return Math.max(y.y - (x.y + x.height), x.y - (y.y + y.height), y.x - (x.x + x.width), x.x - (y.x + y.width));
   };
 
-  test("Delete is not beside Edit", async ({ page }) => {
+  const danger = (page: Page) =>
+    page.evaluate(() => {
+      const probe = Object.assign(document.createElement("i"), { style: "color: var(--color-danger)" });
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+
+  test("Delete beside Edit is still distinct", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
     await page.getByTestId("card-row").filter({ hasText: "Acuña" }).click();
+    const edit = page.getByRole("button", { name: "Edit", exact: true });
     const del = page.getByRole("button", { name: "Delete", exact: true });
-    expect(await gap(page.getByRole("button", { name: "Edit", exact: true }), del)).toBeGreaterThanOrEqual(24);
+    const [e, d] = await Promise.all([edit.boundingBox(), del.boundingBox()]);
+    expect(Math.abs(e!.y + e!.height / 2 - (d!.y + d!.height / 2))).toBeLessThan(4);
+    expect(await gap(edit, del)).toBeGreaterThanOrEqual(8);
+    expect(await css(del, "color")).toBe(await danger(page));
+    expect(await css(del, "background-color")).toBe("rgba(0, 0, 0, 0)");
+    expect(await css(del, "border-top-color")).toBe("rgba(0, 0, 0, 0)");
+    expect(await css(edit, "background-color")).not.toBe("rgba(0, 0, 0, 0)");
     await notAccent(page, del);
     await expect(page.getByText("13/150")).toBeVisible();
+  });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Header lines aligned and tight (${scheme})`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await seed(page, [{ ...CARDS[0], team: "Atlanta Braves" }]);
+      await page.getByTestId("card-row").first().click();
+      const title = page.getByRole("heading", { name: "Ronald Acuña Jr." });
+      const quiet = page.getByTestId("subtitle");
+      const team = page.getByTestId("team-line");
+      await expect(team).toHaveText("Atlanta Braves · Gold");
+      const [t, q, m] = await Promise.all([title, quiet, team].map((l) => l.boundingBox()));
+      expect(Math.abs(t!.x - q!.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(q!.x - m!.x)).toBeLessThanOrEqual(1);
+      expect(q!.y - (t!.y + t!.height)).toBeLessThanOrEqual(8);
+      expect(m!.y - (q!.y + q!.height)).toBeLessThanOrEqual(8);
+    });
+  }
+
+  test("Header without team or parallel", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ player: "Plain Card", cardNumber: "1", team: "", parallel: null }]);
+    await page.getByTestId("card-row").first().click();
+    await expect(page.getByTestId("subtitle")).toBeVisible();
+    await expect(page.getByTestId("team-line")).toHaveCount(0);
+    expect(await page.getByTestId("facts").locator("dt").allTextContents()).not.toContain("Team");
+  });
+
+  test("Dialog over the screen", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    await page.getByTestId("card-row").first().click();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Delete card" });
+    await expect(dialog).toBeInViewport({ ratio: 1 });
+    const box = (await dialog.boundingBox())!;
+    expect(Math.abs(box.x + box.width / 2 - 360 / 2)).toBeLessThanOrEqual(8);
+    await expect(dialog.getByRole("button", { name: "Keep" })).toBeFocused();
+    expect(await css(dialog.getByRole("button", { name: "Delete", exact: true }), "color")).toBe(await danger(page));
   });
 
   test("Detail photos are thumbnails: Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {
@@ -467,8 +524,8 @@ test.describe("polish after the second phone review", () => {
     const edit = page.getByRole("button", { name: "Edit", exact: true });
     await expect(subtitle).toHaveText("2024 Series 1 · #27");
     await expect(badge).toHaveText("13/150");
-    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel", "Condition", "Quantity"]);
-    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold", "PSA 9", "3"]);
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Condition", "Quantity"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "PSA 9", "3"]);
     const [t, b, f] = await Promise.all([title, badge, facts].map((l) => l.boundingBox()));
     expect(Math.abs(b!.y + b!.height / 2 - (t!.y + t!.height / 2))).toBeLessThan(16);
     const dd = (await facts.locator("dd").first().boundingBox())!;
