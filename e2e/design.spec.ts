@@ -396,22 +396,46 @@ test.describe("destructive actions stay apart", () => {
   }
 
   for (const scheme of ["light", "dark"] as const) {
-    test(`Header lines aligned and tight (${scheme})`, async ({ page }) => {
+    test(`Header breathes (${scheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/");
       await seed(page, [{ ...CARDS[0], team: "Atlanta Braves" }]);
       await page.getByTestId("card-row").first().click();
       const title = page.getByRole("heading", { name: "Ronald Acuña Jr." });
       const quiet = page.getByTestId("subtitle");
-      const team = page.getByTestId("team-line");
-      await expect(team).toHaveText("Atlanta Braves · Gold");
-      const [t, q, m] = await Promise.all([title, quiet, team].map((l) => l.boundingBox()));
+      const [s, t, q, r] = await Promise.all(
+        [page.locator("section").first(), title, quiet, page.locator("section .title-rule")].map((l) => l.boundingBox()),
+      );
       expect(Math.abs(t!.x - q!.x)).toBeLessThanOrEqual(1);
-      expect(Math.abs(q!.x - m!.x)).toBeLessThanOrEqual(1);
-      expect(q!.y - (t!.y + t!.height)).toBeLessThanOrEqual(8);
-      expect(m!.y - (q!.y + q!.height)).toBeLessThanOrEqual(8);
+      expect(t!.y - s!.y).toBeGreaterThanOrEqual(16);
+      expect(Math.abs(q!.y - (t!.y + t!.height) - 8)).toBeLessThanOrEqual(2);
+      expect(r!.y - (q!.y + q!.height)).toBeGreaterThanOrEqual(12);
+      await expect(page.getByTestId("team-line")).toHaveCount(0);
     });
   }
+
+  test("Team and Parallel are fact rows", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ ...CARDS[0], team: "Atlanta Braves" }]);
+    await page.getByTestId("card-row").first().click();
+    const facts = page.getByTestId("facts");
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold"]);
+  });
+
+  test("Long names wrap cleanly", async ({ page }) => {
+    await page.goto("/");
+    const player = "Bartholomew Maximilian Featherstonehaugh-Villanueva III";
+    await seed(page, [{ ...CARDS[0], player, set: "Topps Chrome Update Series Sapphire Edition Anniversary", team: "Los Angeles Angels of Anaheim" }]);
+    await page.getByTestId("card-row").first().click();
+    const title = page.getByRole("heading", { name: player });
+    const [t, b] = await Promise.all([title, page.locator("section .tag")].map((l) => l.boundingBox()));
+    expect(t!.height).toBeGreaterThan(40);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const lineHeight = parseFloat(await css(title, "line-height"));
+    expect(b!.y + b!.height).toBeLessThanOrEqual(t!.y + lineHeight + 4);
+    expect(b!.x).toBeGreaterThanOrEqual(t!.x + t!.width - 1);
+  });
 
   test("Header without team or parallel", async ({ page }) => {
     await page.goto("/");
@@ -420,6 +444,7 @@ test.describe("destructive actions stay apart", () => {
     await expect(page.getByTestId("subtitle")).toBeVisible();
     await expect(page.getByTestId("team-line")).toHaveCount(0);
     expect(await page.getByTestId("facts").locator("dt").allTextContents()).not.toContain("Team");
+    expect(await page.getByTestId("facts").locator("dt").allTextContents()).not.toContain("Parallel");
   });
 
   test("Dialog over the screen", async ({ page }) => {
@@ -558,8 +583,8 @@ test.describe("polish after the second phone review", () => {
     const edit = page.getByRole("button", { name: "Edit", exact: true });
     await expect(subtitle).toHaveText("2024 Series 1 · #27");
     await expect(badge).toHaveText("13/150");
-    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Condition", "Quantity"]);
-    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "PSA 9", "3"]);
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel", "Condition", "Quantity"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold", "PSA 9", "3"]);
     const [t, b, f] = await Promise.all([title, badge, facts].map((l) => l.boundingBox()));
     expect(Math.abs(b!.y + b!.height / 2 - (t!.y + t!.height / 2))).toBeLessThan(16);
     const dd = (await facts.locator("dd").first().boundingBox())!;
