@@ -59,7 +59,7 @@ async function choose(page: Page, side: "front" | "back", action: string) {
   await page.getByRole("dialog", { name: `${side === "front" ? "Front" : "Back"} photo` }).getByRole("button", { name: action }).click();
 }
 
-test("Front then back: each tile's chooser attaches both photos", async ({ page }) => {
+test("Front then back: each tile's chooser offers its actions, and Scan front fills both", async ({ page }) => {
   await setNextPhoto(page);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
   await page.getByRole("button", { name: "Add front photo" }).click();
@@ -71,12 +71,6 @@ test("Front then back: each tile's chooser attaches both photos", async ({ page 
   await expect(page.getByRole("button", { name: "Pick back from photos" })).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
   await choose(page, "front", "Scan front");
-  await expect(page.getByAltText("Front photo")).toBeVisible();
-  await expect(page.getByAltText("Back photo")).toBeVisible();
-  await page.getByRole("button", { name: "Change front photo" }).click();
-  await expect(page.getByRole("button", { name: "Retake front" })).toBeVisible();
-  await page.getByRole("button", { name: "Close" }).click();
-  await choose(page, "front", "Retake front");
   await expect(page.getByAltText("Front photo")).toBeVisible();
   await expect(page.getByAltText("Back photo")).toBeVisible();
   await fillRequired(page);

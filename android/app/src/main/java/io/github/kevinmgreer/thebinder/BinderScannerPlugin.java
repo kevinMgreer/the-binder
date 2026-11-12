@@ -2,6 +2,7 @@ package io.github.kevinmgreer.thebinder;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
@@ -22,7 +23,7 @@ import org.json.JSONObject;
 
 /**
  * Card scanner for the web layer: Google's ML Kit Document Scanner (rear camera, edge detection, crop).
- * scan() resolves with the cropped image's file uri, or a null uri when the user closes the scanner, and rejects with the
+ * scan({ hint }) shows the optional hint as a Toast over the scanner. It resolves with the cropped image's file uri, or a null uri when the user closes the scanner, and rejects with the
  * code UNAVAILABLE when the scanner cannot run (no Google Play services, or its module cannot be fetched), so the web
  * layer can fall back to the system camera.
  */
@@ -54,11 +55,16 @@ public class BinderScannerPlugin extends Plugin {
             .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
             .setGalleryImportAllowed(false)
             .build();
-        GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
+        String hint = call.getString("hint");
+        GmsDocumentScanner scanner =GmsDocumentScanning.getClient(options);
         pendingScan = call;
         scanner
             .getStartScanIntent(getActivity())
-            .addOnSuccessListener(intentSender -> scanLauncher.launch(new IntentSenderRequest.Builder(intentSender).build()))
+            .addOnSuccessListener(intentSender -> {
+                scanLauncher.launch(new IntentSenderRequest.Builder(intentSender).build());
+                // The scanner's own screens cannot be customised; a Toast outlives the launch and shows over them.
+                if (hint != null && !hint.isEmpty()) Toast.makeText(getContext(), hint, Toast.LENGTH_LONG).show();
+            })
             .addOnFailureListener(e -> {
                 pendingScan = null;
                 call.reject("Scanner could not start: " + e.getMessage(), "UNAVAILABLE");

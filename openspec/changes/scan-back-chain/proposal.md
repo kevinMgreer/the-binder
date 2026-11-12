@@ -10,14 +10,17 @@ Adding a card almost always means scanning both sides. Today, after the front sc
 - On-device recognition still runs as each photo attaches; the "Processing photo…" state, Save held while preparing, Cancel with its Discard confirmation and Android back behave as the existing specs say.
 - "Next" is taken to be the scanner's own accept button (the ML Kit scanner's Done, or the system camera's confirm in the fallback): the chain starts when the front scan result comes back to the form.
 
+- Every camera scan from a tile (Scan, Retake and the chained back scan) names its side in a short Android Toast over the scanner: "Scan the front of the card" / "Scan the back of the card". The owner found the chained back scan unclear without it. Pick from photos and the system-camera fallback show none.
+
 ## Out of scope
 
 - A setting to turn the chain off.
 - A "Scan back now?" prompt after the front.
 - Chaining after "Pick front from photos", or chaining front after a back scan.
 - Scanning both sides in one scanner session (ML Kit multi-page).
-- Any change to the scanner itself (`BinderScannerPlugin.java`, its options or the fallback camera), the photo pipeline, OCR or Claude identification.
-- Any UI text or layout change.
+- Any change to the scanner's options or the fallback camera, the photo pipeline, OCR or Claude identification.
+- Any in-app UI text or layout change (the hint is a native Toast).
+- An interstitial screen before the scanner, or a persistent banner.
 
 ## Capabilities
 
@@ -28,13 +31,14 @@ None.
 ### Modified Capabilities
 
 - `card-photos`: "Capture front and back" gains the scan-front-then-back chain and its exceptions.
-- `card-scanner`: "Scan a card with the rear camera", whose "Front then back" scenario said the form returns with the back left for the user to start; it now opens the back scanner.
+- `card-scanner`: "Scan a card with the rear camera", whose "Front then back" scenario said the form returns with the back left for the user to start; it now opens the back scanner. New requirement "Name the side being scanned" for the hint.
 
 ## Impact
 
+- `src/adapters/document-scanner-photo-source.ts`, `src/adapters/capacitor-scanner.ts` and `android/.../BinderScannerPlugin.java`: the `hint` string and the Toast.
 - `src/app/PhotoSlot.tsx`: reports a successful Scan of an empty side, and can start its own scan without the chooser.
 - `src/app/CardForm.tsx`: starts the back scan after the front scan when the back is empty.
 - `src/adapters/fakes.ts`: `FakePhotoSource` can return a different result for the back capture (e2e).
 - Tests: `src/app/photo-slot.test.tsx`, `src/app/card-form-actions.test.tsx`, `e2e/photos.spec.ts`, `e2e/identification.spec.ts` (existing front-scan cases now see a back scan).
 - `docs/device-checklist.md`: the Scan front line changes and a phone check is added.
-- No new dependency, no native change, no cost.
+- No new dependency, no cost. One small native change (the Toast), so the phone build needs a rebuild.
