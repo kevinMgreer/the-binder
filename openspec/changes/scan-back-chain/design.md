@@ -46,7 +46,7 @@ $0: no new dependency.
 - `CardForm` passes `onBackPage` to the Front tile only while `hasPhoto("back")` is false, and it is the same attach function the Back tile's own `onChange` uses, so page 2 is stored, saved, discarded and recognized exactly like a back scan.
 - Both photos attach in the same tick, so the recognition effect sees both as new and runs on-device recognition once with front and back together. Each photo is recognized once.
 - While the pages are processed, the Front tile shows "Processing photo…" and the form holds Save (`preparing.front`); the Back tile fills when both are ready. The form counts as changed from then on (Cancel asks, Discard drops both).
-- The first version's `onScanned`, `scan()` ref handle, `PhotoSlotHandle` and its busy/filled guard are removed: no second scan is started from the form, so there is no race between two takes.
+- The first version's `onScanned`, `scan()` ref handle, `PhotoSlotHandle` and its busy/filled guard are removed: no second scan is started from the form, so there is no race between two takes. A Back tile that is still processing makes the next front scan single-page, so page 2 cannot overwrite it.
 
 ### D4. The system-camera fallback opens twice
 

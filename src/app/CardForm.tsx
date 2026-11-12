@@ -298,7 +298,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
             captured={photos[side]}
             onChange={attach(side)}
             onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
-            onBackPage={side === "front" && !hasPhoto("back") ? attach("back") : undefined}
+            onBackPage={side === "front" && !hasPhoto("back") && !preparing.back ?attach("back") : undefined}
           />
         ))}
       </div>
