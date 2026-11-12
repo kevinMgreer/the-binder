@@ -304,6 +304,27 @@ describe("photos", () => {
     expect((await a.collection.get(c.id))!.photos.front).toBeNull();
   });
 
+  test("a photo removed while it is uploading is not put back and its Drive files are deleted", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("a") });
+    const upload = remote.uploadPhoto.bind(remote);
+    let removed = false;
+    remote.uploadPhoto = async (name, blob, kind) => {
+      const id = await upload(name, blob, kind);
+      if (!removed) {
+        removed = true;
+        await saveCard(a.deps, (await a.collection.get(c.id))!, { front: null });
+      }
+      return id;
+    };
+    await a.engine.syncNow();
+    expect((await a.collection.get(c.id))!.photos.front).toBeNull();
+    expect(remote.photoNames()).toEqual([]);
+    expect(await a.photos.pendingUploads()).toEqual([]);
+  });
+
   test("deleting a card removes its photos from Drive", async () => {
     const remote = new InMemoryRemoteStore();
     const a = install(remote);
