@@ -753,6 +753,27 @@ test.describe("States at phone size", () => {
       },
     ],
     [
+      "discard confirm",
+      async (page) => {
+        await page.getByRole("button", { name: "Add card", exact: true }).click();
+        await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
+        await page.getByRole("button", { name: "Cancel" }).click();
+        return page.getByRole("alertdialog", { name: "Discard this card?" });
+      },
+    ],
+    [
+      "duplicate confirm",
+      async (page) => {
+        await seed(page, [{}]);
+        await page.getByRole("button", { name: "Add card", exact: true }).click();
+        for (const [label, value] of [["Player", "Ronald Acuña Jr."], ["Year", "2024"], ["Set", "Series 1"], ["Card number", "27"]]) {
+          await page.getByLabel(label, { exact: true }).fill(value);
+        }
+        await page.getByRole("button", { name: "Save", exact: true }).click();
+        return page.getByRole("alertdialog", { name: "Duplicate card" });
+      },
+    ],
+    [
       "sign-out confirm",
       async (page) => {
         await page.getByRole("button", { name: "Settings" }).click();
@@ -1112,9 +1133,14 @@ test.describe("Form actions and Sort sheet", () => {
     expect(save.width).toBeGreaterThan(cancel.width);
     await page.getByLabel("Player").fill("Hank Aaron");
     await hardwareBack(page);
-    await expect(page.getByRole("alertdialog", { name: "Discard this card?" })).toBeVisible();
+    const dialog = page.getByRole("alertdialog", { name: "Discard this card?" });
+    await expect(dialog).toBeVisible();
+    const box = (await dialog.boundingBox())!;
+    expect(Math.abs(box.x + box.width / 2 - 180)).toBeLessThanOrEqual(8);
+    expect(Math.abs(box.y + box.height / 2 - 400)).toBeLessThanOrEqual(8);
     await hardwareBack(page);
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Cancel" })).toBeFocused();
     await expect(page.getByLabel("Player")).toHaveValue("Hank Aaron");
   });
 

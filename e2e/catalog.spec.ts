@@ -149,7 +149,7 @@ test("Graded card displays PSA 9 and hides raw condition", async ({ page }) => {
 test("Add a duplicate offers to increase the existing quantity", async ({ page }) => {
   await addCard(page, base);
   await tryAddCard(page, base);
-  await page.getByRole("dialog").getByRole("button", { name: "Increase quantity" }).click();
+  await page.getByRole("alertdialog", { name: "Duplicate card" }).getByRole("button", { name: "Increase quantity" }).click();
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText("×2");
 });
@@ -160,7 +160,7 @@ test("The duplicate prompt is in view when Save is tapped at the top of the form
   await fillCard(page, base);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("dialog").getByRole("button", { name: "Increase quantity" })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByRole("alertdialog", { name: "Duplicate card" }).getByRole("button", { name: "Increase quantity" })).toBeInViewport({ ratio: 1 });
 });
 
 test("Edit a card updates the notes and the last-edited time", async ({ page }) => {

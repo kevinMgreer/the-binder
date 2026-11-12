@@ -1,8 +1,9 @@
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
+import type { Card } from "../domain/card";
 import { makeCard } from "../domain/fixtures";
-import { PermissionDeniedError, type CapturedPhoto } from "../ports";
+import { PermissionDeniedError, type CapturedPhoto, type Photos } from "../ports";
 import { CardForm } from "./CardForm";
 import { PortsProvider } from "./ports-context";
 import { openSheets } from "./Sheet";
@@ -303,14 +304,120 @@ test("after a two-page scan Cancel then Discard saves nothing, and recognition r
   expect(onSave).not.toHaveBeenCalled();
 });
 
-test("back with the duplicate prompt open shows no discard dialog", async () => {
-  renderForm(undefined, [makeCard()]);
+const form = () => document.querySelector("form") as HTMLFormElement;
+const player = () => (screen.getByLabelText("Player") as HTMLInputElement).value;
+const saveButton = () => screen.getByRole("button", { name: "Save" });
+
+async function openDuplicate() {
+  const existing = makeCard();
+  const onSave = vi.fn(async (_card: Card, _photos?: Photos) => {});
+  render(
+    <PortsProvider ports={createFakePorts()}>
+      <CardForm cards={[existing]} onSave={onSave} onCancel={vi.fn()} />
+    </PortsProvider>,
+  );
   type("Player", "Ronald Acuña Jr.");
   type("Year", "2024");
   type("Set", "Series 1");
   type("Card number", "27");
-  fireEvent.click(screen.getByRole("button", { name: "Save" }));
-  await screen.findByRole("dialog", { name: "Duplicate card" });
+  fireEvent.click(saveButton());
+  await screen.findByRole("alertdialog", { name: "Duplicate card" });
+  return { existing, onSave };
+}
+
+test("the discard prompt is a modal over a scrim outside the inert form, with a danger Discard", () => {
+  renderForm();
+  type("Player", "Hank Aaron");
+  expect(form().hasAttribute("inert")).toBe(false);
+  cancel();
+  const dialog = screen.getByRole("alertdialog", { name: "Discard this card?" });
+  expect(dialog.getAttribute("aria-modal")).toBe("true");
+  expect(dialog.parentElement?.matches(".backdrop.center")).toBe(true);
+  expect(form().contains(dialog)).toBe(false);
+  expect(form().hasAttribute("inert")).toBe(true);
+  const discard = within(dialog).getByRole("button", { name: "Discard" });
+  expect(discard.classList.contains("danger")).toBe(true);
+  expect(discard.classList.contains("primary")).toBe(false);
+  fireEvent.click(within(dialog).getByRole("button", { name: "Keep editing" }));
+  expect(form().hasAttribute("inert")).toBe(false);
+});
+
+test("a scrim click or Escape on the discard prompt means Keep editing", () => {
+  const onCancel = renderForm();
+  type("Player", "Hank Aaron");
+  for (const close of [
+    () => fireEvent.click(screen.getByRole("alertdialog").parentElement!),
+    () => fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Escape" }),
+  ]) {
+    cancel();
+    close();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(player()).toBe("Hank Aaron");
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
+  }
+});
+
+test("a click inside the discard panel does not close it", () => {
+  renderForm();
+  type("Player", "Hank Aaron");
+  cancel();
+  fireEvent.click(screen.getByText("Discard this card?"));
+  expect(screen.getByRole("alertdialog")).toBeTruthy();
+});
+
+test("the duplicate prompt is a described modal alertdialog with its buttons in order", async () => {
+  await openDuplicate();
+  const dialog = screen.getByRole("alertdialog", { name: "Duplicate card" });
+  expect(dialog.getAttribute("aria-modal")).toBe("true");
+  expect(dialog.parentElement?.matches(".backdrop.center")).toBe(true);
+  expect(form().hasAttribute("inert")).toBe(true);
+  expect(document.getElementById(dialog.getAttribute("aria-describedby")!)?.textContent).toBe(
+    "This card is already in your collection (1 owned).",
+  );
+  const buttons = within(dialog).getAllByRole("button");
+  expect(buttons.map((b) => b.textContent)).toEqual(["Increase quantity", "Add as separate card", "Back to form"]);
+  expect(document.activeElement).toBe(buttons[0]);
+});
+
+test("Back to form, the scrim, Escape and Android back close the duplicate prompt without saving", async () => {
+  const { onSave } = await openDuplicate();
+  const closers = [
+    () => fireEvent.click(screen.getByRole("button", { name: "Back to form" })),
+    () => fireEvent.click(screen.getByRole("alertdialog").parentElement!),
+    () => fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Escape" }),
+    () => act(() => openSheets.at(-1)?.()),
+  ];
+  for (const [i, close] of closers.entries()) {
+    close();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(form().hasAttribute("inert")).toBe(false);
+    expect(player()).toBe("Ronald Acuña Jr.");
+    expect(document.activeElement).toBe(saveButton());
+    expect(onSave).not.toHaveBeenCalled();
+    if (i < closers.length - 1) {
+      fireEvent.click(saveButton());
+      await screen.findByRole("alertdialog", { name: "Duplicate card" });
+    }
+  }
+});
+
+test("Increase quantity saves the existing card at 2 and Add as separate card saves the new one", async () => {
+  const first = await openDuplicate();
+  fireEvent.click(screen.getByRole("button", { name: "Increase quantity" }));
+  expect(first.onSave).toHaveBeenCalledWith(expect.objectContaining({ id: first.existing.id, quantity: 2 }));
+  cleanup();
+  const second = await openDuplicate();
+  fireEvent.click(screen.getByRole("button", { name: "Add as separate card" }));
+  expect(second.onSave).toHaveBeenCalledWith(expect.objectContaining({ player: "Ronald Acuña Jr.", quantity: 1 }), {});
+  expect(second.onSave.mock.calls[0][0].id).not.toBe(second.existing.id);
+});
+
+test("back with the duplicate prompt open closes it, then back asks to discard", async () => {
+  await openDuplicate();
   act(() => openSheets.at(-1)?.());
   expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(form()).toBeTruthy();
+  act(() => openSheets.at(-1)?.());
+  expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
 });
