@@ -392,3 +392,30 @@ test("Deleted card: back to the top of the grid without it", async ({ page }) =>
   await expect(tiles(page).first()).toContainText("Player 001");
   expect(await page.evaluate(() => !!document.activeElement?.closest("[data-testid=card-tile]"))).toBe(false);
 });
+
+for (const [start, item] of [["list", (p: Page) => p.getByTestId("card-row")], ["grid", tiles]] as const) {
+  test(`After back, the view button starts the other view at the top and keeps focus (${start})`, async ({ page }) => {
+    await page.goto("/");
+    await seed(page, many(200));
+    if (start === "grid") await gridView(page).click();
+    const name = await openFarAndBack(page, item(page));
+    await expectBackOn(page, item(page), name);
+    await (start === "grid" ? listView(page) : gridView(page)).click();
+    await expect(start === "grid" ? page.getByTestId("card-row").first() : tiles(page).first()).toContainText("Player 001");
+    expect(await page.locator(".list-scroller").evaluate((el) => el.scrollTop)).toBe(0);
+    await expect(start === "grid" ? gridView(page) : listView(page)).toBeFocused();
+  });
+}
+
+test("After back, clearing a no-match search keeps focus in the search field", async ({ page }) => {
+  await page.goto("/");
+  await seed(page, many(200));
+  const name = await openFarAndBack(page, page.getByTestId("card-row"));
+  await expectBackOn(page, page.getByTestId("card-row"), name);
+  const search = page.getByLabel("Search", { exact: true });
+  await search.fill("zzz");
+  await expect(page.getByTestId("no-match")).toBeVisible();
+  await search.fill("");
+  await expect(page.getByTestId("card-row").first()).toBeVisible();
+  await expect(search).toBeFocused();
+});
