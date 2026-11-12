@@ -15,7 +15,9 @@ interface Props {
 const SIDES: CardSide[] = ["front", "back"];
 
 function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen: () => void }) {
-  const url = useThumbUrl(card.id, side, true, card.updatedAt);
+  const thumb = useThumbUrl(card.id, side, true, card.updatedAt);
+  const full = useThumbUrl(card.id, side, true, card.updatedAt, "full");
+  const url = full ?? thumb;
   return (
     <button className="photo-thumb" aria-label={`View ${side} photo`} onClick={onOpen}>
       <Frame url={url} cacheKey={`${card.id}:${side}:${card.updatedAt}`} />

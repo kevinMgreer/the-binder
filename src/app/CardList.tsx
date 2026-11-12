@@ -4,8 +4,8 @@ import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { Thumb } from "./Thumb";
 
-// Fits the 67 dp thumbnail, the button's 12 dp padding and the 8 dp gap to the next row (the li's bottom padding).
-const ROW_HEIGHT = 100;
+// Fits the 96 dp thumbnail slot centred in the button (row minus the li's 8 dp bottom padding, the gap to the next row).
+const ROW_HEIGHT = 112;
 
 export function CardList({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card) => void }) {
   const scroller = useRef<HTMLDivElement>(null);

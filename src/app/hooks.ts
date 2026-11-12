@@ -13,17 +13,23 @@ export function useBlobUrl(blob: Blob | undefined): string | undefined {
   return url;
 }
 
-export function useThumbUrl(cardId: string, side: CardSide, enabled: boolean, version: string): string | undefined {
+export function useThumbUrl(
+  cardId: string,
+  side: CardSide,
+  enabled: boolean,
+  version: string,
+  kind: "thumb" | "full" = "thumb",
+): string | undefined {
   const { photos } = usePorts();
   const [blob, setBlob] = useState<Blob>();
   useEffect(() => {
     let live = true;
     if (!enabled) setBlob(undefined);
-    else void photos.getThumb(cardId, side).then((b) => live && setBlob(b));
+    else void (kind === "full" ? photos.getFull(cardId, side) : photos.getThumb(cardId, side)).then((b) => live && setBlob(b));
     return () => {
       live = false;
     };
-  }, [photos, cardId, side, enabled, version]);
+  }, [photos, cardId, side, enabled, version, kind]);
   return useBlobUrl(blob);
 }
 
