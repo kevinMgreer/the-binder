@@ -298,7 +298,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
             onChange={(p) => setPhotos((s) => ({ ...s, [side]: p ?? (card?.photos[side] ? null : undefined) }))}
             onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
             ref={side === "back" ? backSlot : undefined}
-            onScanned={side === "front" ? () => !hasPhoto("back") && backSlot.current?.scan() : undefined}
+            onScanned={side === "front" ? () => backSlot.current?.scan() : undefined}
           />
         ))}
       </div>

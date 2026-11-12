@@ -75,7 +75,12 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy, onScanned, r
     }
   }
 
-  useImperativeHandle(ref, () => ({ scan: () => void take("camera") }));
+  // Rebuilt each render so it reads committed state: a take already under way, or a photo already there, is left alone.
+  useImperativeHandle(ref, () => ({
+    scan: () => {
+      if (!busy && !filled) void take("camera");
+    },
+  }));
 
   return (
     <div className="photo-cell">
