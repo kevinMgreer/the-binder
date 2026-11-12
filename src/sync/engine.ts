@@ -39,6 +39,7 @@ export class SyncEngine {
   private failures = 0;
   private lastVersion: string | null = null;
   private thumbs: Promise<void> = Promise.resolve();
+  private scanningThumbs = false;
   private debounceTimer?: ReturnType<typeof setTimeout>;
   private retryTimer?: ReturnType<typeof setTimeout>;
   private intervalTimer?: ReturnType<typeof setInterval>;
@@ -185,7 +186,7 @@ export class SyncEngine {
       photos.pendingDeletes(),
     ]);
     if (pending.length + uploads.length + deletes.length === 0 && version !== null && version === this.lastVersion) {
-      this.thumbs = this.fetchThumbs();
+      this.startThumbs();
       return "done";
     }
 
@@ -197,8 +198,17 @@ export class SyncEngine {
       if (again === "needs-decision") return again;
     }
     await this.deleteTrashedPhotos();
-    this.thumbs = this.fetchThumbs();
+    this.startThumbs();
     return "done";
+  }
+
+  /** One scan at a time: an overlapping one would download the same thumbnails again. The next sync picks up what a running scan skipped. */
+  private startThumbs() {
+    if (this.scanningThumbs) return;
+    this.scanningThumbs = true;
+    this.thumbs = this.fetchThumbs().finally(() => {
+      this.scanningThumbs = false;
+    });
   }
 
   /** Returns whether any card was changed, so the caller pushes it. */
@@ -207,7 +217,10 @@ export class SyncEngine {
     let changed = false;
     for (const upload of await photos.pendingUploads()) {
       const card = await collection.get(upload.cardId);
-      if (!card || card.deletedAt !== null || card.photos[upload.side] === null) {
+      const ref = card?.photos[upload.side];
+      // A saved replacement has fileId null and its old file queued for deletion. Any other file id came from a newer card pulled from Drive: keep it.
+      const replacedFromRemote = !!ref?.fileId && !(await photos.pendingDeletes()).includes(ref.fileId);
+      if (!card || card.deletedAt !== null || ref === null || replacedFromRemote) {
         await photos.markUploaded(upload.cardId, upload.side, upload.revision);
         continue;
       }

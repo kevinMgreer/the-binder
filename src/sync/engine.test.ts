@@ -391,6 +391,26 @@ describe("data-loss fixes", () => {
     expect(await a.photos.pendingUploads()).toHaveLength(0);
   });
 
+  test("an older photo from one device does not replace a newer photo from another", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const b = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("o") });
+    await a.engine.syncNow();
+    await b.engine.syncNow();
+
+    const base = (await a.collection.get(c.id))!;
+    await saveCard(a.deps, { ...base, updatedAt: at(3) }, { front: photo("a") });
+    await saveCard(b.deps, { ...(await b.collection.get(c.id))!, updatedAt: at(10) }, { front: photo("b") });
+    await b.engine.syncNow();
+    const bRef = (await b.collection.get(c.id))!.photos.front!;
+    await a.engine.syncNow();
+
+    expect((await a.collection.get(c.id))!.photos.front).toEqual(bRef);
+    expect(remote.hasPhoto(bRef.fileId)).toBe(true);
+  });
+
   test("a thumbnail that failed to download is fetched by the next sync, even when nothing changed", async () => {
     const remote = new InMemoryRemoteStore();
     const a = install(remote);
