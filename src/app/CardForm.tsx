@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { CONDITIONS, type Card, type CardSide, type Suggestion } from "../domain/card";
 import { isSerialNumbered } from "../domain/format";
 import { findDuplicate } from "../domain/query";
@@ -155,15 +156,22 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const question = card ? "Discard changes?" : "Discard this card?";
 
   const cancelButton = useRef<HTMLButtonElement>(null);
+  const saveButton = useRef<HTMLButtonElement>(null);
+  // The form is inert while a prompt shows and an inert element cannot take focus, so commit the close first.
   const keepEditing = () => {
-    setConfirming(false);
+    flushSync(() => setConfirming(false));
     cancelButton.current?.focus();
   };
+  const backToForm = () => {
+    flushSync(() => setDuplicate(undefined));
+    saveButton.current?.focus();
+  };
+  const closePrompt = duplicate ? backToForm : keepEditing;
 
   // Android back asks first, like Cancel; back again while asking means Keep editing.
   useEffect(() => {
-    if ((!dirty && !confirming) || duplicate) return;
-    const back = () => (confirming ? keepEditing() : setConfirming(true));
+    if (!dirty && !confirming && !duplicate) return;
+    const back = duplicate ? backToForm : confirming ? keepEditing : () => setConfirming(true);
     openSheets.push(back);
     return () => void openSheets.splice(openSheets.lastIndexOf(back), 1);
   }, [dirty, confirming, duplicate]);
@@ -212,6 +220,9 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   }, [photos]);
 
   const hasPhoto = (side: CardSide) => (photos[side] === undefined ? !!card?.photos[side] : !!photos[side]);
+  // A removed capture is simply gone; only a stored photo needs the null to be removed on save.
+  const attach = (side: CardSide) => (p: CapturedPhoto | null) =>
+    setPhotos((s) => ({ ...s, [side]: p ?? (card?.photos[side] ? null : undefined) }));
 
   async function identify() {
     if (!navigator.onLine) return setNote("Identify with Claude needs an internet connection.");
@@ -283,7 +294,8 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={submit} noValidate>
+    <>
+    <form onSubmit={submit} noValidate inert={confirming || !!duplicate}>
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <div className="title-rule" aria-hidden="true" />
       <div className="photo-tiles">
@@ -293,9 +305,9 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
             side={side}
             card={card}
             captured={photos[side]}
-            // A removed capture is simply gone; only a stored photo needs the null to be removed on save.
-            onChange={(p) => setPhotos((s) => ({ ...s, [side]: p ?? (card?.photos[side] ? null : undefined) }))}
+            onChange={attach(side)}
             onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
+            onBackPage={side === "front" && !hasPhoto("back") && !preparing.back ?attach("back") : undefined}
           />
         ))}
       </div>
@@ -349,42 +361,6 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       <Field label="Notes">
         <textarea id={fieldId("Notes")} value={draft.notes} onChange={(e) => set("notes", e.target.value)} />
       </Field>
-      {confirming && (
-        <div role="alertdialog" aria-label={question}>
-          <p>{question}</p>
-          <button type="button" autoFocus onClick={keepEditing}>
-            Keep editing
-          </button>
-          <button type="button" className="danger" onClick={onCancel}>
-            Discard
-          </button>
-        </div>
-      )}
-      {duplicate && (
-        <div role="dialog" aria-modal="true" aria-label="Duplicate card">
-          <p>This card is already in your collection ({duplicate.existing.quantity} owned).</p>
-          <button
-            type="button"
-            autoFocus
-            onClick={() =>
-              onSave({
-                ...duplicate.existing,
-                quantity: duplicate.existing.quantity + duplicate.added.quantity,
-                updatedAt: new Date().toISOString(),
-              })
-            }
-          >
-            Increase quantity
-          </button>
-          <button type="button" onClick={() => onSave(duplicate.added, photos)}>
-            Add as separate card
-          </button>
-          <button type="button" onClick={() => setDuplicate(undefined)}>
-            Back to form
-          </button>
-        </div>
-      )}
-      {/* Last in the flow, after the dialogs, so a dialog at the form's end scrolls fully above the sticky bar. */}
       <div className="form-bar">
         {errors.card && <p role="alert">{errors.card}</p>}
         {blocked.length > 0 && (
@@ -396,11 +372,58 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
           <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>
             Cancel
           </button>
-          <button type="submit" className="primary" disabled={preparing.front || preparing.back}>
+          <button type="submit" className="primary" ref={saveButton} disabled={preparing.front || preparing.back}>
             Save
           </button>
         </div>
       </div>
     </form>
+    {(confirming || duplicate) && (
+      <div className="backdrop center" onClick={closePrompt} onKeyDown={(e) => e.key === "Escape" && closePrompt()}>
+        {duplicate ? (
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-label="Duplicate card"
+            aria-describedby="duplicate-message"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p id="duplicate-message">This card is already in your collection ({duplicate.existing.quantity} owned).</p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() =>
+                onSave({
+                  ...duplicate.existing,
+                  quantity: duplicate.existing.quantity + duplicate.added.quantity,
+                  updatedAt: new Date().toISOString(),
+                })
+              }
+            >
+              Increase quantity
+            </button>
+            <button type="button" onClick={() => onSave(duplicate.added, photos)}>
+              Add as separate card
+            </button>
+            <button type="button" onClick={backToForm}>
+              Back to form
+            </button>
+          </div>
+        ) : (
+          <div role="alertdialog" aria-modal="true" aria-label={question} onClick={(e) => e.stopPropagation()}>
+            <p>{question}</p>
+            <div className="actions">
+              <button type="button" autoFocus onClick={keepEditing}>
+                Keep editing
+              </button>
+              <button type="button" className="danger" onClick={onCancel}>
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+    </>
   );
 }

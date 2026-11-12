@@ -42,13 +42,24 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
+/** Sets the second page of a two-page scan (the back), or `null` for Done after the front. */
+async function setNextBack(page: Page, back: "photo" | null) {
+  await page.evaluate(async (back) => {
+    const source = (window as unknown as Win).__ports.photoSource;
+    if (back === null) return void (source.nextBack = null);
+    const canvas = new OffscreenCanvas(800, 600);
+    canvas.getContext("2d")!.fillRect(0, 0, 800, 600);
+    source.nextBack = await canvas.convertToBlob({ type: "image/jpeg" });
+  }, back);
+}
+
 /** Opens a side's tile (empty or filled) and taps one of its chooser actions. */
 async function choose(page: Page, side: "front" | "back", action: string) {
   await page.getByRole("button", { name: new RegExp(`^(Add|Change) ${side} photo$`) }).click();
   await page.getByRole("dialog", { name: `${side === "front" ? "Front" : "Back"} photo` }).getByRole("button", { name: action }).click();
 }
 
-test("Front then back: each tile's chooser attaches both photos", async ({ page }) => {
+test("Front then back: each tile's chooser offers its actions, and Scan front fills both", async ({ page }) => {
   await setNextPhoto(page);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
   await page.getByRole("button", { name: "Add front photo" }).click();
@@ -61,11 +72,6 @@ test("Front then back: each tile's chooser attaches both photos", async ({ page 
   await page.getByRole("button", { name: "Close" }).click();
   await choose(page, "front", "Scan front");
   await expect(page.getByAltText("Front photo")).toBeVisible();
-  await page.getByRole("button", { name: "Change front photo" }).click();
-  await expect(page.getByRole("button", { name: "Retake front" })).toBeVisible();
-  await page.getByRole("button", { name: "Close" }).click();
-  await choose(page, "back", "Scan back");
-  await expect(page.getByAltText("Front photo")).toBeVisible();
   await expect(page.getByAltText("Back photo")).toBeVisible();
   await fillRequired(page);
   await page.getByRole("button", { name: "Save" }).click();
@@ -73,15 +79,39 @@ test("Front then back: each tile's chooser attaches both photos", async ({ page 
   await expect(page.getByTestId("card-row").first().locator("img")).toBeVisible();
 });
 
-test("Fields kept after a scan: the typed player and the back slot survive", async ({ page }) => {
+test("Front scan takes the back as its second page", async ({ page }) => {
   await setNextPhoto(page);
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
+  await choose(page, "front", "Scan front");
+  await expect(page.getByAltText("Front photo")).toBeVisible();
+  await expect(page.getByAltText("Back photo")).toBeVisible();
+  await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("Done after the front only: the front and the typed player survive", async ({ page }) => {
+  await setNextPhoto(page);
+  await setNextBack(page, null);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
   await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
   await choose(page, "front", "Scan front");
   await expect(page.getByAltText("Front photo")).toBeVisible();
   await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
   await expect(page.getByAltText("Back photo")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Add back photo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add back photo" })).toBeEnabled();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Add card" })).toBeVisible();
+});
+
+test("No back page after picking the front", async ({ page }) => {
+  await setNextPhoto(page);
+  await setNextBack(page, "photo");
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  await choose(page, "front", "Pick front from photos");
+  await expect(page.getByAltText("Front photo")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add back photo" })).toBeEnabled();
+  await expect(page.getByAltText("Back photo")).toHaveCount(0);
 });
 
 test("Back closes the chooser and keeps a typed year", async ({ page }) => {
@@ -111,11 +141,12 @@ test("Scanner closed without a photo leaves the form as it was and adds nothing"
   await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });
 
-test("Cancel discards: a scanned front stores nothing and returns to the dashboard", async ({ page }) => {
+test("Cancel discards: scanned photos store nothing and returns to the dashboard", async ({ page }) => {
   await setNextPhoto(page);
   await page.getByRole("button", { name: "Add card", exact: true }).click();
   await choose(page, "front", "Scan front");
   await expect(page.getByAltText("Front photo")).toBeVisible();
+  await expect(page.getByAltText("Back photo")).toBeVisible();
   await page.getByRole("button", { name: "Cancel" }).click();
   await expect(page.getByRole("alertdialog", { name: "Discard this card?" })).toBeVisible();
   await page.getByRole("button", { name: "Discard" }).click();

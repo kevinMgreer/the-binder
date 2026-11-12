@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Card, CardSide } from "../domain/card";
-import { acquirePhoto } from "../photos/acquire";
+import { acquirePhotos } from "../photos/acquire";
 import { PermissionDeniedError, type CapturedPhoto } from "../ports";
 import { Frame } from "./Frame";
 import { useBlobUrl, useThumbUrl } from "./hooks";
@@ -16,9 +16,11 @@ interface Props {
   onChange: (photo: CapturedPhoto | null) => void;
   /** Lets the form hold Save while a photo is still being prepared. */
   onBusy?: (busy: boolean) => void;
+  /** When set, "Scan" on the empty tile asks the scanner for a second page, the back, and hands it here. */
+  onBackPage?: (photo: CapturedPhoto) => void;
 }
 
-export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
+export function PhotoSlot({ side, card, captured, onChange, onBusy, onBackPage }: Props) {
   const { photoSource } = usePorts();
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -50,8 +52,10 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
     setBusy(true);
     onBusy?.(true);
     try {
-      const photo = await acquirePhoto(photoSource, side, how);
+      const pages = how === "camera" && !filled && onBackPage ? 2 : 1;
+      const [photo, back] = await acquirePhotos(photoSource, side, how, pages);
       if (photo) onChange(photo);
+      if (back) onBackPage?.(back);
     } catch (error) {
       setMessage(
         error instanceof PermissionDeniedError

@@ -70,7 +70,8 @@ export class PermissionDeniedError extends Error {}
 export class DailyLimitError extends Error {}
 
 export interface PhotoSource {
-  capture(side: CardSide): Promise<Blob | null>;
+  /** Up to `pages` photos in one session, `side` first (with 2, the second is the back); empty when closed. */
+  capture(side: CardSide, pages?: number): Promise<Blob[]>;
   pick(): Promise<Blob | null>;
 }
 
