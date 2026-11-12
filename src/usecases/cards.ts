@@ -9,11 +9,13 @@ interface Deps {
 }
 
 export async function saveCard({ collection, photos: store }: Deps, card: Card, photos: Photos = {}) {
-  let next = card;
+  const stored = await collection.get(card.id);
+  // The form's photo refs can be stale: a background upload may have stored new ones since it opened.
+  let next = stored ? { ...card, photos: stored.photos } : card;
   for (const side of SIDES) {
     const photo = photos[side];
     if (photo === undefined) continue;
-    const old = (await collection.get(card.id))?.photos[side];
+    const old = stored?.photos[side];
     for (const id of [old?.fileId, old?.thumbId]) if (id) await store.queueDelete(id);
     // shortcut: a removed photo's local blobs stay until eviction or sign-out; add PhotoStore.remove if they matter.
     if (photo) await store.saveCaptured(card.id, side, photo);

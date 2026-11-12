@@ -265,7 +265,8 @@ describe("photos", () => {
     await a.engine.syncNow();
     const first = (await a.collection.get(c.id))!.photos.front!;
 
-    await saveCard(a.deps, (await a.collection.get(c.id))!, { front: photo("b") });
+    // The form stamps updatedAt on every save; without it the merge would keep the remote card.
+    await saveCard(a.deps, { ...(await a.collection.get(c.id))!, updatedAt: at(5) }, { front: photo("b") });
     await a.engine.syncNow();
     const second = (await a.collection.get(c.id))!.photos.front!;
     expect(second.fileId).not.toBe(first.fileId);
@@ -351,6 +352,85 @@ describe("photos", () => {
     for (const name of names) expect(name).toMatch(/2024.*27.*ronald-acuna-jr.*(front|back)/);
     expect(names.some((n) => n.includes("front"))).toBe(true);
     expect(names.some((n) => n.includes("back"))).toBe(true);
+  });
+});
+
+describe("data-loss fixes", () => {
+  test("editing a card right after its photo uploaded keeps the stored photo refs", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("a") });
+    const formCopy = (await a.collection.get(c.id))!; // the edit form opens with fileId null
+    await a.engine.syncNow(); // the background upload stores the refs
+    const stored = (await a.collection.get(c.id))!.photos.front!;
+    expect(stored.fileId).not.toBeNull();
+
+    await saveCard(a.deps, { ...formCopy, notes: "edited", updatedAt: at(50) });
+    expect((await a.collection.get(c.id))!.photos.front).toEqual(stored);
+  });
+
+  test("a photo upload does not overwrite a newer edit from another device", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const b = install(remote);
+    const c = card({ notes: "original" });
+    await a.collection.put(c);
+    await a.engine.syncNow();
+    await b.engine.syncNow();
+
+    await saveCard(a.deps, { ...c, updatedAt: at(3) }, { front: photo("a") });
+    await b.collection.put({ ...c, notes: "from B", updatedAt: at(10) });
+    await b.engine.syncNow();
+    await a.engine.syncNow();
+    await b.engine.syncNow();
+
+    expect((await a.collection.get(c.id))!.notes).toBe("from B");
+    expect((await b.collection.get(c.id))!.notes).toBe("from B");
+    expect((await remote.readCollection())!.file.cards[0].notes).toBe("from B");
+    expect(await a.photos.pendingUploads()).toHaveLength(0);
+  });
+
+  test("an older photo from one device does not replace a newer photo from another", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const b = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("o") });
+    await a.engine.syncNow();
+    await b.engine.syncNow();
+
+    const base = (await a.collection.get(c.id))!;
+    await saveCard(a.deps, { ...base, updatedAt: at(3) }, { front: photo("a") });
+    await saveCard(b.deps, { ...(await b.collection.get(c.id))!, updatedAt: at(10) }, { front: photo("b") });
+    await b.engine.syncNow();
+    const bRef = (await b.collection.get(c.id))!.photos.front!;
+    await a.engine.syncNow();
+
+    expect((await a.collection.get(c.id))!.photos.front).toEqual(bRef);
+    expect(remote.hasPhoto(bRef.fileId)).toBe(true);
+  });
+
+  test("a thumbnail that failed to download is fetched by the next sync, even when nothing changed", async () => {
+    const remote = new InMemoryRemoteStore();
+    const a = install(remote);
+    const c = card();
+    await saveCard(a.deps, c, { front: photo("t") });
+    await a.engine.syncNow();
+
+    const b = install(remote);
+    const download = remote.downloadPhoto.bind(remote);
+    remote.downloadPhoto = async () => {
+      remote.downloadPhoto = download;
+      throw new Error("offline");
+    };
+    await b.engine.syncNow();
+    await b.engine.settled();
+    expect(await b.photos.getThumb(c.id, "front")).toBeUndefined();
+
+    await b.engine.syncNow();
+    await b.engine.settled();
+    expect(await b.photos.getThumb(c.id, "front")).toBeDefined();
   });
 });
 
