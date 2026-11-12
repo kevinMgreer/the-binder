@@ -141,7 +141,7 @@ for (const size of PHONES) {
       const filter = page.getByRole("button", { name: /^Filter/ });
       const add = page.getByRole("button", { name: "Add card", exact: true });
       const sort = page.getByRole("button", { name: /^Sort: / });
-      const toggle = page.getByRole("group", { name: "View" });
+      const toggle = page.getByRole("button", { name: "Grid view", exact: true });
       for (const el of [status, gear, search, filter, shown, toggle, sort, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
       const rowBox = (await page.locator(".shown-row").boundingBox())!;
       for (const el of [sort, toggle]) {
@@ -173,7 +173,7 @@ for (const size of PHONES) {
       await openCollection(page);
       await page.getByRole("button", { name: "Grid view", exact: true }).click();
       await showUpdateBanner(page);
-      for (const el of [page.locator("header").getByTestId("sync-status"), page.getByRole("button", { name: "Settings", exact: true }), page.getByLabel("Search", { exact: true }), page.getByRole("button", { name: /^Filter/ }), page.getByTestId("shown"), page.getByRole("group", { name: "View" }), page.getByRole("button", { name: /^Sort: / })]) await expect(el).toBeInViewport();
+      for (const el of [page.locator("header").getByTestId("sync-status"), page.getByRole("button", { name: "Settings", exact: true }), page.getByLabel("Search", { exact: true }), page.getByRole("button", { name: /^Filter/ }), page.getByTestId("shown"), page.getByRole("button", { name: "List view", exact: true }), page.getByRole("button", { name: /^Sort: / })]) await expect(el).toBeInViewport();
       const scrollerBottom = await bottom(page.locator(".list-scroller"));
       const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
       expect(add.y - scrollerBottom).toBeGreaterThanOrEqual(7.5);

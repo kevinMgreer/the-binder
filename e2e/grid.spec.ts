@@ -54,39 +54,40 @@ test("Toggle shares the Showing line: 5,000 cards, the toggle left of Sort, noth
     const x = Math.min(...rects.map((r) => r.left));
     return { x, y: 0, width: Math.max(...rects.map((r) => r.right)) - x, height: 0 };
   });
-  const parts = [text, await box(page.getByRole("group", { name: "View" })), await box(sortButton(page))];
+  const parts = [text, await box(gridView(page)), await box(sortButton(page))];
   await expect(sortButton(page)).toHaveText(/^Sort: Last name ↑$/);
   for (const b of [parts[1], parts[2]]) {
     expect(b.y).toBeGreaterThanOrEqual(row.y - 0.5);
     expect(b.y + b.height).toBeLessThanOrEqual(row.y + row.height + 0.5);
   }
   const [shown, toggle, sort] = parts;
-  expect(toggle.x + toggle.width).toBeLessThanOrEqual(sort.x + 0.5);
-  expect(shown.x + shown.width).toBeLessThanOrEqual(toggle.x + 0.5);
+  expect(sort.x - (toggle.x + toggle.width)).toBeGreaterThanOrEqual(7.5);
+  expect(toggle.x - (shown.x + shown.width)).toBeGreaterThanOrEqual(7.5);
   expect(sort.x + sort.width).toBeLessThanOrEqual(360 - 24 + 0.5);
   console.log("showing-row widths", JSON.stringify({ shown: shown.width, toggle: toggle.width, sort: sort.width, content: 312 }));
 });
 
-test("Toggle targets: both buttons are at least 48 dp", async ({ page }) => {
+test("Toggle targets: the view button is at least 48 dp in both views", async ({ page }) => {
   await page.goto("/");
   await seed(page, names(2));
-  for (const b of [listView(page), gridView(page)]) {
-    const { width, height } = await box(b);
+  for (const flip of [gridView, listView]) {
+    const { width, height } = await box(flip(page));
     expect(width).toBeGreaterThanOrEqual(47.5);
     expect(height).toBeGreaterThanOrEqual(47.5);
+    await flip(page).click();
   }
 });
 
 test("Default is List, and Grid view switches to tiles in the same order and count", async ({ page }) => {
   await page.goto("/");
   await seed(page, names(4));
-  await expect(listView(page)).toHaveAttribute("aria-pressed", "true");
-  await expect(gridView(page)).toHaveAttribute("aria-pressed", "false");
+  await expect(gridView(page)).toBeVisible();
+  await expect(listView(page)).toHaveCount(0);
   await expect(page.getByTestId("card-row")).toHaveCount(4);
   await expect(tiles(page)).toHaveCount(0);
   await gridView(page).click();
-  await expect(gridView(page)).toHaveAttribute("aria-pressed", "true");
-  await expect(listView(page)).toHaveAttribute("aria-pressed", "false");
+  await expect(listView(page)).toBeVisible();
+  await expect(gridView(page)).toHaveCount(0);
   await expect(page.getByTestId("card-row")).toHaveCount(0);
   expect(await gridNames(page)).toEqual(["Player A", "Player B", "Player C", "Player D"]);
   await expect(page.getByTestId("shown")).toHaveText("Showing 4");
@@ -123,7 +124,7 @@ test("Empty and no-match in Grid view keep the toggle", async ({ page }) => {
   await openCollection(page);
   await gridView(page).click();
   await expect(page.getByTestId("empty-state")).toHaveText("Your binder is empty. Scan a card or add one by hand.");
-  await expect(gridView(page)).toBeVisible();
+  await expect(listView(page)).toBeVisible();
   await page.evaluate(async () => {
     const { makeCard } = await import("/src/domain/fixtures.ts");
     await (window as unknown as Win).__ports.collection.putSynced([makeCard()]);
@@ -133,7 +134,7 @@ test("Empty and no-match in Grid view keep the toggle", async ({ page }) => {
   await gridView(page).click();
   await page.getByLabel("Search", { exact: true }).fill("zzz");
   await expect(page.getByTestId("no-match")).toHaveText("No cards match. Clear the search or a filter.");
-  await expect(gridView(page)).toBeVisible();
+  await expect(listView(page)).toBeVisible();
 });
 
 test("Kept while the app runs: Grid survives a card, back and the dashboard", async ({ page }) => {
@@ -142,10 +143,10 @@ test("Kept while the app runs: Grid survives a card, back and the dashboard", as
   await gridView(page).click();
   await tiles(page).first().click();
   await hardwareBack(page);
-  await expect(gridView(page)).toHaveAttribute("aria-pressed", "true");
+  await expect(listView(page)).toBeVisible();
   await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "Dashboard", exact: true }).click();
   await openCollection(page);
-  await expect(gridView(page)).toHaveAttribute("aria-pressed", "true");
+  await expect(listView(page)).toBeVisible();
   await expect(tiles(page)).toHaveCount(3);
 });
 
