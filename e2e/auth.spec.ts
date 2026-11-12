@@ -117,6 +117,25 @@ test("Sign out with unsynced changes warns first and signs out only after confir
   await expect(signInButton(page)).toBeVisible();
 });
 
+test("A remembered user with Google unreachable still sees the collection and can add a card", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(async () => {
+    const w = window as unknown as Win;
+    const { AuthExpiredError } = await import("/src/ports/index.ts");
+    w.__ports.auth.getAccessToken = () => Promise.reject(new AuthExpiredError("Sign in again"));
+  });
+  await expect(signInButton(page)).toHaveCount(0);
+  await page.getByRole("button", { name: "Add card" }).click();
+  await page.getByLabel("Player", { exact: true }).fill("Ronald Acuña Jr.");
+  await page.getByLabel("Year", { exact: true }).fill("2024");
+  await page.getByLabel("Set", { exact: true }).fill("Series 1");
+  await page.getByLabel("Card number", { exact: true }).fill("27");
+  await page.getByRole("button", { name: "Save" }).click();
+  await openCollection(page);
+  await expect(page.getByTestId("card-row")).toHaveCount(1);
+  await expect(signInButton(page)).toHaveCount(0);
+});
+
 test("Sign out leaves no card data or photos in local storage", async ({ page }) => {
   await page.goto("/");
   await addCardWithPhoto(page);

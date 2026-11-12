@@ -151,9 +151,61 @@ describe("authorization and failures", () => {
     expect(drive.requests.every((r) => r.authorization === `Bearer ${drive.token}`)).toBe(true);
   });
 
-  test("a rejected token raises AuthExpiredError so sync pauses", async () => {
+  test("a token Drive keeps rejecting raises AuthExpiredError after exactly two sends", async () => {
+    const stale = new DriveRemoteStore({
+      root: "release",
+      fetch: drive.fetch as unknown as typeof fetch,
+      getAccessToken: async () => "stale",
+      onUnauthorized: async () => {},
+    });
+    await expect(stale.readCollection()).rejects.toBeInstanceOf(AuthExpiredError);
+    expect(drive.requests).toHaveLength(2);
+  });
+
+  test("a 401 drops the token, gets a new one and the request goes through", async () => {
+    let dropped = 0;
+    const retrying = new DriveRemoteStore({
+      root: "release",
+      fetch: drive.fetch as unknown as typeof fetch,
+      getAccessToken: async () => {
+        tokenCalls++;
+        return drive.token;
+      },
+      onUnauthorized: async () => void dropped++,
+    });
     drive.failNext = { status: 401 };
-    await expect(store().readCollection()).rejects.toBeInstanceOf(AuthExpiredError);
+    await expect(retrying.readCollection()).resolves.toBeNull();
+    expect(dropped).toBe(1);
+    expect(tokenCalls).toBeGreaterThanOrEqual(2);
+  });
+
+  test("a refusal from the renewed token raises AuthExpiredError", async () => {
+    let calls = 0;
+    const refused = new DriveRemoteStore({
+      root: "release",
+      fetch: drive.fetch as unknown as typeof fetch,
+      getAccessToken: async () => {
+        if (++calls > 1) throw new AuthExpiredError("Sign in again");
+        return drive.token;
+      },
+      onUnauthorized: async () => {},
+    });
+    drive.failNext = { status: 401 };
+    await expect(refused.readCollection()).rejects.toBeInstanceOf(AuthExpiredError);
+  });
+
+  test("a non-401 error is not retried", async () => {
+    let dropped = 0;
+    const plain = new DriveRemoteStore({
+      root: "release",
+      fetch: drive.fetch as unknown as typeof fetch,
+      getAccessToken: async () => drive.token,
+      onUnauthorized: async () => void dropped++,
+    });
+    drive.failNext = { status: 503 };
+    await expect(plain.readCollection()).rejects.toThrow();
+    expect(dropped).toBe(0);
+    expect(drive.requests).toHaveLength(1);
   });
 
   test("rate limits and outages are ordinary errors that sync retries", async () => {
