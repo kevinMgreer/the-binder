@@ -4,7 +4,7 @@ The Cards screen shows one card per 112 dp row, so a screen holds about four car
 
 ## What Changes
 
-- A List / Grid view toggle on the Cards screen: two 48 dp icon buttons ("List view", "Grid view", `aria-pressed`) in the "Showing N" row, left of Sort.
+- A List / Grid view switch on the Cards screen: one 48 dp icon button in the "Showing N" row, left of Sort. It shows the icon of the view a tap switches to and is named for it ("Grid view" while the list is shown, "List view" while the grid is shown). Two side-by-side buttons do not fit at 360 dp (design.md).
 - **List** is today's list, unchanged.
 - **Grid** shows each card as a tile: its front thumbnail in the existing trading-card frame (whole photo, never cropped; the placeholder frame when there is no front photo), with a two-line caption under it (player; year, with a "×N" quantity badge when the quantity is above one). 3 columns on a phone of 360 dp, 4 from 480 dp wide. A tap opens the card, like a row.
 - The grid is virtualized like the list, so a 5,000-card collection stays fast; it uses the stored 320 px thumbnails and never downloads a photo.

@@ -13,7 +13,7 @@ The system SHALL show, on the collection screen, a header whose one row holds th
 
 #### Scenario: Toggle shares the Showing line
 - **WHEN** the collection screen is shown on a 360 by 800 phone for 5,000 cards with the order "Sort: Last name ↑"
-- **THEN** the List view and Grid view buttons lie within the vertical extent of the "Showing N" line's row, left of the Sort button, no two of the "Showing N" text, the toggle and the Sort button overlap, and none of them extends past the screen's content edge
+- **THEN** the view button lies within the vertical extent of the "Showing N" line's row, left of the Sort button, no two of the "Showing N" text (the text itself, not only its box), the view button and the Sort button overlap, there are at least 8 dp between the view button and its neighbours, and none of them extends past the screen's content edge
 
 #### Scenario: No count line
 - **WHEN** the collection screen is shown for a collection of 12 cards, 10 of them distinct
@@ -110,20 +110,20 @@ The system SHALL let the user order the collection list by Last name, Year, Team
 ## ADDED Requirements
 
 ### Requirement: The user chooses list or grid view
-The system SHALL offer, in the "Showing N" row left of the Sort button, a view toggle of two adjacent icon buttons named "List view" and "Grid view", each at least 48 dp in height and width, in a group named "View". The button of the current view SHALL have `aria-pressed="true"` and look selected (ink fill, ground-coloured icon); the other SHALL have `aria-pressed="false"`. Tapping a button SHALL switch to that view at once, showing the same cards (the same search, filters, chips, "Showing N" count and order) from the top. List view SHALL show the ruled rows the "Each card is a ruled row" requirement describes; Grid view SHALL show the tiles the "The grid shows cards as framed tiles" requirement describes. The empty-collection and no-match messages SHALL be the same in both views, and the toggle SHALL stay shown with them. The default view SHALL be List. The chosen view SHALL be kept on the device, so it is the view shown after opening a card, Settings or the dashboard and coming back, and after the app is closed and started again; it SHALL NOT be stored in Drive. When the device storage cannot be read or written, the app SHALL use List view (or keep the view chosen in this run) and SHALL NOT show an error. Sort keeps its own rule: it is not stored and returns to Last name ascending on a fresh start.
+The system SHALL offer, in the "Showing N" row left of the Sort button, a view switch that is one icon button at least 48 dp in height and width, with at least 8 dp between it and the "Showing N" text and the Sort button. It SHALL show the icon of the view a tap switches to (the grid icon while the list is shown, the list icon while the grid is shown) and SHALL be named for that action: "Grid view" while the list is shown and "List view" while the grid is shown. It SHALL NOT use `aria-pressed`, because its name already tells the state to come. Tapping it SHALL switch to the other view at once, showing the same cards (the same search, filters, chips, "Showing N" count and order) from the top. List view SHALL show the ruled rows the "Each card is a ruled row" requirement describes; Grid view SHALL show the tiles the "The grid shows cards as framed tiles" requirement describes. The empty-collection and no-match messages SHALL be the same in both views, and the toggle SHALL stay shown with them. The default view SHALL be List. The chosen view SHALL be kept on the device, so it is the view shown after opening a card, Settings or the dashboard and coming back, and after the app is closed and started again; it SHALL NOT be stored in Drive. When the device storage cannot be read or written, the app SHALL use List view (or keep the view chosen in this run) and SHALL NOT show an error. Sort keeps its own rule: it is not stored and returns to Last name ascending on a fresh start.
 
 #### Scenario: Default is List
 - **GIVEN** the view has never been chosen on this device
 - **WHEN** the collection screen opens
-- **THEN** the cards are shown as rows, "List view" has `aria-pressed="true"` and "Grid view" has `aria-pressed="false"`
+- **THEN** the cards are shown as rows, one button named "Grid view" is shown in the view switch's place and no button named "List view" exists
 
 #### Scenario: Switch to Grid
 - **WHEN** the user taps "Grid view"
-- **THEN** the cards are shown as tiles in the same order, the "Showing N" count is unchanged, "Grid view" has `aria-pressed="true"` and "List view" has `aria-pressed="false"`
+- **THEN** the cards are shown as tiles in the same order, the "Showing N" count is unchanged, the button is now named "List view" and shows the list icon, and tapping it shows the rows again
 
 #### Scenario: Toggle targets
 - **WHEN** the collection screen is shown on a 360 by 800 phone
-- **THEN** the "List view" and "Grid view" buttons are each at least 48 dp high and wide
+- **THEN** the view button is at least 48 dp high and wide
 
 #### Scenario: Filters, search and sort apply in Grid view
 - **GIVEN** Grid view, the Team filter "Atlanta Braves", the search "acu" and the order Year descending
