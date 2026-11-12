@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { acquirePhoto } from "../photos/acquire";
 import { PermissionDeniedError, type CapturedPhoto } from "../ports";
@@ -23,7 +23,19 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [choosing, setChoosing] = useState(false);
-  const closeChooser = useCallback(() => setChoosing(false), []);
+  const tileRef = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  const closeChooser = useCallback(() => {
+    restoreFocus.current = true;
+    setChoosing(false);
+  }, []);
+  // The tile is disabled while busy, so focus waits until the photo is ready.
+  useEffect(() => {
+    if (restoreFocus.current && !choosing && !busy) {
+      restoreFocus.current = false;
+      tileRef.current?.focus();
+    }
+  });
   const label = side[0].toUpperCase() + side.slice(1);
 
   const stored = captured === null ? undefined : card?.photos[side];
@@ -33,7 +45,7 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
   const filled = !!(captured || stored);
 
   async function take(how: "camera" | "pick") {
-    setChoosing(false);
+    closeChooser();
     setMessage(undefined);
     setBusy(true);
     onBusy?.(true);
@@ -54,7 +66,7 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
 
   return (
     <div className="photo-cell">
-      <button type="button" className="photo-tile" disabled={busy} aria-label={`${filled ? "Change" : "Add"} ${side} photo`} onClick={() => setChoosing(true)}>
+      <button ref={tileRef} type="button" className="photo-tile" disabled={busy} aria-label={`${filled ? "Change" : "Add"} ${side} photo`} onClick={() => setChoosing(true)}>
         <Frame url={url} alt={`${label} photo`} />
         {!filled && (
           <span className="photo-tile-empty" aria-hidden="true">
@@ -78,7 +90,7 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
               type="button"
               className="danger"
               onClick={() => {
-                setChoosing(false);
+                closeChooser();
                 setMessage(undefined);
                 onChange(null);
               }}

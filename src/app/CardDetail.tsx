@@ -89,12 +89,12 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
       <p>
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>
       </p>
-      <div className="actions">
+      <div className="actions detail-actions">
+        <button ref={deleteButton} className="danger outline" onClick={() => setConfirming(true)}>
+          Delete
+        </button>
         <button className="primary" onClick={onEdit}>
           Edit
-        </button>
-        <button ref={deleteButton} className="danger" onClick={() => setConfirming(true)}>
-          Delete
         </button>
       </div>
       {confirming && (

@@ -10,7 +10,7 @@ The owner finds the card form and the card detail screen clumsy on the phone. Ea
 - **Detail actions.** Edit (primary, fills the row) and Delete (danger-coloured text button) sit side by side in one action row. Delete asks in a centred modal dialog over a scrim ("Delete this card?", Keep focused, Delete in danger red). Android back, the scrim and Escape mean Keep. Soft delete is unchanged.
 - **Detail header.** The player name is the title with the serial stamp beside it. Under it come one compact line "year set · #number" and a secondary line "team · parallel" when the card has them, then the rule. Team and Parallel leave the fact list because the header now shows them.
 - **Save always in reach.** The form's Cancel / Save row becomes a sticky bottom bar on the panel background with a top rule, kept above the system navigation bar. The save-blocked message moves into that bar, directly above the buttons.
-- **BREAKING (spec wording only):** the app-theme requirement "Destructive actions stay apart" (scenario "Delete is not beside Edit") is removed and replaced by "Destructive actions are distinct", because the owner now wants Delete next to Edit, kept distinct by colour and weight instead of distance.
+- **BREAKING (spec wording only):** the app-theme requirement "Destructive actions stay apart" (scenario "Delete is not beside Edit") is removed and replaced by "Destructive actions are distinct", because the owner now wants Delete next to Edit, kept distinct by colour (a danger-outlined button left of Edit, matching Edit's size) instead of distance.
 
 ## Capabilities
 
@@ -22,7 +22,7 @@ None.
 
 - `card-photos`: the photo section becomes two tiles with a chooser; a stored or captured photo can be removed; the detail screen shows the full photo when it is on the device. The "Photos are taken from the card form" delta is written against the text `form-sort-polish` leaves (see design.md).
 - `collection-list`: list rows 112 dp with a 96 dp thumbnail slot; the detail screen has a new header layout, 200 dp photos and one Edit / Delete action row; Delete confirms in a centred dialog.
-- `app-theme`: "Destructive actions stay apart" is replaced by "Destructive actions are distinct" (Delete may sit beside Edit as danger text); list rows stay 112 dp in the spacing rule.
+- `app-theme`: "Destructive actions stay apart" is replaced by "Destructive actions are distinct" (Delete is a danger-outlined button left of Edit); list rows stay 112 dp in the spacing rule.
 - `card-form-guidance`: Cancel and Save stay in reach in a sticky bottom bar with the save-blocked message.
 
 ## Out of scope

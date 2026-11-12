@@ -1,4 +1,4 @@
-Archive after form-sort-polish (see design.md). The groups touch the same `src/app/app.css` and `src/app/CardDetail.tsx`, so run them one after another in this order: 1, 2, 3, 4. Each group is one implementer run and ends with `npx vitest run` and the repo check green.
+Archive after form-sort-polish (see design.md). The groups touch the same `src/app/app.css` and `src/app/CardDetail.tsx`, so run them one after another in this order: 1, 2, 3, 4, 5. Each group is one implementer run and ends with `npx vitest run` and the repo check green.
 
 ## 1. Photo tiles and Remove (card-photos)
 
@@ -12,10 +12,10 @@ Archive after form-sort-polish (see design.md). The groups touch the same `src/a
 
 ## 2. Detail header, action row and Delete dialog (collection-list, app-theme)
 
-- [x] 2.1 Tests first in `e2e/design.spec.ts`: replace "Delete is not beside Edit" with "Delete beside Edit is still distinct" (same row, at least 8 dp apart, danger text, transparent background, no visible border, Edit ink-filled); add "Header lines aligned and tight" (title, quiet line and team line share x within 1 dp, title-to-quiet-line gap at most 8 dp) and "Header without team or parallel"; change the facts list expectation (line ~470) to drop Team and Parallel. Verify: they fail on the current screen.
+- [x] 2.1 Tests first in `e2e/design.spec.ts`: replace "Delete is not beside Edit" with "Delete beside Edit is still distinct" (same row, at least 8 dp apart, danger text, transparent background, no visible border, Edit ink-filled; reworked by group 5); add "Header lines aligned and tight" (title, quiet line and team line share x within 1 dp, title-to-quiet-line gap at most 8 dp) and "Header without team or parallel"; change the facts list expectation (line ~470) to drop Team and Parallel. Verify: they fail on the current screen.
 - [x] 2.2 Tests first for the dialog: in `src/app/back-button.test.tsx` back with the dialog open closes it and keeps the card, back again leaves the screen; Keep returns focus to Delete; scrim tap keeps the card; Delete in the dialog deletes. In `e2e/design.spec.ts` "Dialog over the screen": scrolled to the end, tap Delete, the alertdialog's box is inside the viewport and centred within 8 dp horizontally, Keep is focused, the dialog's Delete computes to the danger colour. Verify: they fail before 2.4.
 - [x] 2.3 Header in `src/app/CardDetail.tsx` and `src/app/app.css`: `header.detail-head` with the title row, the quiet line and the team · parallel line, then `.title-rule`; Team and Parallel leave `facts`; `.detail-head .title-row` without the 56 dp minimum, first-baseline aligned; facts lose their top border after the rule. Check the result in the e2e design harness at 360 by 800 in both themes. Verify: 2.1 header and facts cases pass.
-- [x] 2.4 Actions and dialog in `src/app/CardDetail.tsx`: Edit and Delete in one `.actions` row, `.danger-zone` removed (markup and CSS); the centred `div.backdrop.center` alertdialog with Keep (`autoFocus`) and Delete, `openSheets` push while open, scrim and Escape as Keep, focus back to the Delete button. Verify: 2.1 and 2.2 pass.
+- [x] 2.4 Actions and dialog in `src/app/CardDetail.tsx`: Edit and Delete in one `.actions` row, `.danger-zone` markup removed (CSS kept for Settings' Sign out); the centred `div.backdrop.center` alertdialog with Keep (`autoFocus`) and Delete, `openSheets` push while open, scrim and Escape as Keep, focus back to the Delete button. Verify: 2.1 and 2.2 pass.
 - [x] 2.5 Update the delete flows that clicked "Confirm delete": `e2e/catalog.spec.ts` (~172), `e2e/dashboard.spec.ts` (~172), `e2e/design.spec.ts` (~606 state screenshot, ~1075 Keep) to use Delete inside the "Delete card" dialog. Verify: `npx playwright test e2e/catalog.spec.ts e2e/dashboard.spec.ts e2e/design.spec.ts` passes.
 - [x] 2.6 `DESIGN.md` "Card facts" (header block, action row), "Buttons" (Delete as danger text beside Edit) and "Sheets and dialogs" (the centred confirm dialog). Verify: the doc matches the shipped layout.
 
@@ -42,3 +42,10 @@ Archive after form-sort-polish (see design.md). The groups touch the same `src/a
   - Add form: Save is visible without scrolling; with the keyboard open on Notes the field stays visible above the bar and the bar does not cover it; record whether the bar should hide while typing.
   Verify: the lines are in the file; ticking them is the owner's phone run.
 - [ ] 4.6 Phone run of the 4.5 lines on the debug build (owner). Verify: each line ticked in `docs/device-checklist.md` with the build version, or a desk todo opened for what fails (including hiding the bar while typing).
+
+## 5. Delete left, Edit right, matching buttons (app-theme, collection-list)
+
+- [x] 5.1 Tests first in `e2e/design.spec.ts`: "Delete is a danger-outlined button left of Edit, matching Edit's size" (Delete left of Edit on one row, at least 8 dp apart, same height, same width within 1 dp, same border radius, text and border danger, transparent background, Edit ink-filled); update every test that expects Edit first. Verify: they fail before 5.2.
+- [x] 5.2 `src/app/CardDetail.tsx`: the detail `.actions` row renders Delete (`danger outline`) before Edit; `src/app/app.css`: `.detail-actions button { flex: 1 }` and `button.danger.outline { border-color: var(--color-danger) }`. Verify: 5.1 passes in light and dark.
+- [x] 5.3 `DESIGN.md` "Buttons" (Danger outlined beside Edit, Delete left, Edit right) and "Keyline" (no danger-zone divider on the detail screen). Verify: the doc matches the shipped row.
+- [x] 5.4 `openspec validate photo-detail-polish --strict` passes. Verify: exit 0.
