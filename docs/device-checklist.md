@@ -39,7 +39,7 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 ## Screens
 
 - [ ] Card detail: Delete (outlined, left) and Edit (filled, right) are equal buttons; Delete opens a centred dialog, Android back closes it, Keep keeps the card, Delete removes it. [photo-detail-polish, T-41]
-- [ ] Card detail header reads cleanly: title, one line "year set · #number", one line "team · parallel". [photo-detail-polish, T-41]
+- [ ] Card detail header reads cleanly: title, one quiet line "year set · #number" with room around it, Team and Parallel as rows in the list. [photo-detail-polish, T-41]
 - [ ] Add form: Save is visible without scrolling; with the keyboard open on Notes the field stays visible above the bar and the bar does not cover it; record whether the bar should hide while typing. [photo-detail-polish, T-41]
 
 ## Identification (card-identification)

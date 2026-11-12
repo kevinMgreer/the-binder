@@ -29,3 +29,7 @@ The system SHALL space every screen from these spacing tokens: `--gutter` 24 px 
 #### Scenario: Cells, frames and fields
 - **WHEN** the dashboard and the card form are shown
 - **THEN** stat cell text starts 16 px inside its rule, Recently added frames are 12 px apart with the caption 8 px below, form fields are 24 px apart, and every cell and control keeps the 48 dp and 8 dp rules
+
+#### Scenario: Card detail header spacing
+- **WHEN** the card detail screen is shown
+- **THEN** the header uses spacing tokens only: `--space-4` above the title, `--space-2` between the title and the quiet line, `--space-4` between the quiet line and the rule, and the quiet line is in the muted ink colour

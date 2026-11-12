@@ -51,19 +51,23 @@ The system SHALL show each card as one fixed-height row of 112 dp on the ground 
 - **THEN** the set name is cut with an ellipsis on its one line and the card number stays visible
 
 ### Requirement: The card detail screen is a tidy fact sheet
-The system SHALL lay the card detail screen out, top to bottom, as: a header block, a 1 px rule, a plain list of facts, the photos, a muted last-edited line and one action row. The header block SHALL hold the player as a large title in the slab face with the serial stamp beside it on the title's first line, then one quiet line "year set · #number" (just "year set" for a card with no number), then, when the card has a team or a parallel name, one secondary line "team · parallel" with only the parts it has. Every line of the header SHALL start at the content's left edge, the lines SHALL follow each other with spacing-token gaps only (no empty band between the title and the quiet line), and the header SHALL have no minimum height of its own. The fact list SHALL separate its rows by 1 px rules with the label in uppercase label type at the left and the value right-aligned (Manufacturer, Subset, Insert, Condition or grade, Quantity, and Traits when set, only those the card has; Team and Parallel are in the header instead), and SHALL NOT sit in a box. The photos SHALL be shown in trading-card frames as the `card-photos` capability describes. The action row SHALL hold Delete at the left as a danger-outlined button (danger text and border, transparent background) and Edit at the right as the filled primary button, both real buttons of the same height, width share and radius.
+The system SHALL lay the card detail screen out, top to bottom, as: a header block, a 1 px rule, a plain list of facts, the photos, a muted last-edited line and one action row. The header block SHALL hold only the player as a large title in the slab face with the serial stamp beside it on the title's first line (a long name wraps inside the width left of the stamp, and the stamp stays level with the first line), then one quiet muted line "year set · #number" (just "year set" for a card with no number). Both lines SHALL start at the content's left edge and the header SHALL have no minimum height of its own, but it SHALL breathe: at least 16 dp from the top of the screen content to the title, 8 dp between the title and the quiet line, and 12 dp or more from the quiet line to the rule. The fact list SHALL separate its rows by 1 px rules with the label in uppercase label type at the left and the value right-aligned (Manufacturer, Subset, Insert, Team, Parallel, Condition or grade, Quantity, and Traits when set, only those the card has; Team and Parallel are rows like the others, not a second line under the title), and SHALL NOT sit in a box. The photos SHALL be shown in trading-card frames as the `card-photos` capability describes. The action row SHALL hold Delete at the left as a danger-outlined button (danger text and border, transparent background) and Edit at the right as the filled primary button, both real buttons of the same height, width share and radius.
 
 #### Scenario: Fact list
 - **WHEN** a card with a team, a serial-numbered parallel, a grade and quantity 3 is opened
-- **THEN** the title has the stamp beside it, the quiet line and the "team · parallel" line follow, then the rule, the ruled facts, the framed photos and the last-edited line, and the action row with Edit and Delete is below that
+- **THEN** the title has the stamp beside it and the quiet line follows, then the rule, the ruled facts (including Team and Parallel rows), the framed photos and the last-edited line, and the action row with Delete and Edit is below that
 
-#### Scenario: Header lines aligned and tight
+#### Scenario: Header breathes
 - **WHEN** a card with a team and a parallel is opened on a 360 by 800 phone
-- **THEN** the title, the quiet line and the secondary line start at the same x position within 1 dp, and the gap between the bottom of the title and the top of the quiet line is at most 8 dp
+- **THEN** the title and the quiet line start at the same x position within 1 dp, the title starts at least 16 dp below the top of the screen content, the gap between the bottom of the title and the top of the quiet line is 8 dp within 2 dp, and the gap from the quiet line to the rule is at least 12 dp
 
-#### Scenario: Header without team or parallel
-- **WHEN** a card with no team and no parallel name is opened
-- **THEN** the header shows the title and the quiet line only, with no empty secondary line
+#### Scenario: Team and Parallel are fact rows
+- **WHEN** a card with a team and a parallel name is opened
+- **THEN** the header has no third line, and the facts list has Team and Parallel rows in the same style as the other rows
+
+#### Scenario: Long names wrap cleanly
+- **WHEN** a card with a very long player name, a long set name, a serial-numbered parallel and a team is opened on a 360 by 800 phone
+- **THEN** nothing overflows the width, the name wraps onto further lines left of the stamp, and the stamp is level with the first line of the name
 
 #### Scenario: Detail without a number
 - **WHEN** a card with no card number is opened
