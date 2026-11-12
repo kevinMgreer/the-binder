@@ -370,22 +370,30 @@ test.describe("destructive actions stay apart", () => {
       return color;
     });
 
-  test("Delete beside Edit is still distinct", async ({ page }) => {
-    await page.goto("/");
-    await seed(page, CARDS);
-    await page.getByTestId("card-row").filter({ hasText: "Acuña" }).click();
-    const edit = page.getByRole("button", { name: "Edit", exact: true });
-    const del = page.getByRole("button", { name: "Delete", exact: true });
-    const [e, d] = await Promise.all([edit.boundingBox(), del.boundingBox()]);
-    expect(Math.abs(e!.y + e!.height / 2 - (d!.y + d!.height / 2))).toBeLessThan(4);
-    expect(await gap(edit, del)).toBeGreaterThanOrEqual(8);
-    expect(await css(del, "color")).toBe(await danger(page));
-    expect(await css(del, "background-color")).toBe("rgba(0, 0, 0, 0)");
-    expect(await css(del, "border-top-color")).toBe("rgba(0, 0, 0, 0)");
-    expect(await css(edit, "background-color")).not.toBe("rgba(0, 0, 0, 0)");
-    await notAccent(page, del);
-    await expect(page.getByText("13/150")).toBeVisible();
-  });
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Delete is a danger-outlined button left of Edit, matching Edit's size (${scheme})`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await seed(page, CARDS);
+      await page.getByTestId("card-row").filter({ hasText: "Acuña" }).click();
+      const edit = page.getByRole("button", { name: "Edit", exact: true });
+      const del = page.getByRole("button", { name: "Delete", exact: true });
+      const [e, d] = await Promise.all([edit.boundingBox(), del.boundingBox()]);
+      expect(Math.abs(e!.y + e!.height / 2 - (d!.y + d!.height / 2))).toBeLessThan(4);
+      expect(d!.x + d!.width).toBeLessThanOrEqual(e!.x);
+      expect(await gap(edit, del)).toBeGreaterThanOrEqual(8);
+      expect(Math.abs(e!.height - d!.height)).toBeLessThanOrEqual(1);
+      expect(Math.abs(e!.width - d!.width)).toBeLessThanOrEqual(1);
+      expect(await css(del, "border-top-left-radius")).toBe(await css(edit, "border-top-left-radius"));
+      const red = await danger(page);
+      expect(await css(del, "color")).toBe(red);
+      expect(await css(del, "border-top-color")).toBe(red);
+      expect(await css(del, "background-color")).toBe("rgba(0, 0, 0, 0)");
+      expect(await css(edit, "background-color")).not.toBe("rgba(0, 0, 0, 0)");
+      await notAccent(page, del);
+      await expect(page.getByText("13/150")).toBeVisible();
+    });
+  }
 
   for (const scheme of ["light", "dark"] as const) {
     test(`Header lines aligned and tight (${scheme})`, async ({ page }) => {
@@ -416,14 +424,17 @@ test.describe("destructive actions stay apart", () => {
 
   test("Dialog over the screen", async ({ page }) => {
     await page.goto("/");
-    await seed(page, CARDS);
+    const notes = "A long note about this card and where it came from. ".repeat(12);
+    await seed(page, [{ ...CARDS[0], notes, photos: { front: { fileId: "f", thumbId: "ft" }, back: { fileId: "b", thumbId: "bt" } } }]);
     await page.getByTestId("card-row").first().click();
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
     await page.getByRole("button", { name: "Delete", exact: true }).click();
     const dialog = page.getByRole("alertdialog", { name: "Delete card" });
     await expect(dialog).toBeInViewport({ ratio: 1 });
     const box = (await dialog.boundingBox())!;
     expect(Math.abs(box.x + box.width / 2 - 360 / 2)).toBeLessThanOrEqual(8);
+    expect(Math.abs(box.y + box.height / 2 - 800 / 2)).toBeLessThanOrEqual(8);
     await expect(dialog.getByRole("button", { name: "Keep" })).toBeFocused();
     expect(await css(dialog.getByRole("button", { name: "Delete", exact: true }), "color")).toBe(await danger(page));
   });
@@ -560,7 +571,7 @@ test.describe("polish after the second phone review", () => {
     expect(await y(subtitle)).toBeLessThan(await y(facts));
     expect(await y(facts)).toBeLessThan(await y(edited));
     expect(await y(edited)).toBeLessThan(await y(edit));
-    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(180);
+    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(140);
     expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
