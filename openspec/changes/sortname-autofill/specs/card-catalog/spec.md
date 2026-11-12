@@ -9,7 +9,7 @@ The system SHALL offer an optional Sort name field in the card form, directly un
 
 A card saved before this field existed SHALL sort by the derived key with no migration or re-save.
 
-In the card form the Sort name field SHALL show the derived key of the current Player and Team text as the user types them, until the user edits Sort name themselves; after that it SHALL keep what they typed when Player or Team change. Clearing Sort name by hand SHALL make it follow again. A card that already has a stored sort name SHALL open with it and never have it replaced automatically. A card SHALL be saved with a sort name only when the field differs from the derived key; otherwise it SHALL be saved with none.
+In the card form the Sort name field SHALL show the derived key of the current Player and Team text as the user types them, until the user edits Sort name themselves; after that it SHALL keep what they typed when Player or Team change. Clearing Sort name by hand SHALL make it follow again. A card that already has a stored sort name SHALL open with it and never have it replaced automatically. A card SHALL be saved with a sort name only when the field differs from the derived key or is the card's unchanged stored sort name; otherwise it SHALL be saved with none.
 
 #### Scenario: Field in the form
 - **WHEN** the user opens the form to add a card
@@ -37,6 +37,11 @@ In the card form the Sort name field SHALL show the derived key of the current P
 #### Scenario: Derived value is not stored
 - **WHEN** the user saves a card with player "Mookie Betts" and leaves Sort name showing "Betts"
 - **THEN** the saved card has no sort name
+
+#### Scenario: Stored sort name equal to the derived one is kept
+- **GIVEN** a stored card with player "Ronald Acuña Jr." and sort name "Acuña"
+- **WHEN** the user opens it, changes only Notes and saves
+- **THEN** the saved card still has sort name "Acuña"
 
 #### Scenario: Changed value is stored
 - **WHEN** the user saves a card with player "Elly De La Cruz" and Sort name "De La Cruz"

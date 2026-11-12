@@ -49,10 +49,19 @@ test("Sort name follows Player, is optional and carries its hint", () => {
   expect(fields.indexOf("f-sort-name")).toBe(fields.indexOf("f-player") + 1);
   const input = screen.getByLabelText("Sort name");
   expect(input.getAttribute("aria-required")).toBeNull();
+  expect((input as HTMLInputElement).value).toBe("");
   expect(screen.getByText("Follows the player's last name. Change it to sort differently, e.g. De La Cruz")).toBeTruthy();
 });
 
 const sortName = () => (screen.getByLabelText("Sort name") as HTMLInputElement).value;
+
+test("a stored Sort name equal to the derived one is kept on save", async () => {
+  const onSave = renderForm(makeCard({ player: "Ronald Acuña Jr.", sortName: "Acuña" }));
+  type("Notes", "changed");
+  save();
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].sortName).toBe("Acuña");
+});
 
 test("Sort name follows Player and Team until the user edits it, and again once cleared", () => {
   renderForm();

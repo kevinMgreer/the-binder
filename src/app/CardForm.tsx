@@ -43,7 +43,7 @@ const listedCondition = (stored: string) =>
 
 /** What the list sorts the card by when it has no sort name. */
 const derivedSortName = (d: Pick<Draft, "player" | "team">) =>
-  lastNameKey({ player: d.player, team: d.team } as Card);
+  lastNameKey({ player: d.player, team: d.team });
 
 function sortNameToStore(d: Draft, existing?: Card) {
   const typed = d.sortName.trim();

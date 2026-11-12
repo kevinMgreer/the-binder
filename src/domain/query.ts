@@ -81,7 +81,7 @@ export interface Sort {
 export const defaultSort: Sort = { by: "lastName", descending: false };
 
 /** Sort name, else the player's last name; a team card keeps its whole text. */
-export function lastNameKey(c: Card): string {
+export function lastNameKey(c: Pick<Card, "player" | "team" | "sortName">): string {
   const sortName = c.sortName?.trim();
   if (sortName) return sortName;
   const player = c.player.trim();
