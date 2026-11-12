@@ -145,10 +145,10 @@ test("back from the add form opened on the list shows the list", async () => {
 test("back closes an open sheet first and keeps the app open", async () => {
   await renderSignedIn();
   await openList();
-  fireEvent.click(screen.getByRole("button", { name: "Filter" }));
-  expect(screen.getByRole("dialog", { name: "Filters" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Filter and sort" }));
+  expect(screen.getByRole("dialog", { name: "Filter and sort" })).toBeTruthy();
   await pressBack();
-  expect(screen.queryByRole("dialog", { name: "Filters" })).toBeNull();
+  expect(screen.queryByRole("dialog", { name: "Filter and sort" })).toBeNull();
   await onList();
   expect(native.exitApp).not.toHaveBeenCalled();
 });

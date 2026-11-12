@@ -123,7 +123,9 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .banner a { color: var(--color-ink); text-decoration: underline; border: 0; background: none; padding: 0; }
 .search-row { display: flex; gap: var(--space-2); align-items: flex-start; }
 .search-row .field { flex: 1; margin: 0; }
-.search-row .field > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.search-row .field > label, .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.search-row > button { white-space: nowrap; }
+[data-testid="order"] { white-space: nowrap; }
 .badge { margin-left: var(--space-2); min-width: var(--space-5); padding: 0 var(--space-1); box-sizing: border-box; text-align: center; border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-ground); font-size: var(--type-label); font-weight: 600; }
 .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); flex: none; }
 .chip { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); border-radius: var(--radius-pill); }

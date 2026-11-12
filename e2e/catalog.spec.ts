@@ -200,7 +200,7 @@ test("Combined filters list only cards matching all of them, with a count", asyn
   await addCard(page, { ...braves, cardNumber: "30", team: "Boston Red Sox" });
   await addCard(page, { ...braves, cardNumber: "31", parallel: undefined, serial: undefined, printRun: undefined });
   await openFilters(page);
-  await page.getByLabel("Team", { exact: true }).selectOption({ label: "Atlanta Braves" });
+  await page.getByRole("combobox", { name: "Team", exact: true }).selectOption({ label: "Atlanta Braves" });
   await page.getByLabel("Serial-numbered", { exact: true }).check();
   await page.getByLabel("Year from", { exact: true }).fill("2020");
   await page.getByLabel("Year to", { exact: true }).fill("2026");
@@ -213,7 +213,8 @@ test("List order: last name by default, Year descending on request, kept after o
   await addCard(page, { ...base, year: "2024", cardNumber: "2" });
   await addCard(page, { ...base, player: "Freddie Freeman", year: "2021", cardNumber: "3" });
   await expect(rows(page)).toContainText(["Acuña", "Betts", "Freeman"]);
-  await page.getByRole("button", { name: "Sort: Last name, ascending" }).click();
+  await expect(page.getByTestId("order")).toContainText("sorted by Last name, ascending");
+  await page.getByRole("button", { name: /^Filter and sort/ }).click();
   await page.getByRole("radio", { name: "Year", exact: true }).check();
   await page.getByRole("radio", { name: "Descending", exact: true }).check();
   await page.getByRole("button", { name: "Close" }).click();
@@ -221,7 +222,7 @@ test("List order: last name by default, Year descending on request, kept after o
   await rows(page).first().click();
   await page.getByRole("button", { name: "Edit" }).waitFor();
   await hardwareBack(page);
-  await expect(page.getByRole("button", { name: "Sort: Year, descending" })).toBeVisible();
+  await expect(page.getByTestId("order")).toContainText("sorted by Year, descending");
   await expect(rows(page)).toContainText(["Acuña", "Freeman", "Betts"]);
 });
 
@@ -278,7 +279,7 @@ test("Filter by player", async ({ page }) => {
   await expect(rows(page)).toHaveCount(1);
   await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
   await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Filter, 1 applied", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Filter and sort, 1 applied", exact: true })).toBeVisible();
 });
 
 test("A player filter of only spaces shows no chip and no badge", async ({ page }) => {
@@ -287,7 +288,7 @@ test("A player filter of only spaces shows no chip and no badge", async ({ page 
   await page.getByLabel("Player", { exact: true }).fill("   ");
   await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
   await expect(page.getByRole("button", { name: /^Remove Player filter/ })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Filter", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Filter and sort", exact: true })).toBeVisible();
 });
 
 test("Clear all clears the player filter and keeps search", async ({ page }) => {

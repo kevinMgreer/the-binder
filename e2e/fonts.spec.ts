@@ -35,7 +35,7 @@ test("Fonts ship inside the app: no request leaves it, both faces load and are u
   await page.getByRole("button", { name: "Cancel" }).click();
   await page.evaluate(() => window.dispatchEvent(new Event("hardware-back")));
   await page.getByRole("button", { name: /^Filter/ }).click();
-  await expect(page.getByRole("dialog", { name: "Filters" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Filter and sort" })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.evaluate(() => window.dispatchEvent(new Event("hardware-back")));
   await page.getByRole("button", { name: "Settings", exact: true }).click();

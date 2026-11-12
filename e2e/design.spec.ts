@@ -140,11 +140,12 @@ for (const size of PHONES) {
       const search = page.getByLabel("Search", { exact: true });
       const filter = page.getByRole("button", { name: /^Filter/ });
       const add = page.getByRole("button", { name: "Add card", exact: true });
-      const sort = page.getByRole("button", { name: /^Sort: / });
+      const order = page.getByTestId("order");
       const toggle = page.getByRole("button", { name: "Grid view", exact: true });
-      for (const el of [status, gear, search, filter, shown, toggle, sort, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
+      for (const el of [status, gear, search, filter, shown, toggle, order, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
       const rowBox = (await page.locator(".shown-row").boundingBox())!;
-      for (const el of [sort, toggle]) {
+      for (const el of [order, toggle]) {
         const b = (await el.boundingBox())!;
         expect(b.y).toBeGreaterThanOrEqual(rowBox.y - 0.5);
         expect(b.y + b.height).toBeLessThanOrEqual(rowBox.y + rowBox.height + 0.5);
@@ -173,7 +174,8 @@ for (const size of PHONES) {
       await openCollection(page);
       await page.getByRole("button", { name: "Grid view", exact: true }).click();
       await showUpdateBanner(page);
-      for (const el of [page.locator("header").getByTestId("sync-status"), page.getByRole("button", { name: "Settings", exact: true }), page.getByLabel("Search", { exact: true }), page.getByRole("button", { name: /^Filter/ }), page.getByTestId("shown"), page.getByRole("button", { name: "List view", exact: true }), page.getByRole("button", { name: /^Sort: / })]) await expect(el).toBeInViewport();
+      for (const el of [page.locator("header").getByTestId("sync-status"), page.getByRole("button", { name: "Settings", exact: true }), page.getByLabel("Search", { exact: true }), page.getByRole("button", { name: /^Filter/ }), page.getByTestId("shown"), page.getByRole("button", { name: "List view", exact: true }), page.getByTestId("order")]) await expect(el).toBeInViewport();
+      await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
       const scrollerBottom = await bottom(page.locator(".list-scroller"));
       const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
       expect(add.y - scrollerBottom).toBeGreaterThanOrEqual(7.5);
@@ -203,13 +205,13 @@ for (const size of PHONES) {
       await page.getByRole("button", { name: /^Filter/ }).click();
       await expect(page.getByRole("button", { name: "Close" })).toBeFocused();
       await page.keyboard.press("Escape");
-      await expect(page.getByRole("dialog", { name: "Filters" })).toHaveCount(0);
+      await expect(page.getByRole("dialog", { name: "Filter and sort" })).toHaveCount(0);
     });
 
     test("Filter and chip names say what they do", async ({ page }) => {
-      await expect(page.getByRole("button", { name: "Filter", exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Filter and sort", exact: true })).toBeVisible();
       await applyYearFrom(page, "2024");
-      await expect(page.getByRole("button", { name: "Filter, 1 applied", exact: true })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Filter and sort, 1 applied", exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Remove Year filter: 2024–", exact: true })).toBeVisible();
     });
 
@@ -342,19 +344,19 @@ for (const size of PHONES) {
 
     test("Nothing applied: no chips and no badge", async ({ page }) => {
       await expect(page.locator(".chip")).toHaveCount(0);
-      await expect(page.getByRole("button", { name: /^Filter/ })).toHaveText("Filter");
+      await expect(page.getByRole("button", { name: /^Filter/ })).toHaveText("Filter & sort");
     });
 
     test("Filter applied: the sheet closes, a chip and a badge appear, the count shows", async ({ page }) => {
       await page.getByRole("button", { name: /^Filter/ }).click();
-      const sheet = page.getByRole("dialog", { name: "Filters" });
+      const sheet = page.getByRole("dialog", { name: "Filter and sort" });
       await sheet.getByLabel("Year from", { exact: true }).fill("2030");
       await expect(sheet.getByRole("button", { name: "Show 0 cards" })).toBeVisible();
       await sheet.getByLabel("Year from", { exact: true }).fill("2024");
       await sheet.getByRole("button", { name: "Show 4 cards" }).click();
       await expect(sheet).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Remove Year filter" })).toBeVisible();
-      await expect(page.getByRole("button", { name: /^Filter/ })).toHaveText("Filter1");
+      await expect(page.getByRole("button", { name: /^Filter/ })).toHaveText("Filter & sort1");
       await expect(page.getByTestId("shown")).toHaveText("Showing 4");
     });
 
@@ -682,9 +684,6 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: /^Filter/ }).click();
     await expectTouchable(page, "filter sheet");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
-    await page.getByRole("button", { name: /^Sort: / }).click();
-    await expectTouchable(page, "sort sheet");
-    await page.getByRole("dialog", { name: "Sort" }).getByRole("button", { name: "Close" }).click();
     await applyYearFrom(page, "2000");
     await expectTouchable(page, "applied chip");
     await page.getByTestId("card-row").first().click();
@@ -1121,7 +1120,7 @@ test.describe("System navigation bar strip", () => {
   });
 });
 
-test.describe("Form actions and Sort sheet", () => {
+test.describe("Form actions", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
   test("Cancel sits left of a wider Save and a typed form asks before back leaves", async ({ page }) => {
@@ -1144,29 +1143,51 @@ test.describe("Form actions and Sort sheet", () => {
     await expect(page.getByLabel("Player")).toHaveValue("Hank Aaron");
   });
 
-  test("the Sort sheet is compact and aligned; the Filters sheet stays full height", async ({ page }) => {
+  test("Options line up in the Filter and sort sheet, which stays full height", async ({ page }) => {
     await page.goto("/");
     await seed(page, CARDS);
-    const sort = page.getByRole("dialog", { name: "Sort" });
-    await page.getByRole("button", { name: /^Sort: / }).click();
-    const sheet = (await sort.boundingBox())!;
-    expect(sheet.height).toBeLessThan(800 * (2 / 3));
-    const rows = await sort.locator("label.check").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+    const sheet = page.getByRole("dialog", { name: "Filter and sort" });
+    await page.getByRole("button", { name: /^Filter and sort/ }).click();
+    const rows = await sheet.locator("label.check:has(input[type=radio])").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
     expect(rows.length).toBe(6);
     for (const h of rows) expect(h).toBeGreaterThanOrEqual(47.5);
-    expect(Math.max(...rows) - Math.min(...rows)).toBeLessThan(1);
-    const left = async (name: string) => (await sort.getByRole("radio", { name, exact: true }).boundingBox())!;
+    expect(Math.max(...rows.slice(0, 4)) - Math.min(...rows.slice(0, 4))).toBeLessThan(1);
+    expect(rows[4]).toBeCloseTo(rows[5], 0);
+    const left = async (name: string) => (await sheet.getByRole("radio", { name, exact: true }).boundingBox())!;
     const lefts = await Promise.all(["Last name", "Year", "Team", "Set", "Ascending"].map(async (n) => (await left(n)).x));
     expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
+    expect((await left("Descending")).x).toBeGreaterThan((await left("Ascending")).x);
     expect((await left("Descending")).y).toBeCloseTo((await left("Ascending")).y, 0);
-    await expect(sort.getByRole("button", { name: "Done" })).toHaveCount(0);
-    await expect(sort.locator(".sheet-foot")).toHaveCount(0);
-    const lastRow = (await sort.locator("label.check").last().boundingBox())!;
-    expect(sheet.y + sheet.height - (lastRow.y + lastRow.height)).toBeLessThan(48);
-    await sort.getByRole("button", { name: "Close" }).click();
-    await page.getByRole("button", { name: /^Filter/ }).click();
-    const filters = (await page.getByRole("dialog", { name: "Filters" }).boundingBox())!;
-    expect(filters.y + filters.height).toBeCloseTo(800, 0);
+    const box = (await sheet.boundingBox())!;
+    expect(box.y + box.height).toBeCloseTo(800, 0);
+  });
+
+  test("The button fits the search row: 12 filters applied, one line, Search stays at least 120 dp", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [...CARDS, { player: "Full House", cardNumber: "99", team: "Atlanta Braves", manufacturer: "Topps", set: "Series One", subset: "Base" }]);
+    await page.getByRole("button", { name: /^Filter and sort/ }).click();
+    const sheet = page.getByRole("dialog", { name: "Filter and sort" });
+    await sheet.getByLabel("Year from", { exact: true }).fill("1900");
+    await sheet.getByLabel("Player", { exact: true }).fill("a");
+    await sheet.getByLabel("Print run", { exact: true }).fill("5");
+    for (const label of ["Team", "Manufacturer", "Set", "Subset"]) {
+      await sheet.getByRole("combobox", { name: label, exact: true }).selectOption({ index: 1 });
+    }
+    for (const label of ["Serial-numbered", "Rookie", "Autograph", "Relic", "Graded"]) await sheet.getByLabel(label, { exact: true }).check();
+    await sheet.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+    const button = page.getByRole("button", { name: "Filter and sort, 12 applied", exact: true });
+    await expect(button).toHaveText("Filter & sort12");
+    const b = (await button.boundingBox())!;
+    const s = (await page.getByLabel("Search", { exact: true }).boundingBox())!;
+    expect(b.height).toBeGreaterThanOrEqual(47.5);
+    expect(Math.abs(b.y - s.y)).toBeLessThan(24);
+    expect(s.width).toBeGreaterThanOrEqual(120);
+    expect(await button.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el.firstChild!);
+      return range.getClientRects().length;
+    })).toBe(1);
+    expect(await button.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   });
 });
 
@@ -1355,7 +1376,7 @@ test.describe("Card-back look", () => {
       page.evaluate(() => {
         const bad = new Set<string>();
         for (const el of document.querySelectorAll("body *")) {
-          const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) || (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && (el as HTMLInputElement).type !== "checkbox");
+          const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) || (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && !["checkbox", "radio"].includes((el as HTMLInputElement).type));
           if (own) {
             const px = getComputedStyle(el).fontSize;
             if (!["12px", "14px", "16px", "18px", "28px", "32px"].includes(px)) bad.add(`${el.tagName}.${el.className} ${px}`);
