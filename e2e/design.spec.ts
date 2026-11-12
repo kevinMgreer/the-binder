@@ -419,8 +419,8 @@ test.describe("destructive actions stay apart", () => {
     await seed(page, [{ ...CARDS[0], team: "Atlanta Braves" }]);
     await page.getByTestId("card-row").first().click();
     const facts = page.getByTestId("facts");
-    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel"]);
-    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold"]);
+    expect(await facts.locator("dt").allTextContents()).toEqual(["Manufacturer", "Team", "Parallel", "Quantity"]);
+    expect(await facts.locator("dd").allTextContents()).toEqual(["Topps", "Atlanta Braves", "Gold", "1"]);
   });
 
   test("Long names wrap cleanly", async ({ page }) => {

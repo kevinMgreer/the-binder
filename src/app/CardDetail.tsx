@@ -41,11 +41,12 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
   }, [confirming]);
   const serial = serialLabel(card.parallel);
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
-  const teamLine = [card.team, card.parallel?.name].filter(Boolean).join(" · ");
   const facts: Array<[string, ReactNode]> = [
     ["Manufacturer", card.manufacturer],
     ["Subset", card.subset],
     ["Insert", card.insert],
+    ["Team", card.team],
+    ["Parallel", card.parallel?.name],
     ["Condition", gradeLabel(card.grading)],
     ["Quantity", card.quantity],
     ["Traits", flags.join(", ")],
@@ -62,11 +63,6 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
           {card.year} {card.set}
           {card.cardNumber && ` · #${card.cardNumber}`}
         </p>
-        {teamLine && (
-          <p className="subtitle" data-testid="team-line">
-            {teamLine}
-          </p>
-        )}
       </header>
       <div className="title-rule" aria-hidden="true" />
       <dl className="facts" data-testid="facts">
