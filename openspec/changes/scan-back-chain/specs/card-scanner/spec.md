@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Scan a card with the rear camera
-The system SHALL open an in-app scanner on the rear camera when the user taps "Scan front" or "Scan back" on the card form, and when the form opens the back scanner by itself after a front scan (see "Capture front and back" in the `card-photos` capability), and SHALL detect the card's edges and save the photo straightened and cropped to the card.
+The system SHALL open an in-app scanner on the rear camera when the user taps "Scan front" or "Scan back" on the card form, and SHALL detect the card's edges and save each photo straightened and cropped to the card. When "Scan front" also takes the back (see "Capture front and back" in the `card-photos` capability), the same scanner session SHALL allow a second page for the back.
 
 #### Scenario: Scanner opens on the rear camera
 - **WHEN** the user taps "Scan front" on the add form on a phone that has Google Play services
@@ -13,12 +13,12 @@ The system SHALL open an in-app scanner on the rear camera when the user taps "S
 
 #### Scenario: Front then back
 - **GIVEN** the Back tile is empty
-- **WHEN** the user accepts the front scan with the scanner's own accept button
-- **THEN** the front photo is attached and the same rear-camera scanner opens again for the back; the user skips the back by closing it, which leaves the form with the front photo and an empty Back tile
+- **WHEN** the user scans the front from "Scan front"
+- **THEN** the scanner stays open and allows a second page, which is the back; the user skips the back by accepting after the front, which leaves the form with the front photo and an empty Back tile
 
-#### Scenario: Back scanner falls back like any scan
-- **WHEN** the back scanner opens after a front scan on a phone without Google Play services, or where the scanner's module cannot be fetched
-- **THEN** the system camera opens for the back instead, with no error shown
+#### Scenario: Front then back without the scanner
+- **WHEN** the user taps "Scan front" with an empty Back tile on a phone without Google Play services, or where the scanner's module cannot be fetched
+- **THEN** the system camera opens for the front and, once the front is taken, opens again for the back, with no error shown
 
 #### Scenario: Retake
 - **WHEN** the user is not happy with a scan and retakes it before accepting
@@ -26,22 +26,22 @@ The system SHALL open an in-app scanner on the rear camera when the user taps "S
 
 #### Scenario: Retake from the card form
 - **WHEN** the user taps "Retake front" or "Retake back" on the card form, shown in place of "Scan front" or "Scan back" once that side has a photo
-- **THEN** the same rear-camera scanner opens and the new photo replaces that side's photo
+- **THEN** the same rear-camera scanner opens for one page and the new photo replaces that side's photo
 
 ## ADDED Requirements
 
 ### Requirement: Name the side being scanned
-The system SHALL show a short message over the scanner that names the side being scanned, "Scan the front of the card" or "Scan the back of the card", every time a scan is started from a photo tile (Scan, Retake, and the back scan the form opens by itself after a front scan). The message SHALL NOT appear for "Pick front from photos" or "Pick back from photos". The system SHALL NOT require the system-camera fallback to show it.
+The system SHALL show a short message over the scanner that names what to scan every time a scan is started from a photo tile: "Scan the front of the card, then the back" when the scan takes both sides, otherwise "Scan the front of the card" or "Scan the back of the card". The message SHALL NOT appear for "Pick front from photos" or "Pick back from photos". The system SHALL NOT require the system-camera fallback to show it.
 
-#### Scenario: Front scan names the front
-- **WHEN** the user chooses "Scan front" or "Retake front" on a phone where the scanner runs
+#### Scenario: Front and back scan names the order
+- **WHEN** the user chooses "Scan front" with an empty Back tile on a phone where the scanner runs
+- **THEN** a message reading "Scan the front of the card, then the back" shows over the scanner
+
+#### Scenario: One-page front scan names the front
+- **WHEN** the user chooses "Retake front", or "Scan front" while the Back tile has a photo
 - **THEN** a message reading "Scan the front of the card" shows over the scanner
 
-#### Scenario: Chained back scan names the back
-- **WHEN** the back scanner opens by itself after the front scan
-- **THEN** a message reading "Scan the back of the card" shows over the scanner
-
-#### Scenario: Back scan from the Back tile names the back
+#### Scenario: Back scan names the back
 - **WHEN** the user chooses "Scan back" or "Retake back"
 - **THEN** a message reading "Scan the back of the card" shows over the scanner
 

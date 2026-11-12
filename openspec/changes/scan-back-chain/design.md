@@ -1,81 +1,76 @@
 ## Context
 
-See proposal.md for why. Today each photo tile is its own `PhotoSlot` (`src/app/PhotoSlot.tsx`): tapping it opens a chooser sheet, and its `take(how)` closes the sheet, sets busy (the form holds Save through `onBusy`), calls `acquirePhoto(photoSource, side, how)` and hands the result to `onChange`, or shows "Camera permission denied. Pick from photos instead." / "Could not load that photo." on error. A `null` result (scanner closed) changes nothing. `CardForm` (`src/app/CardForm.tsx`) renders the two slots, keeps `photos` and `preparing` state, and runs on-device recognition in an effect for each newly attached photo. The two slots do not know about each other.
+See proposal.md for why. Each photo tile is its own `PhotoSlot` (`src/app/PhotoSlot.tsx`): tapping it opens a chooser sheet, and its `take(how)` closes the sheet, sets busy (the form holds Save through `onBusy`), acquires the photo and hands it to `onChange`, or shows "Camera permission denied. Pick from photos instead." / "Could not load that photo." on error. A closed scanner changes nothing. `CardForm` (`src/app/CardForm.tsx`) renders the two slots, keeps `photos` and `preparing` state, and runs on-device recognition in an effect for each newly attached photo.
 
-The scanner is the ML Kit document scanner (`BinderScannerPlugin.java`, base mode, page limit 1, no gallery import) behind `ScannerPhotoSource`, which falls back to the system camera when ML Kit cannot run. The scanner's own screens handle retake and accept; when it closes, `capture()` resolves with the image or `null`. Android back inside the scanner closes it (resolves `null`).
+The scanner is the ML Kit document scanner (`BinderScannerPlugin.java`, `play-services-mlkit-document-scanner` 16.0.0, base mode, no gallery import) behind `ScannerPhotoSource`, which falls back to the system camera when ML Kit cannot run. The scanner's own screens handle capture, retake, crop and accept; it returns to the app only when it closes. Android back inside the scanner closes it without a result.
 
-**Order with photo-detail-polish.** The card-photos delta here is written against the text that `openspec/changes/photo-detail-polish/specs/card-photos/spec.md` leaves for "Capture front and back" (tiles and choosers), not today's `openspec/specs/card-photos/spec.md`. photo-detail-polish is being archived in a parallel PR; this change SHALL be archived after it. The card-scanner delta is written against today's main spec, which photo-detail-polish does not touch.
+The first version of this change (merged into this branch, not into main) chained two one-page scans from the form: the front tile reported a successful scan and the form called a `scan()` handle on the back tile. On the phone the form showed for a moment between the two scanners, which the owner rejected.
+
+**Checked in the installed library.** `GmsDocumentScannerOptions.Builder.setPageLimit(int)` takes any value of 1 or more (it rejects less than 1), and `GmsDocumentScanningResult.getPages()` returns a `List<Page>`, each with `getImageUri()`. Google's ML Kit pages describe a viewfinder screen and a preview screen and list "reorder pages" among base mode's editing tools, but do not name the control that adds a page, so no in-app text quotes it.
+
+**Order with photo-detail-polish.** The card-photos delta here is written against the "Capture front and back" text that photo-detail-polish left (tiles and choosers), now in main. The card-scanner delta is written against the main spec.
 
 ## Goals / Non-Goals
 
-**Goals:** one fewer tap-pair per card on the common "scan both sides" path, with every existing behaviour of the form unchanged.
+**Goals:** scan both sides in one scanner session, with no return to the form between them, and every existing behaviour of the form unchanged.
 
-**Non-Goals:** changing the scanner's options, the photo pipeline, recognition, or any in-app text (D6 adds only a native hint over the scanner). See proposal.md "Out of scope".
+**Non-Goals:** the photo pipeline, recognition, any in-app text. See proposal.md "Out of scope".
 
 ## Decisions
 
-### D1. Where "next" is: the scanner's own accept
+### D1. One scanner session with a page limit of 2
 
-The owner's "once I hit next" is read as the scanner's accept button (ML Kit's Done after the capture preview; the system camera's confirm in the fallback). The app never sees a separate "Next": `capture()` returns when the scanner closes. So the chain starts when the front scan result comes back and is attached.
+"Scan front" on an empty Front tile, while the Back tile is empty, starts the ML Kit scanner with `setPageLimit(2)`. Page 1 is the front, page 2 the back. The owner's "hit next" is the scanner's own control for another page; its accept (Done) closes the scanner. When it closes with two pages, the form attaches the first to the Front tile and the second to the Back tile; with one page, only the front.
 
-- Alternative: add an in-app "Next" button after the front scan. Rejected: an extra tap, the thing the owner wants gone.
-- Alternative: ML Kit multi-page (page limit 2) to take both sides in one session. Rejected: changes the native plugin and the photo pipeline (two images from one call), loses the per-side fallback and makes "skip the back" a different gesture. Out of scope.
+- Closing the scanner without accepting (close button or Android back) returns `RESULT_CANCELED`: nothing is attached, even a page already taken. This is how every closed scan already behaves.
+- Base mode lets the user reorder or delete pages in the preview. The app trusts the order it gets back: page 1 is the front. A user who swaps them gets swapped tiles and fixes them with Retake. Accepted.
+- "Back empty" is the form's `hasPhoto("back")` at the moment "Scan front" is chosen: no stored back that was kept, no captured back. A back removed on the edit form counts as empty.
 
-$0: no new service or dependency.
+Alternatives:
 
-### D2. The chain lives in the form, triggered by the front slot
-
-- `PhotoSlot` gets an optional `onScanned?: () => void`, called after `take("camera")` attaches a photo on a side that was empty when the action was chosen (the chooser read "Scan", not "Retake"). Not called for "pick", for a `null` result or on error.
-- `PhotoSlot` exposes `scan()` through a ref (React 19 `ref` prop with `useImperativeHandle`): it runs the same `take("camera")` path the "Scan back" button runs, without opening the chooser. Busy state, "Processing photo…", `onBusy`, errors and focus return all come for free.
-- `CardForm` holds a ref to the back slot and passes the front slot `onScanned={() => { if (!hasPhoto("back")) backSlot.current?.scan(); }}`. `hasPhoto` already means "stored and not removed, or captured", so the edit form of a card with a back does not chain, and a back removed on this form counts as empty (the Back tile is empty).
-- The back slot gets no `onScanned`, so a back scan never chains to the front.
-
-`scan()` itself decides whether to start: it does nothing when the back slot is `busy` or `filled`, read from the committed state of the latest render (the handle is rebuilt each render). The form does no check of its own: its `photos` state may be stale when `onScanned` fires. The front scan does not freeze the back tile: the scanner closes first, then the front photo is prepared ("Processing photo…"), and in that window the user can start a back take from the Back tile or fill it from photos. Without the guard a second concurrent take would be rejected by the plugin ("A scan is already open") and a picked back could be replaced.
-
-- Alternative: lift `take` and both slots' busy/error state into `CardForm`. Rejected: moves working code for one call.
-- Alternative: a `scanRequest` counter prop and an effect in the back slot. Rejected: an effect to replay a one-off event; the ref call is direct.
-- Alternative: chain inside `ScannerPhotoSource` (capture front, then capture back). Rejected: the adapter does not know the form's state (is there a back?) and the pipeline, OCR and error messages are per slot.
-
-$0: client code only.
-
-### D3. No setting, no prompt, no chain after Pick
-
-- A setting to turn the chain off: rejected as extra; closing the back scanner (one tap or Android back) skips the back.
-- A "Scan back now?" prompt: rejected, an extra tap.
-- Chaining after "Pick front from photos": rejected; picking means the photos already exist, and the back scanner opening over the gallery flow would surprise. The owner asked about scanning.
-- Chaining after "Retake front": rejected; a retake fixes one side.
-
-$0: nothing added.
-
-### D4. Recognition, preparing, Cancel and Android back unchanged
-
-The front photo attaches (and its recognition effect runs) before `onScanned` fires; the back attaches later and only the back is new to the recognition effect, so each photo is recognized once. While either slot is busy Save stays disabled (existing `preparing`). Cancel and its Discard confirmation, and Android back on the form, act on whatever is attached when the scanner closes. Android back inside the back scanner is the scanner's close (null result): the form keeps the front and shows nothing. No sheet is open during the chained scan (the front chooser closed when "Scan front" was chosen), so the app's back stack is untouched.
-
-### D5. Test seams
-
-- Vitest keeps the existing pattern of mocking `acquirePhoto` (`src/app/photo-slot.test.tsx`, `src/app/card-form-actions.test.tsx`); a second call with `"back", "camera"` is the chain. Existing tests that scan the front and expect one photo get `mockResolvedValueOnce(photo).mockResolvedValue(null)` (back closed).
-- e2e: `FakePhotoSource` in `src/adapters/fakes.ts` gets `nextBack?: Blob | null` (used by `capture("back")` when set, else `next`) so a test can accept the front and close or fill the back. No change to `pick()`.
-
-### D6. A hint names the side over the scanner
-
-After trying the chain on the phone the owner found it "not immediately clear that you're now scanning the back". The ML Kit scanner's screens cannot be customised, so the plugin shows a short Android `Toast` (`LENGTH_LONG`) naming the side: "Scan the front of the card" / "Scan the back of the card". A Toast is a system overlay that outlives the activity launch, so it shows over the scanner.
-
-- `DocumentScanner.scan(hint)` and the plugin's `scan({ hint })` carry an optional string; `ScannerPhotoSource.capture(side)` builds it from the side, so every camera scan from a tile (Scan, Retake, the chained back scan) has one. `pick()` never reaches the scanner, so a pick has none. The system-camera fallback ignores it.
-- Alternative: an interstitial "Now scan the back" screen for about a second before the scanner opens. Rejected: an added delay on every card, the thing the chain removes.
-- Alternative: a persistent in-app banner. Rejected: the native scanner covers the whole screen, so the banner is invisible behind it.
+- **Keep the chain (two one-page scans).** Rejected: the form flashes between the scanners, the thing the owner asked to remove.
+- **Our own camera screen (CameraX) with "Front" and "Back" labels.** Rejected: it loses ML Kit's edge detection, straightening and crop, which `card-scanner` requires, and is a large native build of its own.
+- **An interstitial "Now the back" screen between two scans.** Rejected: it is still a return to the app between the scanners, plus an added delay on every card.
 
 $0: no new dependency.
 
+### D2. The port returns a list of pages
+
+- `PhotoSource.capture(side, pages = 1): Promise<Blob[]>`: up to `pages` photos, `side` first; an empty list means closed. `DocumentScanner.scan(hint, pages)` and the plugin's `scan({ hint, pages })` → `{ uris: string[] }` follow the same shape, so ML Kit's page list passes through unchanged.
+- `acquirePhotos(source, side, how, pages = 1)` (was `acquirePhoto`) returns the processed photos in order, each through `processPhoto` (compress, thumbnail) like a single scan. If any page fails to process, the whole call fails and nothing is attached.
+- Alternative: a separate `captureFrontAndBack()` method. Rejected: a second path through every adapter and the fake for what is the same call with a different page limit.
+
+### D3. The front tile asks, the form attaches
+
+- `PhotoSlot` gets `onBackPage?: (photo) => void`. When it is set and the tile is empty, "Scan" asks for two pages and hands page 2 to it after `onChange(page 1)`. Retake (tile filled) and Pick always ask for one page.
+- `CardForm` passes `onBackPage` to the Front tile only while `hasPhoto("back")` is false, and it is the same attach function the Back tile's own `onChange` uses, so page 2 is stored, saved, discarded and recognized exactly like a back scan.
+- Both photos attach in the same tick, so the recognition effect sees both as new and runs on-device recognition once with front and back together. Each photo is recognized once.
+- While the pages are processed, the Front tile shows "Processing photo…" and the form holds Save (`preparing.front`); the Back tile fills when both are ready. The form counts as changed from then on (Cancel asks, Discard drops both).
+- The first version's `onScanned`, `scan()` ref handle, `PhotoSlotHandle` and its busy/filled guard are removed: no second scan is started from the form, so there is no race between two takes.
+
+### D4. The system-camera fallback opens twice
+
+The system camera takes one photo per launch. When ML Kit cannot run and two pages were asked for, `ScannerPhotoSource` opens the fallback for the front and, if a front came back, again for the back. This keeps the first version's behaviour on such phones (the form shows briefly between the two, as before) in two lines in the adapter; the form does not know which path ran. An error on the back launch fails the whole call, like any failed scan.
+
+### D5. A hint names the side over the scanner
+
+The ML Kit screens cannot be customised, so the plugin shows a short Android `Toast` (`LENGTH_LONG`) as the scanner opens. `ScannerPhotoSource` builds the text: "Scan the front of the card, then the back" for two pages, "Scan the front of the card" / "Scan the back of the card" for one. The wording does not name the scanner's add-page control, because its label could not be confirmed. `pick()` never reaches the scanner; the system-camera fallback shows no hint.
+
+- Alternative: a persistent in-app banner. Rejected: the scanner covers the whole screen.
+
+### D6. Test seams
+
+- Vitest mocks `acquirePhotos` as the files do now; the two-page case is `["front", "camera", 2]` resolving to two photos.
+- e2e: `FakePhotoSource.nextBack?: Blob | null` is page 2 of a two-page capture (`undefined`: same as `next`; `null`: the user finished after the front). One-page captures and `pick()` ignore it.
+
 ## Risks / Trade-offs
 
-- [The Toast fades after about 3.5 s, and some Android versions limit Toasts shown while another app or activity is in front] → the scanner is the app's own task, so it shows; the phone check covers it.
-
-- [The owner sometimes adds a card with only a front] → one extra close (or Android back) per such card. Accepted; revisit with a setting only if the owner asks.
-- [Fallback system camera shows no side hint] → it opens right after the front, as "Scan back" would; the owner sees the Back tile fill. Phone check covers it.
-- [Existing tests assume one capture per front scan] → task 1.3 audits and updates them in the same branch.
-- [Focus] → after the back scan finishes, focus returns to the Back tile (the existing focus-restore in `take`); acceptable, and covered by the existing focus test pattern.
+- [The Toast fades after about 3.5 s, before the user reaches the back] → it names the order up front; the phone check covers whether it is enough.
+- [The scanner's flow for a second page is not documented (whether it stays in the viewfinder or goes to the preview first)] → the phone check confirms the user can add the back without help; if not, the owner decides between a reworded Toast and another approach.
+- [The owner sometimes adds a card with only a front] → press Done after the front; no extra step.
+- [Android back after taking the front loses the front] → same as closing any scan; the user scans again.
+- [Phones without Play services still see the form between two system-camera launches] → accepted; the owner's phone has Play services.
 
 ## Open Questions
 
-- Owner to confirm on the phone run that "next" is the scanner's Done (assumed in D1). There is no Next button on the form today, so no other reading fits the current flow.
-- A back removed on the edit form leaves the Back tile empty, so scanning the front then chains (assumed fine: the tile is empty).
+- Owner to confirm on the phone that the scanner's own add-page step reads as "next" and the Toast wording is clear enough.
