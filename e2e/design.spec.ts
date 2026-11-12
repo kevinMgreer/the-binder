@@ -658,7 +658,7 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
     await page.getByRole("button", { name: /^Sort: / }).click();
     await expectTouchable(page, "sort sheet");
-    await page.getByRole("button", { name: "Done" }).click();
+    await page.getByRole("dialog", { name: "Sort" }).getByRole("button", { name: "Close" }).click();
     await applyYearFrom(page, "2000");
     await expectTouchable(page, "applied chip");
     await page.getByTestId("card-row").first().click();
@@ -1107,9 +1107,11 @@ test.describe("Form actions and Sort sheet", () => {
     const lefts = await Promise.all(["Last name", "Year", "Team", "Set", "Ascending"].map(async (n) => (await left(n)).x));
     expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
     expect((await left("Descending")).y).toBeCloseTo((await left("Ascending")).y, 0);
-    const done = (await sort.getByRole("button", { name: "Done" }).boundingBox())!;
-    expect(done.width).toBeGreaterThan(sheet.width - 80);
-    await page.getByRole("button", { name: "Done" }).click();
+    await expect(sort.getByRole("button", { name: "Done" })).toHaveCount(0);
+    await expect(sort.locator(".sheet-foot")).toHaveCount(0);
+    const lastRow = (await sort.locator("label.check").last().boundingBox())!;
+    expect(sheet.y + sheet.height - (lastRow.y + lastRow.height)).toBeLessThan(48);
+    await sort.getByRole("button", { name: "Close" }).click();
     await page.getByRole("button", { name: /^Filter/ }).click();
     const filters = (await page.getByRole("dialog", { name: "Filters" }).boundingBox())!;
     expect(filters.y + filters.height).toBeCloseTo(800, 0);
