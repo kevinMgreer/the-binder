@@ -150,7 +150,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const [initial] = useState(draft);
   const [confirming, setConfirming] = useState(false);
   const dirty =
-    !!(photos.front || photos.back || preparing.front || preparing.back) ||
+    photos.front !== undefined || photos.back !== undefined || preparing.front || preparing.back ||
     (Object.keys(initial) as (keyof Draft)[]).some((k) => draft[k] !== initial[k]);
   const question = card ? "Discard changes?" : "Discard this card?";
 
@@ -211,13 +211,15 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       });
   }, [photos]);
 
+  const hasPhoto = (side: CardSide) => (photos[side] === undefined ? !!card?.photos[side] : !!photos[side]);
+
   async function identify() {
     if (!navigator.onLine) return setNote("Identify with Claude needs an internet connection.");
     setIdentifying(true);
     setNote(undefined);
     try {
-      const front = photos.front?.full ?? (card?.photos.front ? await photoStore.getFull(card.id, "front") : undefined);
-      const back = photos.back?.full ?? (card?.photos.back ? await photoStore.getFull(card.id, "back") : undefined);
+      const front = photos.front?.full ?? (photos.front === undefined && card?.photos.front ? await photoStore.getFull(card.id, "front") : undefined);
+      const back = photos.back?.full ?? (photos.back === undefined && card?.photos.back ? await photoStore.getFull(card.id, "back") : undefined);
       if (!front && !back) return setNote("The full photo is not on this device yet. Open the card while online first.");
       if (!applySuggestion(await claude.recognize({ front, back }), "claude")) {
         setNote("Claude could not read any details from these photos.");
@@ -284,17 +286,20 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
     <form onSubmit={submit} noValidate>
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <div className="title-rule" aria-hidden="true" />
-      {(["front", "back"] as const).map((side) => (
-        <PhotoSlot
-          key={side}
-          side={side}
-          card={card}
-          captured={photos[side]}
-          onChange={(p) => setPhotos((s) => ({ ...s, [side]: p }))}
-          onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
-        />
-      ))}
-      {(photos.front || photos.back || card?.photos.front || card?.photos.back) && (
+      <div className="photo-tiles">
+        {(["front", "back"] as const).map((side) => (
+          <PhotoSlot
+            key={side}
+            side={side}
+            card={card}
+            captured={photos[side]}
+            // A removed capture is simply gone; only a stored photo needs the null to be removed on save.
+            onChange={(p) => setPhotos((s) => ({ ...s, [side]: p ?? (card?.photos[side] ? null : undefined) }))}
+            onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
+          />
+        ))}
+      </div>
+      {(hasPhoto("front") || hasPhoto("back")) && (
         <button type="button" className="identify" disabled={identifying} onClick={identify}>
           Identify with Claude
         </button>

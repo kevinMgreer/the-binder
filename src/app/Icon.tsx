@@ -3,6 +3,7 @@ const PATHS = {
   dashboard: "M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z",
   plus: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z",
   cards: "M7 19h10V4H7v15zM2 17h4V6H2v11zM18 6v11h4V6h-4z",
+  camera: "M12 8.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z",
 } as const;
 
 /** Inline icons in `currentColor`. `outline` draws the same shape as a stroke, so a solid icon next to an outline one differs in shape, not only in colour. */

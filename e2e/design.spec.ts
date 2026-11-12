@@ -1370,3 +1370,25 @@ test.describe("Card-back look", () => {
     expect(rule).toMatch(/^rgba\(28, 43, 74, 0\.5\d*\)$/);
   });
 });
+
+test.describe("Photo tiles on the form", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`Front and Back tiles share a row, 96 dp tall, with 48 dp chooser buttons in ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      const [front, back] = await Promise.all(["Add front photo", "Add back photo"].map((n) => page.getByRole("button", { name: n }).boundingBox()));
+      expect(Math.abs(front!.y - back!.y)).toBeLessThanOrEqual(1);
+      expect(back!.x).toBeGreaterThan(front!.x + front!.width - 1);
+      for (const box of [front!, back!]) expect(Math.abs(box.height - 96)).toBeLessThanOrEqual(2);
+      for (const side of ["Front", "Back"]) {
+        await page.getByRole("button", { name: `Add ${side.toLowerCase()} photo` }).click();
+        const sheet = page.getByRole("dialog", { name: `${side} photo` });
+        for (const b of await sheet.getByRole("button").all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(47.5);
+        await sheet.getByRole("button", { name: "Close" }).click();
+      }
+    });
+  }
+});

@@ -200,7 +200,7 @@ export class SyncEngine {
     const { collection, remote, photos } = this.deps;
     for (const upload of await photos.pendingUploads()) {
       const card = await collection.get(upload.cardId);
-      if (!card || card.deletedAt !== null) {
+      if (!card || card.deletedAt !== null || card.photos[upload.side] === null) {
         await photos.markUploaded(upload.cardId, upload.side, upload.revision);
         continue;
       }

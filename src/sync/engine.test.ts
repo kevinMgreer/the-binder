@@ -282,7 +282,8 @@ describe("photos", () => {
     await a.engine.syncNow();
     const first = (await a.collection.get(c.id))!.photos.front!;
 
-    await saveCard(a.deps, (await a.collection.get(c.id))!, { front: null });
+    // The form stamps updatedAt on every save; without it the merge would keep the remote card.
+    await saveCard(a.deps, { ...(await a.collection.get(c.id))!, updatedAt: new Date(Date.UTC(2026, 5, 3)).toISOString() }, { front: null });
     expect((await a.collection.get(c.id))!.photos.front).toBeNull();
     expect((await a.photos.pendingDeletes()).sort()).toEqual([first.fileId!, first.thumbId!].sort());
     await a.engine.syncNow();
