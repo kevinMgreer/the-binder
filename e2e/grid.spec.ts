@@ -303,3 +303,92 @@ test("Only nearby tiles exist: under 100 of 5,000, at the top and in the middle"
   });
   expect(inView).toBeGreaterThanOrEqual(6);
 });
+
+test("Kept after a relaunch, Sort still resets", async ({ page }) => {
+  await page.goto("/");
+  await seed(page, names(3));
+  await gridView(page).click();
+  await sortButton(page).click();
+  const sort = page.getByRole("dialog", { name: "Sort" });
+  await sort.getByRole("radio", { name: "Team", exact: true }).check();
+  await sort.getByRole("radio", { name: "Descending" }).check();
+  await sort.getByRole("button", { name: "Close" }).click();
+  await expect(sortButton(page)).toHaveText("Sort: Team ↓");
+  await page.reload();
+  await openCollection(page);
+  await expect(listView(page)).toBeVisible();
+  await expect(tiles(page)).toHaveCount(3);
+  await expect(sortButton(page)).toHaveText("Sort: Last name ↑");
+});
+
+test("Storage unavailable: List at first, Grid on a tap, no error", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.addInitScript(() => Object.defineProperty(window, "localStorage", { get: () => { throw new Error("denied"); } }));
+  await page.goto("/");
+  await seed(page, names(3));
+  await expect(gridView(page)).toBeVisible();
+  await expect(page.getByTestId("card-row")).toHaveCount(3);
+  await gridView(page).click();
+  await expect(tiles(page)).toHaveCount(3);
+  expect(errors).toEqual([]);
+});
+
+const many = (n: number): Item[] => Array.from({ length: n }, (_, i) => ({ player: `Player ${String(i + 1).padStart(3, "0")}`, cardNumber: String(i + 1) }));
+
+/** Scrolls down, opens a card far from the top, presses back; returns its name. */
+async function openFarAndBack(page: Page, item: Locator) {
+  await page.locator(".list-scroller").evaluate((el) => (el.scrollTop = el.scrollHeight * 0.7));
+  await expect.poll(() => item.count()).toBeGreaterThan(0);
+  const target = item.nth(Math.floor((await item.count()) / 2));
+  const name = (await target.locator(".grid-name, .player").first().textContent())!;
+  await target.getByRole("button").click();
+  await expect(page.getByRole("heading", { name })).toBeVisible();
+  await hardwareBack(page);
+  return name;
+}
+
+async function expectBackOn(page: Page, item: Locator, name: string) {
+  const back = item.filter({ hasText: name });
+  await expect(back).toHaveCount(1);
+  const s = await box(page.locator(".list-scroller"));
+  const b = await box(back);
+  expect(b.y).toBeGreaterThanOrEqual(s.y - 0.5);
+  expect(b.y + b.height).toBeLessThanOrEqual(s.y + s.height + 0.5);
+  await expect.poll(() => back.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+}
+
+test("Back to a tile far down the grid", async ({ page }) => {
+  await page.goto("/");
+  await seed(page, many(200));
+  await gridView(page).click();
+  const name = await openFarAndBack(page, tiles(page));
+  await expect(listView(page)).toBeVisible();
+  await expectBackOn(page, tiles(page), name);
+});
+
+test("Back to a row far down the list", async ({ page }) => {
+  await page.goto("/");
+  await seed(page, many(200));
+  const name = await openFarAndBack(page, page.getByTestId("card-row"));
+  await expect(gridView(page)).toBeVisible();
+  await expectBackOn(page, page.getByTestId("card-row"), name);
+});
+
+test("Deleted card: back to the top of the grid without it", async ({ page }) => {
+  await page.goto("/");
+  await seed(page, many(40));
+  await gridView(page).click();
+  await page.locator(".list-scroller").evaluate((el) => (el.scrollTop = el.scrollHeight * 0.7));
+  const target = tiles(page).nth(Math.floor((await tiles(page).count()) / 2));
+  const name = (await target.locator(".grid-name").textContent())!;
+  await target.getByRole("button").click();
+  await page.getByRole("button", { name: "Delete" }).click();
+  await page.getByRole("alertdialog", { name: "Delete card" }).getByRole("button", { name: "Delete" }).click();
+  await expect(listView(page)).toBeVisible();
+  await expect(page.getByTestId("shown")).toHaveText("Showing 39");
+  await expect(tiles(page).filter({ hasText: name })).toHaveCount(0);
+  expect(await page.locator(".list-scroller").evaluate((el) => el.scrollTop)).toBe(0);
+  await expect(tiles(page).first()).toContainText("Player 001");
+  expect(await page.evaluate(() => !!document.activeElement?.closest("[data-testid=card-tile]"))).toBe(false);
+});
