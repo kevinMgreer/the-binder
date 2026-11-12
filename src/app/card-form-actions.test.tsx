@@ -214,6 +214,18 @@ test("Scan front on an empty back takes both sides in one scan and fills both ti
   expect(acquire.mock.calls.map((c) => c.slice(1))).toEqual([["front", "camera", 2]]);
 });
 
+test("Scan front while a back take is still processing asks the scanner for one page", async () => {
+  acquire.mockReturnValueOnce(new Promise(() => {}));
+  acquire.mockResolvedValue([front]);
+  renderForm();
+  click("Add back photo");
+  click("Scan back");
+  await screen.findByText("Processing photo…");
+  scanFront();
+  await screen.findByRole("button", { name: "Change front photo" });
+  expect(acquire.mock.calls.map((c) => c.slice(1))).toEqual([["back", "camera", 1], ["front", "camera", 1]]);
+});
+
 test("a two-page scan finished after the front keeps the front and shows nothing", async () => {
   acquire.mockResolvedValue([front]);
   renderForm();
