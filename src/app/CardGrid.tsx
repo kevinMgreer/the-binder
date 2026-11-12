@@ -1,6 +1,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Card } from "../domain/card";
+import { useReturnTo } from "./CardList";
 import { Thumb } from "./Thumb";
 
 // A first-row guess at 360 dp (3 columns); the measured tile height replaces it after the first row.
@@ -22,7 +23,7 @@ function useColumns() {
 const accessibleName = (c: Card) =>
   [c.player, `${c.year} ${c.set}`, c.cardNumber && `number ${c.cardNumber}`, c.quantity > 1 && `${c.quantity} copies`].filter(Boolean).join(", ");
 
-export function CardGrid({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card) => void }) {
+export function CardGrid({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (card: Card) => void; returnTo?: string }) {
   const scroller = useRef<HTMLDivElement>(null);
   const lanes = useColumns();
   const virtualizer = useVirtualizer({
@@ -32,6 +33,8 @@ export function CardGrid({ cards, onOpen }: { cards: Card[]; onOpen: (card: Card
     overscan: 8,
     lanes,
   });
+
+  useReturnTo(virtualizer, cards, returnTo, scroller);
 
   useEffect(() => virtualizer.measure(), [lanes, virtualizer]);
 

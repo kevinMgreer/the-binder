@@ -4,7 +4,8 @@ import type { Card } from "../domain/card";
 import { CardDetail } from "./CardDetail";
 import { CardForm } from "./CardForm";
 import { defaultSort, emptyFilters, type Filters, type Sort } from "../domain/query";
-import { CollectionScreen, type CardsView } from "./CollectionScreen";
+import { loadCardsView, saveCardsView, type CardsView } from "./cards-view";
+import { CollectionScreen } from "./CollectionScreen";
 import { Dashboard } from "./Dashboard";
 import { openSheets } from "./Sheet";
 import { SettingsScreen } from "./SettingsScreen";
@@ -12,7 +13,7 @@ import { useCards } from "./useCards";
 import { useUpdates } from "./useUpdates";
 
 type View =
-  | { name: Screen }
+  | { name: Screen; returnTo?: string }
   | { name: "form"; card?: Card; from: Screen }
   | { name: "detail"; id: string; from: Screen }
   | { name: "settings"; from: Screen };
@@ -26,7 +27,11 @@ export function App() {
   const [view, setView] = useState<View>({ name: "dashboard" });
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [sort, setSort] = useState<Sort>(defaultSort);
-  const [cardsView, setCardsView] = useState<CardsView>("list");
+  const [cardsView, setCardsView] = useState<CardsView>(loadCardsView);
+  const changeCardsView = (next: CardsView) => {
+    setCardsView(next);
+    saveCardsView(next);
+  };
 
   // Android back: one screen up, and leave the app only from the dashboard.
   useEffect(() => {
@@ -35,7 +40,7 @@ export function App() {
       if (sheet) sheet();
       else if (view.name === "dashboard") void CapacitorApp.exitApp();
       else if (view.name === "list") setView({ name: "dashboard" });
-      else if (view.name === "detail") setView({ name: view.from });
+      else if (view.name === "detail") setView(view.from === "list" ? { name: "list", returnTo: view.id } : { name: view.from });
       else if (view.name === "form" && view.card) setView({ name: "detail", id: view.card.id, from: view.from });
       else if ("from" in view) setView({ name: view.from });
     };
@@ -119,7 +124,8 @@ export function App() {
       sort={sort}
       onSortChange={setSort}
       view={cardsView}
-      onViewChange={setCardsView}
+      onViewChange={changeCardsView}
+      returnTo={view.name === "list" ? view.returnTo : undefined}
       onOpen={(card) => setView({ name: "detail", id: card.id, from: "list" })}
     />
   );

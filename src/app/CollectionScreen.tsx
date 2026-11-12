@@ -4,6 +4,7 @@ import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, ty
 import { BottomNav, type Destination } from "./BottomNav";
 import { SettingsButton } from "./SettingsButton";
 import { CardGrid } from "./CardGrid";
+import type { CardsView } from "./cards-view";
 import { CardList } from "./CardList";
 import { Field, fieldId } from "./Field";
 import { Icon } from "./Icon";
@@ -11,8 +12,6 @@ import { Sheet } from "./Sheet";
 import { SyncActions, SyncIndicator } from "./SyncIndicator";
 import { UpdateLink } from "./UpdateLink";
 import type { UpdateInfo } from "./useUpdates";
-
-export type CardsView = "list" | "grid";
 
 interface Props {
   cards: Card[];
@@ -22,6 +21,8 @@ interface Props {
   onSortChange: (sort: Sort) => void;
   view: CardsView;
   onViewChange: (view: CardsView) => void;
+  /** The card the user just came back from; its row or tile is scrolled into view and focused. */
+  returnTo?: string;
   update: UpdateInfo | null;
   onAdd: () => void;
   onNavigate: (to: Destination) => void;
@@ -41,7 +42,7 @@ const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
@@ -164,7 +165,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         </button>
       </div>
       {shown.length > 0 ? (
-        view === "grid" ? <CardGrid cards={shown} onOpen={onOpen} /> : <CardList cards={shown} onOpen={onOpen} />
+        view === "grid" ? <CardGrid cards={shown} onOpen={onOpen} returnTo={returnTo} /> : <CardList cards={shown} onOpen={onOpen} returnTo={returnTo} />
       ) : cards.length === 0 ? (
         <p className="empty" data-testid="empty-state">
           Your binder is empty. Scan a card or add one by hand.

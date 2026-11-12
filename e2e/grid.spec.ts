@@ -131,7 +131,7 @@ test("Empty and no-match in Grid view keep the toggle", async ({ page }) => {
   });
   await page.reload();
   await openCollection(page);
-  await gridView(page).click();
+  await expect(listView(page)).toBeVisible();
   await page.getByLabel("Search", { exact: true }).fill("zzz");
   await expect(page.getByTestId("no-match")).toHaveText("No cards match. Clear the search or a filter.");
   await expect(listView(page)).toBeVisible();
@@ -339,10 +339,10 @@ const many = (n: number): Item[] => Array.from({ length: n }, (_, i) => ({ playe
 /** Scrolls down, opens a card far from the top, presses back; returns its name. */
 async function openFarAndBack(page: Page, item: Locator) {
   await page.locator(".list-scroller").evaluate((el) => (el.scrollTop = el.scrollHeight * 0.7));
-  await expect.poll(() => item.count()).toBeGreaterThan(0);
+  await expect.poll(() => item.first().getAttribute("data-index").then(Number)).toBeGreaterThan(50);
   const target = item.nth(Math.floor((await item.count()) / 2));
   const name = (await target.locator(".grid-name, .player").first().textContent())!;
-  await target.getByRole("button").click();
+  await item.filter({ hasText: name }).getByRole("button").click();
   await expect(page.getByRole("heading", { name })).toBeVisible();
   await hardwareBack(page);
   return name;
