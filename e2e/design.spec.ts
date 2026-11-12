@@ -537,7 +537,7 @@ test.describe("polish after the second phone review", () => {
     expect(await y(subtitle)).toBeLessThan(await y(facts));
     expect(await y(facts)).toBeLessThan(await y(edited));
     expect(await y(edited)).toBeLessThan(await y(edit));
-    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(360 - 2 * 24 - 1);
+    expect((await edit.boundingBox())!.width).toBeGreaterThanOrEqual(180);
     expect(await css(edited, "color")).toBe(await css(subtitle, "color"));
     await page.evaluate(() => document.documentElement.style.setProperty("--color-ink", "rgb(1, 2, 3)"));
     expect(await css(badge, "color")).toBe("rgb(1, 2, 3)");
@@ -1131,7 +1131,7 @@ test.describe("Card-back look", () => {
       expect(await scan()).toEqual([]);
       await page.getByRole("button", { name: "Delete", exact: true }).click();
       expect(await scan()).toEqual([]);
-      await page.getByRole("button", { name: "Keep" }).click();
+      await page.getByRole("alertdialog", { name: "Delete card" }).getByRole("button", { name: "Keep" }).click();
       await page.getByRole("button", { name: "Edit", exact: true }).click();
       expect(await scan()).toEqual([]);
       await page.getByRole("button", { name: "Cancel" }).click();

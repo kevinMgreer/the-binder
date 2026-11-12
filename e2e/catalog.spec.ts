@@ -170,7 +170,7 @@ test("Delete a card removes it after confirmation", async ({ page }) => {
   await addCard(page, base);
   await rows(page).first().click();
   await page.getByRole("button", { name: "Delete" }).click();
-  await page.getByRole("button", { name: "Confirm delete" }).click();
+  await page.getByRole("alertdialog", { name: "Delete card" }).getByRole("button", { name: "Delete" }).click();
   await expect(rows(page)).toHaveCount(0);
   await expect(page.getByTestId("shown")).toHaveText("Showing 0");
 });

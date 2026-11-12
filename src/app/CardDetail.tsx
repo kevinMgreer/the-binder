@@ -1,10 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { Frame } from "./Frame";
 import { useThumbUrl } from "./hooks";
 import { PhotoView } from "./PhotoView";
-import { Sheet } from "./Sheet";
+import { Sheet, openSheets } from "./Sheet";
 
 interface Props {
   card: Card;
@@ -26,14 +26,24 @@ function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen
 export function CardDetail({ card, onEdit, onDelete }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [viewing, setViewing] = useState<CardSide | null>(null);
+  const deleteButton = useRef<HTMLButtonElement>(null);
+  const keep = () => {
+    setConfirming(false);
+    deleteButton.current?.focus();
+  };
+  // Android back is Keep while the dialog is open, like the form's discard prompt.
+  useEffect(() => {
+    if (!confirming) return;
+    openSheets.push(keep);
+    return () => void openSheets.splice(openSheets.lastIndexOf(keep), 1);
+  }, [confirming]);
   const serial = serialLabel(card.parallel);
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
+  const teamLine = [card.team, card.parallel?.name].filter(Boolean).join(" · ");
   const facts: Array<[string, ReactNode]> = [
     ["Manufacturer", card.manufacturer],
     ["Subset", card.subset],
     ["Insert", card.insert],
-    ["Team", card.team],
-    ["Parallel", card.parallel?.name],
     ["Condition", gradeLabel(card.grading)],
     ["Quantity", card.quantity],
     ["Traits", flags.join(", ")],
@@ -41,15 +51,22 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
 
   return (
     <section>
-      <div className="title-row">
-        <h2>{card.player}</h2>
-        {serial && <span className="tag">{serial}</span>}
-      </div>
+      <header className="detail-head">
+        <div className="title-row">
+          <h2>{card.player}</h2>
+          {serial && <span className="tag">{serial}</span>}
+        </div>
+        <p className="subtitle" data-testid="subtitle">
+          {card.year} {card.set}
+          {card.cardNumber && ` · #${card.cardNumber}`}
+        </p>
+        {teamLine && (
+          <p className="subtitle" data-testid="team-line">
+            {teamLine}
+          </p>
+        )}
+      </header>
       <div className="title-rule" aria-hidden="true" />
-      <p className="subtitle" data-testid="subtitle">
-        {card.year} {card.set}
-        {card.cardNumber && ` · #${card.cardNumber}`}
-      </p>
       <dl className="facts" data-testid="facts">
         {facts.map(([label, value]) => (
           <div key={label}>
@@ -74,19 +91,27 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         <button className="primary" onClick={onEdit}>
           Edit
         </button>
-      </div>
-      <div className="danger-zone">
-        <button className="danger" onClick={() => setConfirming(true)}>
+        <button ref={deleteButton} className="danger" onClick={() => setConfirming(true)}>
           Delete
         </button>
       </div>
       {confirming && (
-        <div role="alertdialog" aria-label="Delete card">
-          <p>Delete this card?</p>
-          <button className="danger" onClick={onDelete}>
-            Confirm delete
-          </button>
-          <button onClick={() => setConfirming(false)}>Keep</button>
+        <div
+          className="backdrop center"
+          onClick={keep}
+          onKeyDown={(e) => e.key === "Escape" && keep()}
+        >
+          <div role="alertdialog" aria-modal="true" aria-label="Delete card" onClick={(e) => e.stopPropagation()}>
+            <p>Delete this card?</p>
+            <div className="actions">
+              <button autoFocus onClick={keep}>
+                Keep
+              </button>
+              <button className="danger" onClick={onDelete}>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

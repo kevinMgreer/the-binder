@@ -135,6 +135,8 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .bottom-nav button[aria-current="page"] { color: var(--color-ink); font-weight: 600; }
 .icon-button { padding: 0; }
 .backdrop { position: fixed; inset: 0; z-index: 10; display: flex; align-items: flex-end; box-sizing: border-box; padding-top: var(--inset-top); background: var(--color-scrim); }
+.backdrop.center { align-items: center; justify-content: center; padding: var(--inset-top) var(--gutter) var(--inset-bottom); }
+.backdrop.center [role="alertdialog"] { margin: 0; width: 100%; max-width: 320px; }
 .sheet { display: flex; flex-direction: column; gap: var(--space-2); box-sizing: border-box; width: 100%; height: 100%; overflow: hidden; margin: 0; padding: var(--space-3) var(--gutter) calc(var(--space-4) + var(--inset-bottom)); border-width: var(--rule) 0 0; border-color: var(--color-rule); border-radius: var(--radius-frame) var(--radius-frame) 0 0; background: var(--color-panel); }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .sheet-head h2 { margin: 0; }
@@ -193,8 +195,12 @@ form > [role="status"] { margin: 0 0 var(--space-3); }
 .title-row h2 { margin: 0; overflow-wrap: anywhere; }
 .subtitle, section > p:has(> time) { color: var(--color-ink-muted); }
 section > p:has(> time) { font-size: var(--type-label); margin-bottom: var(--space-4); }
-.subtitle { margin: var(--space-2) 0 var(--space-5); }
+.detail-head { display: flex; flex-direction: column; gap: var(--space-1); }
+.detail-head .title-row { min-height: 0; align-items: baseline; }
+.subtitle { margin: 0; }
+.detail-head + .title-rule { margin-top: var(--space-3); }
 .facts { margin: 0 0 var(--space-3); border-block: var(--rule) solid var(--color-rule); }
+.title-rule + .facts { border-top: 0; }
 .facts div { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); padding: var(--pad-cell) 0; }
 .facts div + div { border-top: var(--rule) solid var(--color-rule); }
 .facts dt { flex: none; color: var(--color-ink-muted); }
