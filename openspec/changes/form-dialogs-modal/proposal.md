@@ -6,7 +6,7 @@ A first version made both prompts centred modal dialogs over a scrim. The owner 
 
 ## What Changes
 
-- The discard question ("Discard this card?" / "Discard changes?") is no longer a dialog. On Cancel or Android back with entries, the form's bottom Cancel/Save bar is replaced in place by the question and two equal-width buttons: Discard (outlined danger, left) and Keep editing (filled primary, right). No scrim, nothing centred. Keep editing has focus. Android back and Escape mean Keep editing, and focus returns to Cancel.
+- The discard question ("Discard this card?" / "Discard changes?") is no longer a dialog. On Cancel or Android back with entries, the form's bottom Cancel/Save bar is replaced in place by two equal-width buttons: Discard (outlined danger, left) and Keep editing (filled primary, right). The owner dropped the visible question text, so the bar shows only the buttons; the question is the accessible name of the button group, so TalkBack still reads it. No scrim, nothing centred. Keep editing has focus. Android back and Escape mean Keep editing, and focus returns to Cancel.
 - Cancel is on the left and Discard is on the left, so a double tap on Cancel would land on Discard. Discard ignores taps for a short moment after the question appears (design.md).
 - The duplicate-card prompt (Increase quantity, Add as separate card, Back to form) stays a centred modal alertdialog over a scrim. Its buttons are restyled: Increase quantity filled primary, the other two outlined, none in the danger colour.
 - Card detail's Delete dialog stays a dialog, but its buttons match the pair: Delete outlined danger on the left, Keep filled primary on the right. Wording, focus on Keep, scrim and back handling are unchanged.

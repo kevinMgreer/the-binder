@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Cancel asks before discarding entries
-The system SHALL, when the user taps Cancel on a form that holds entries, ask instead of leaving: "Discard this card?" on the add form and "Discard changes?" on the edit form. The question SHALL replace the Cancel/Save bar in place at the bottom of the screen, with no scrim and no centred dialog, holding two buttons of equal width as card detail's Delete and Edit pair is drawn: Discard outlined in the danger colour on the left, and Keep editing filled as the primary button on the right. Keep editing SHALL have focus. The question SHALL be exposed to a screen reader as an alert. While it shows, the Cancel and Save buttons SHALL NOT exist, and Discard SHALL ignore taps for the first 500 ms after the question appears, so a double tap on Cancel cannot discard. A form holds entries when any field value differs from the value the form opened with (including a value filled by a suggestion), or a photo is attached or still being prepared. Keep editing, Escape and Android back SHALL close the question, restore the bar, leave every field, photo, suggestion marker and save-blocked message as it was, and return focus to Cancel. Discard SHALL leave the form as Cancel does today, saving nothing. On a form without entries, Cancel SHALL leave at once with no question. Discard SHALL be outlined in danger, never a filled primary button.
+The system SHALL, when the user taps Cancel on a form that holds entries, ask instead of leaving: "Discard this card?" on the add form and "Discard changes?" on the edit form. The question SHALL replace the Cancel/Save bar in place at the bottom of the screen, with no scrim and no centred dialog, holding two buttons of equal width as card detail's Delete and Edit pair is drawn: Discard outlined in the danger colour on the left, and Keep editing filled as the primary button on the right. Keep editing SHALL have focus. The bar SHALL show no question text, only the two buttons; the question SHALL be the accessible name of the button pair (role group, name "Discard this card?" or "Discard changes?"), so a screen reader reads it when focus lands on Keep editing. While it shows, the Cancel and Save buttons SHALL NOT exist, and Discard SHALL ignore taps for the first 500 ms after the question appears, so a double tap on Cancel cannot discard. A form holds entries when any field value differs from the value the form opened with (including a value filled by a suggestion), or a photo is attached or still being prepared. Keep editing, Escape and Android back SHALL close the question, restore the bar, leave every field, photo, suggestion marker and save-blocked message as it was, and return focus to Cancel. Discard SHALL leave the form as Cancel does today, saving nothing. On a form without entries, Cancel SHALL leave at once with no question. Discard SHALL be outlined in danger, never a filled primary button.
 
 #### Scenario: Untouched add form closes at once
 - **WHEN** the user opens the add form and taps Cancel without changing anything
@@ -10,7 +10,7 @@ The system SHALL, when the user taps Cancel on a form that holds entries, ask in
 #### Scenario: Typed field asks first
 - **GIVEN** the user typed "Hank Aaron" as the player on the add form
 - **WHEN** the user taps Cancel
-- **THEN** the bar shows "Discard this card?" with Discard on the left and Keep editing on the right and focused, and the form is still showing
+- **THEN** the bar shows a group named "Discard this card?" holding Discard on the left and Keep editing on the right and focused, with no visible question text, and the form is still showing
 
 #### Scenario: Keep editing keeps everything
 - **GIVEN** the discard confirmation is showing on the add form with "Hank Aaron" typed and a front photo attached
@@ -25,7 +25,7 @@ The system SHALL, when the user taps Cancel on a form that holds entries, ask in
 #### Scenario: Edit form asks with its own wording
 - **GIVEN** the user changed the quantity on the edit form of a stored card
 - **WHEN** the user taps Cancel and then Discard
-- **THEN** the question read "Discard changes?", and the card's detail screen is shown with the stored quantity unchanged
+- **THEN** the button group was named "Discard changes?", and the card's detail screen is shown with the stored quantity unchanged
 
 #### Scenario: Unchanged edit form closes at once
 - **WHEN** the user opens the edit form of a stored card and taps Cancel without changing anything
@@ -33,7 +33,7 @@ The system SHALL, when the user taps Cancel on a form that holds entries, ask in
 
 #### Scenario: A photo alone counts as an entry
 - **WHEN** the user attaches a front photo on the add form, types nothing, and taps Cancel
-- **THEN** the "Discard this card?" question is shown
+- **THEN** the group named "Discard this card?" is shown
 
 #### Scenario: Typing a value back is not an entry
 - **WHEN** the user types "1" into an empty Year field on the add form, clears it again, and taps Cancel
@@ -42,7 +42,7 @@ The system SHALL, when the user taps Cancel on a form that holds entries, ask in
 #### Scenario: The question takes the bar's place
 - **GIVEN** the user typed "Hank Aaron" on the add form on a 360 by 800 phone with a 48 dp bottom inset, in the light theme and in the dark theme
 - **WHEN** the user taps Cancel
-- **THEN** the bar is in the same place above the bottom inset and holds "Discard this card?", no scrim or dialog is shown, Cancel and Save are not in the page, and Discard is left of Keep editing with equal widths within 1 dp, each at least 48 dp high
+- **THEN** the bar is in the same place above the bottom inset and holds only the group named "Discard this card?" with its two buttons and no other visible text, no scrim or dialog is shown, Cancel and Save are not in the page, and Discard is left of Keep editing with equal widths within 1 dp, each at least 48 dp high
 
 #### Scenario: The pair is drawn like Delete and Edit
 - **WHEN** the question shows

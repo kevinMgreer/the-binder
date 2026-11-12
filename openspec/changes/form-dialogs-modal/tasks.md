@@ -22,3 +22,11 @@ Rebase on `main` first if `scan-back-chain` or `filter-sort-merge` has merged (s
 - [x] 2.5 Rewrite the "Form prompts over the bar" line in `docs/device-checklist.md`: add form, type a player, tap Cancel twice fast: the bar shows "Discard this card?" with Discard outlined red left and Keep editing filled right, the double tap does not discard, a later Discard leaves, Keep editing and back return with entries kept; the duplicate dialog's Increase quantity is the filled button; the Delete dialog on card detail shows Delete outlined left and Keep filled right. Keep the `[form-dialogs-modal 2.6, T-50]` tag.
 - [ ] 2.6 On the phone, run the check from 2.5 with the release build. Verify: the owner ticks the checklist line.
 - [x] 2.7 Run `openspec validate form-dialogs-modal --strict` and the repo's check command from `desk.config.json`. Verify: both exit 0.
+
+## 3. Revision: no visible question text
+
+The owner asked for the bar to show only the two buttons. Where 2.1 to 2.5 say the bar shows or holds the question text, read it as the accessible name of the button group.
+
+- [x] 3.1 Tests first: in `src/app/card-form-actions.test.tsx`, `src/app/back-button.test.tsx`, `e2e/form-bar.spec.ts`, `e2e/design.spec.ts` and `e2e/photos.spec.ts`, replace visible-text and `role=alert` assertions for the discard question with `getByRole("group", { name: "Discard this card?" })`, assert no visible question text in the bar, and drop the ink-colour check of the question line. Verify: they fail on the old markup.
+- [x] 3.2 In `src/app/CardForm.tsx`, drop the question `div`, and give the `.actions.detail-actions` row `role="group"` and `aria-label={question}`. Verify: the tests of 3.1 pass.
+- [x] 3.3 Update `DESIGN.md` "Sheets and dialogs" and the "Form prompts over the bar" line in `docs/device-checklist.md` (the bar shows only the two buttons; TalkBack reads the question when focus lands on Keep editing). Verify: `openspec validate form-dialogs-modal --strict` and the repo check exit 0.
