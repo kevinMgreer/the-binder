@@ -27,8 +27,17 @@ async function openDiscard(page: Page, scheme: "light" | "dark" = "light") {
   await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.getByRole("button", { name: "Cancel" }).click();
-  return page.getByRole("alertdialog", { name: "Discard this card?" });
+  return page.locator(".form-bar");
 }
+
+const color = (page: Page, token: string) =>
+  page.evaluate((t) => {
+    const probe = Object.assign(document.createElement("div"), { style: `color: var(${t})` });
+    document.body.append(probe);
+    const c = getComputedStyle(probe).color;
+    probe.remove();
+    return c;
+  }, token);
 
 async function openDuplicate(page: Page, scheme: "light" | "dark" = "light") {
   await page.emulateMedia({ colorScheme: scheme });
@@ -65,24 +74,44 @@ const underBar = (page: Page, name: "Save" | "Cancel") =>
 
 const rowCount = (page: Page) => page.evaluate(() => (window as any).__ports.collection.list().then((l: unknown[]) => l.length));
 
-test.describe("Form prompts are modal dialogs", () => {
+test.describe("Form prompts", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
+  test("The question takes the bar's place", async ({ page }) => {
+    await openForm(page, "light", false);
+    await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const before = (await page.locator(".form-bar").boundingBox())!;
+    await page.getByRole("button", { name: "Cancel" }).click();
+    const bar = page.locator(".form-bar");
+    const after = (await bar.boundingBox())!;
+    expect(after.x).toBeCloseTo(before.x, 0);
+    expect(after.width).toBeCloseTo(before.width, 0);
+    expect(after.y + after.height).toBeCloseTo(before.y + before.height, 0);
+    await expect(bar.getByRole("alert")).toHaveText("Discard this card?");
+    await expect(page.locator(".backdrop")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Cancel" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
+    const discard = (await bar.getByRole("button", { name: "Discard" }).boundingBox())!;
+    const keep = (await bar.getByRole("button", { name: "Keep editing" }).boundingBox())!;
+    expect(discard.x).toBeLessThan(keep.x);
+    expect(Math.abs(discard.width - keep.width)).toBeLessThanOrEqual(1);
+    expect(discard.height).toBe(48);
+    expect(keep.height).toBe(48);
+    await expect(bar.getByRole("button", { name: "Keep editing" })).toBeFocused();
+    await expect(page.getByLabel("Player", { exact: true })).toBeEditable();
+  });
+
   for (const scheme of ["light", "dark"] as const) {
-    test(`Discard prompt centred over the bar: ${scheme}`, async ({ page }) => {
-      const dialog = await openDiscard(page, scheme);
-      await expect(dialog).toBeInViewport({ ratio: 1 });
-      await centre(page, dialog);
-      expect(await underBar(page, "Save")).toBe(false);
-      const danger = await page.evaluate(() => {
-        const probe = Object.assign(document.createElement("div"), { style: "color: var(--color-danger)" });
-        document.body.append(probe);
-        const color = getComputedStyle(probe).color;
-        probe.remove();
-        return color;
-      });
-      expect(await dialog.getByRole("button", { name: "Discard" }).evaluate((el) => getComputedStyle(el).color)).toBe(danger);
-      await expect(dialog.getByRole("button", { name: "Keep editing" })).toBeFocused();
+    test(`Pair drawn like Delete and Edit: ${scheme}`, async ({ page }) => {
+      const bar = await openDiscard(page, scheme);
+      const danger = await color(page, "--color-danger");
+      const style = (name: string, prop: string) =>
+        bar.getByRole("button", { name }).evaluate((el, p) => getComputedStyle(el).getPropertyValue(p), prop);
+      expect(await style("Discard", "color")).toBe(danger);
+      expect(await style("Discard", "background-color")).toBe("rgba(0, 0, 0, 0)");
+      expect(await style("Keep editing", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
+      expect(await style("Keep editing", "color")).not.toBe(danger);
     });
 
     test(`Duplicate prompt centred over the bar: ${scheme}`, async ({ page }) => {
@@ -95,39 +124,32 @@ test.describe("Form prompts are modal dialogs", () => {
     });
   }
 
-  test("A scrim tap on the Save point keeps editing", async ({ page }) => {
-    const dialog = await openDiscard(page);
-    const save = (await page.getByRole("button", { name: "Save", exact: true }).boundingBox())!;
-    await page.mouse.click(save.x + save.width / 2, save.y + save.height / 2);
-    await expect(dialog).toHaveCount(0);
+  test("Double tap on Cancel does not discard", async ({ page }) => {
+    await openDiscard(page);
+    await page.getByRole("button", { name: "Keep editing" }).click();
+    await page.getByRole("button", { name: "Cancel" }).dblclick();
+    await expect(page.getByRole("button", { name: "Keep editing" })).toBeVisible();
+    await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
+    await page.waitForTimeout(600);
+    await page.getByRole("button", { name: "Discard" }).click();
+    await expect(page.getByLabel("Player", { exact: true })).toHaveCount(0);
+  });
+
+  test("Escape keeps editing", async ({ page }) => {
+    const bar = await openDiscard(page);
+    await page.getByLabel("Player", { exact: true }).focus();
+    await page.keyboard.press("Escape");
+    await expect(bar.getByRole("button", { name: "Keep editing" })).toHaveCount(0);
     await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
     await expect(page.getByRole("button", { name: "Cancel" })).toBeFocused();
   });
 
-  test("Escape keeps editing", async ({ page }) => {
-    const dialog = await openDiscard(page);
-    await page.keyboard.press("Escape");
-    await expect(dialog).toHaveCount(0);
+  test("Android back keeps editing", async ({ page }) => {
+    const bar = await openDiscard(page);
+    await hardwareBack(page);
+    await expect(bar.getByRole("button", { name: "Keep editing" })).toHaveCount(0);
+    await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
     await expect(page.getByRole("button", { name: "Cancel" })).toBeFocused();
-  });
-
-  test("The form behind is out of reach", async ({ page }) => {
-    const dialog = await openDiscard(page);
-    await page.getByLabel("Player", { exact: true }).evaluate((el) => (el as HTMLElement).focus());
-    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
-    await page.locator(".form-bar").getByRole("button", { name: "Save", exact: true }).evaluate((el) => (el as HTMLElement).focus());
-    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
-  });
-
-  test("The bar does nothing under the discard prompt", async ({ page }) => {
-    for (const name of ["Save", "Cancel"] as const) {
-      const dialog = await openDiscard(page);
-      const box = (await page.getByRole("button", { name, exact: true }).boundingBox())!;
-      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-      await expect(dialog).toHaveCount(0);
-      expect(await rowCount(page)).toBe(0);
-      await expect(page.getByLabel("Player", { exact: true })).toBeVisible();
-    }
   });
 
   test("The bar does nothing under the duplicate prompt", async ({ page }) => {
@@ -141,11 +163,12 @@ test.describe("Form prompts are modal dialogs", () => {
     }
   });
 
-  test("Blocked message kept under the dialog", async ({ page }) => {
+  test("Blocked message kept under the question", async ({ page }) => {
     await openForm(page, "light", false);
     await page.getByRole("button", { name: "Save", exact: true }).click();
     await page.getByLabel("Year", { exact: true }).fill("2024");
     await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.locator(".form-bar").getByTestId("save-blocked")).toContainText("Player");
     await page.getByRole("button", { name: "Keep editing" }).click();
     await expect(page.locator(".form-bar").getByTestId("save-blocked")).toContainText("Player");
   });
@@ -171,8 +194,9 @@ test.describe("Form prompts are modal dialogs", () => {
     test.use({ viewport: { width: 360, height: 450 } });
 
     test("Both prompts are fully visible after scrolling to the end", async ({ page }) => {
-      const discard = await openDiscard(page);
-      await expect(discard).toBeInViewport({ ratio: 1 });
+      const bar = await openDiscard(page);
+      await expect(bar).toBeInViewport({ ratio: 1 });
+      await expect(bar.getByRole("button", { name: "Discard" })).toBeInViewport({ ratio: 1 });
       const duplicate = await openDuplicate(page);
       await expect(duplicate).toBeInViewport({ ratio: 1 });
     });

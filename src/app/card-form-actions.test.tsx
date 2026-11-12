@@ -28,6 +28,17 @@ function renderForm(card?: ReturnType<typeof makeCard>, cards: ReturnType<typeof
 
 const type = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const cancel = () => fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+// Discard ignores taps for 500 ms after the question opens; tap it as a person who read the question would.
+const discard = () => {
+  const now = vi.spyOn(performance, "now").mockReturnValue(performance.now() + 1000);
+  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  now.mockRestore();
+};
+const asking = (text: string) => {
+  const bar = document.querySelector(".form-bar") as HTMLElement;
+  expect(within(bar).getByRole("alert").textContent).toBe(text);
+  return bar;
+};
 
 test("Cancel comes first in the action row and Save, the primary button, last", () => {
   renderForm();
@@ -44,30 +55,77 @@ test("an untouched add form closes at once", () => {
   expect(screen.queryByRole("alertdialog")).toBeNull();
 });
 
-test("Cancel on a typed add form asks first and focuses Keep editing", () => {
+test("Cancel on a typed add form puts the question in the bar, Discard first, Keep editing primary and focused", () => {
   const onCancel = renderForm();
   type("Player", "Hank Aaron");
   cancel();
-  const dialog = screen.getByRole("alertdialog", { name: "Discard this card?" });
-  expect(document.activeElement).toBe(within(dialog).getByRole("button", { name: "Keep editing" }));
+  const bar = asking("Discard this card?");
+  const buttons = within(bar).getAllByRole("button");
+  expect(buttons.map((b) => b.textContent)).toEqual(["Discard", "Keep editing"]);
+  expect(buttons[0].className).toBe("danger outline");
+  expect(buttons[1].className).toBe("primary");
+  expect(buttons[0].parentElement?.className).toBe("actions detail-actions");
+  expect(document.activeElement).toBe(buttons[1]);
+  expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+  expect(document.querySelector(".backdrop")).toBeNull();
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(form().hasAttribute("inert")).toBe(false);
   expect(onCancel).not.toHaveBeenCalled();
 });
 
-test("Keep editing closes the question and keeps the entries", () => {
+test("Keep editing and Escape restore the bar, keep the entries and focus Cancel", () => {
+  const onCancel = renderForm();
+  type("Player", "Hank Aaron");
+  for (const close of [
+    () => fireEvent.click(screen.getByRole("button", { name: "Keep editing" })),
+    () => fireEvent.keyDown(screen.getByLabelText("Player"), { key: "Escape" }),
+  ]) {
+    cancel();
+    close();
+    expect(screen.queryByRole("button", { name: "Keep editing" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Save" })).toBeTruthy();
+    expect(player()).toBe("Hank Aaron");
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
+  }
+  expect(onCancel).not.toHaveBeenCalled();
+});
+
+test("Android back with the question open does the same as Keep editing", () => {
   renderForm();
   type("Player", "Hank Aaron");
   cancel();
-  fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
-  expect(screen.queryByRole("alertdialog")).toBeNull();
-  expect((screen.getByLabelText("Player") as HTMLInputElement).value).toBe("Hank Aaron");
+  act(() => openSheets.at(-1)?.());
+  expect(screen.queryByRole("button", { name: "Keep editing" })).toBeNull();
+  expect(player()).toBe("Hank Aaron");
+  expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
 });
 
 test("Discard leaves the form", () => {
   const onCancel = renderForm();
   type("Player", "Hank Aaron");
   cancel();
-  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  discard();
   expect(onCancel).toHaveBeenCalledTimes(1);
+});
+
+test("Discard ignores a tap in the first 500 ms and works after", () => {
+  vi.useFakeTimers();
+  try {
+    const onCancel = renderForm();
+    type("Player", "Hank Aaron");
+    cancel();
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(onCancel).not.toHaveBeenCalled();
+    act(() => void vi.advanceTimersByTime(499));
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(onCancel).not.toHaveBeenCalled();
+    act(() => void vi.advanceTimersByTime(2));
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test("a value typed and erased again is not an entry", () => {
@@ -84,7 +142,7 @@ test("the edit form asks only after a change, with its own wording", () => {
   expect(onCancel).toHaveBeenCalledTimes(1);
   type("Quantity", "5");
   cancel();
-  expect(screen.getByRole("alertdialog", { name: "Discard changes?" })).toBeTruthy();
+  asking("Discard changes?");
   expect(onCancel).toHaveBeenCalledTimes(1);
 });
 
@@ -96,7 +154,7 @@ test("a captured photo alone makes Cancel ask", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Scan front" }));
   await screen.findByRole("button", { name: "Change front photo" });
   cancel();
-  expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
+  asking("Discard this card?");
   expect(onCancel).not.toHaveBeenCalled();
 });
 
@@ -108,8 +166,8 @@ test("removing a stored front photo then Cancel and Discard leaves the card unch
   fireEvent.click(screen.getByRole("button", { name: "Remove front photo" }));
   expect(screen.getByRole("button", { name: "Add front photo" })).toBeTruthy();
   cancel();
-  expect(screen.getByRole("alertdialog", { name: "Discard changes?" })).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  asking("Discard changes?");
+  discard();
   expect(onCancel).toHaveBeenCalledTimes(1);
   expect(stored).toEqual(before);
 });
@@ -170,7 +228,7 @@ test("Keep editing returns focus to Cancel, by tap and by back", () => {
   expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
   cancel();
   act(() => openSheets.at(-1)?.());
-  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Keep editing" })).toBeNull();
   expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
 });
 
@@ -180,7 +238,7 @@ test("Discard on the edit form leaves the stored card unchanged", () => {
   const onCancel = renderForm(stored);
   type("Quantity", "5");
   cancel();
-  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  discard();
   expect(onCancel).toHaveBeenCalledTimes(1);
   expect(stored).toEqual(before);
 });
@@ -299,7 +357,7 @@ test("after a two-page scan Cancel then Discard saves nothing, and recognition r
   await vi.waitFor(() => expect(recognize).toHaveBeenCalledTimes(1));
   expect(recognize.mock.calls).toEqual([[{ front: front.full, back: backPhoto.full }]]);
   cancel();
-  click("Discard");
+  discard();
   expect(onCancel).toHaveBeenCalledTimes(1);
   expect(onSave).not.toHaveBeenCalled();
 });
@@ -325,45 +383,12 @@ async function openDuplicate() {
   return { existing, onSave };
 }
 
-test("the discard prompt is a modal over a scrim outside the inert form, with a danger Discard", () => {
-  renderForm();
-  type("Player", "Hank Aaron");
-  expect(form().hasAttribute("inert")).toBe(false);
-  cancel();
-  const dialog = screen.getByRole("alertdialog", { name: "Discard this card?" });
-  expect(dialog.getAttribute("aria-modal")).toBe("true");
-  expect(dialog.parentElement?.matches(".backdrop.center")).toBe(true);
-  expect(form().contains(dialog)).toBe(false);
-  expect(form().hasAttribute("inert")).toBe(true);
-  const discard = within(dialog).getByRole("button", { name: "Discard" });
-  expect(discard.classList.contains("danger")).toBe(true);
-  expect(discard.classList.contains("primary")).toBe(false);
-  fireEvent.click(within(dialog).getByRole("button", { name: "Keep editing" }));
-  expect(form().hasAttribute("inert")).toBe(false);
-});
-
-test("a scrim click or Escape on the discard prompt means Keep editing", () => {
-  const onCancel = renderForm();
-  type("Player", "Hank Aaron");
-  for (const close of [
-    () => fireEvent.click(screen.getByRole("alertdialog").parentElement!),
-    () => fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Escape" }),
-  ]) {
-    cancel();
-    close();
-    expect(screen.queryByRole("alertdialog")).toBeNull();
-    expect(onCancel).not.toHaveBeenCalled();
-    expect(player()).toBe("Hank Aaron");
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
-  }
-});
-
-test("a click inside the discard panel does not close it", () => {
+test("a click on the question text does not close it", () => {
   renderForm();
   type("Player", "Hank Aaron");
   cancel();
   fireEvent.click(screen.getByText("Discard this card?"));
-  expect(screen.getByRole("alertdialog")).toBeTruthy();
+  asking("Discard this card?");
 });
 
 test("the duplicate prompt is a described modal alertdialog with its buttons in order", async () => {
@@ -378,6 +403,7 @@ test("the duplicate prompt is a described modal alertdialog with its buttons in 
   const buttons = within(dialog).getAllByRole("button");
   expect(buttons.map((b) => b.textContent)).toEqual(["Increase quantity", "Add as separate card", "Back to form"]);
   expect(document.activeElement).toBe(buttons[0]);
+  expect(buttons.map((b) => b.className)).toEqual(["primary", "", ""]);
 });
 
 test("Back to form, the scrim, Escape and Android back close the duplicate prompt without saving", async () => {
@@ -419,5 +445,5 @@ test("back with the duplicate prompt open closes it, then back asks to discard",
   expect(screen.queryByRole("alertdialog")).toBeNull();
   expect(form()).toBeTruthy();
   act(() => openSheets.at(-1)?.());
-  expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
+  asking("Discard this card?");
 });

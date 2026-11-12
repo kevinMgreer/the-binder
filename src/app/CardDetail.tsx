@@ -101,12 +101,12 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         >
           <div role="alertdialog" aria-modal="true" aria-label="Delete card" onClick={(e) => e.stopPropagation()}>
             <p>Delete this card?</p>
-            <div className="actions">
-              <button autoFocus onClick={keep}>
-                Keep
-              </button>
-              <button className="danger" onClick={onDelete}>
+            <div className="actions detail-actions">
+              <button className="danger outline" onClick={onDelete}>
                 Delete
+              </button>
+              <button className="primary" autoFocus onClick={keep}>
+                Keep
               </button>
             </div>
           </div>

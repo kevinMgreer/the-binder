@@ -489,6 +489,9 @@ test.describe("destructive actions stay apart", () => {
     expect(Math.abs(box.x + box.width / 2 - 360 / 2)).toBeLessThanOrEqual(8);
     expect(Math.abs(box.y + box.height / 2 - 800 / 2)).toBeLessThanOrEqual(8);
     await expect(dialog.getByRole("button", { name: "Keep" })).toBeFocused();
+    await expect(dialog.getByRole("button")).toHaveText(["Delete", "Keep"]);
+    await expect(dialog.getByRole("button", { name: "Keep" })).toHaveClass("primary");
+    await expect(dialog.getByRole("button", { name: "Delete", exact: true })).toHaveClass("danger outline");
     expect(await css(dialog.getByRole("button", { name: "Delete", exact: true }), "color")).toBe(await danger(page));
   });
 
@@ -749,15 +752,6 @@ test.describe("States at phone size", () => {
         await page.getByTestId("card-row").first().click();
         await page.getByRole("button", { name: "Delete", exact: true }).click();
         return page.getByRole("alertdialog", { name: "Delete card" });
-      },
-    ],
-    [
-      "discard confirm",
-      async (page) => {
-        await page.getByRole("button", { name: "Add card", exact: true }).click();
-        await page.getByLabel("Player", { exact: true }).fill("Hank Aaron");
-        await page.getByRole("button", { name: "Cancel" }).click();
-        return page.getByRole("alertdialog", { name: "Discard this card?" });
       },
     ],
     [
@@ -1132,13 +1126,11 @@ test.describe("Form actions", () => {
     expect(save.width).toBeGreaterThan(cancel.width);
     await page.getByLabel("Player").fill("Hank Aaron");
     await hardwareBack(page);
-    const dialog = page.getByRole("alertdialog", { name: "Discard this card?" });
-    await expect(dialog).toBeVisible();
-    const box = (await dialog.boundingBox())!;
-    expect(Math.abs(box.x + box.width / 2 - 180)).toBeLessThanOrEqual(8);
-    expect(Math.abs(box.y + box.height / 2 - 400)).toBeLessThanOrEqual(8);
-    await hardwareBack(page);
+    const bar = page.locator(".form-bar");
+    await expect(bar.getByRole("alert")).toHaveText("Discard this card?");
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
+    await hardwareBack(page);
+    await expect(bar.getByRole("alert")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel" })).toBeFocused();
     await expect(page.getByLabel("Player")).toHaveValue("Hank Aaron");
   });
