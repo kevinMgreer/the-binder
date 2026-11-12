@@ -42,6 +42,11 @@ test("a failing sign-in shows its message instead of doing nothing", async () =>
   expect((await screen.findByRole("alert")).textContent).toBe("Google web client ID is not configured");
 });
 
+test("a remembered user opens the dashboard even when Google needs the network", async () => {
+  renderApp("owner@example.test");
+  expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeTruthy();
+});
+
 test("signed-out app shows only the sign-in screen", async () => {
   renderApp(null);
   expect(await screen.findByRole("button", { name: "Sign in with Google" })).toBeTruthy();

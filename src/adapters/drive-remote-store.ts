@@ -14,6 +14,8 @@ const ROOTS = {
 interface Options {
   root: keyof typeof ROOTS;
   getAccessToken: () => Promise<string>;
+  /** Called on a 401 before the one retry, so the cached token is dropped. */
+  onUnauthorized?: () => Promise<void>;
   fetch?: typeof fetch;
 }
 
@@ -94,14 +96,16 @@ export class DriveRemoteStore implements RemoteStore {
     if (!response.ok && response.status !== 404) throw new Error(`Drive responded ${response.status}`);
   }
 
-  private async request(url: string, init: RequestInit = {}): Promise<Response> {
+  private async request(url: string, init: RequestInit = {}, retried = false): Promise<Response> {
     const token = await this.options.getAccessToken();
     const response = await this.fetchFn(url, {
       ...init,
       headers: { ...(init.headers as Record<string, string>), authorization: `Bearer ${token}` },
     });
-    if (response.status === 401) throw new AuthExpiredError("Sign in again");
-    return response;
+    if (response.status !== 401) return response;
+    if (retried) throw new AuthExpiredError("Sign in again");
+    await this.options.onUnauthorized?.();
+    return this.request(url, init, true);
   }
 
   private async send<T>(url: string, body: BodyInit, contentType: string): Promise<T> {

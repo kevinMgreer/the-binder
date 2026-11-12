@@ -44,6 +44,7 @@ if (Capacitor.isNativePlatform()) {
   ports.remote = new DriveRemoteStore({
     root: id.endsWith(".debug") ? "dev" : "release",
     getAccessToken: () => ports.auth.getAccessToken(),
+    onUnauthorized: () => ports.auth.dropAccessToken(),
   });
   ports.auth = new NativeGoogleAuthProvider(capacitorNativeAuth, {
     webClientId: import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string,
