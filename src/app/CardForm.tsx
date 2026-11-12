@@ -385,10 +385,11 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
         )}
         {confirming ? (
           <div key="ask" className="actions detail-actions" role="group" aria-label={question}>
-            <button type="button" className="danger outline" onClick={discard}>
+            <span id="discard-question" className="visually-hidden">{question}</span>
+            <button type="button" className="danger outline" aria-describedby="discard-question" onClick={discard}>
               Discard
             </button>
-            <button type="button" className="primary" autoFocus onClick={keepEditing}>
+            <button type="button" className="primary" aria-describedby="discard-question" autoFocus onClick={keepEditing}>
               Keep editing
             </button>
           </div>

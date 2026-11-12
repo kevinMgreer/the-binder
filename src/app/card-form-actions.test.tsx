@@ -37,7 +37,10 @@ const discard = () => {
 const asking = (text: string) => {
   const bar = document.querySelector(".form-bar") as HTMLElement;
   expect(within(bar).getByRole("group", { name: text })).toBeTruthy();
-  expect(within(bar).queryByText(text)).toBeNull();
+  expect(within(bar).getByText(text).className).toBe("visually-hidden");
+  for (const name of ["Discard", "Keep editing"]) {
+    expect(within(bar).getByRole("button", { name }).getAttribute("aria-describedby")).toBe("discard-question");
+  }
   return bar;
 };
 

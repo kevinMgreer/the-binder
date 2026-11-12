@@ -89,7 +89,12 @@ test.describe("Form prompts", () => {
     expect(after.width).toBeCloseTo(before.width, 0);
     expect(after.y + after.height).toBeCloseTo(before.y + before.height, 0);
     await expect(bar.getByRole("group", { name: "Discard this card?" })).toBeVisible();
-    expect((await bar.innerText()).split("\n").map((s) => s.trim()).filter(Boolean)).toEqual(["Discard", "Keep editing"]);
+    await expect(bar.getByRole("button")).toHaveText(["Discard", "Keep editing"]);
+    const hidden = (await bar.locator(".visually-hidden").boundingBox())!;
+    expect([hidden.width, hidden.height]).toEqual([1, 1]);
+    for (const name of ["Discard", "Keep editing"]) {
+      await expect(bar.getByRole("button", { name })).toHaveAccessibleDescription("Discard this card?");
+    }
     await expect(page.locator(".backdrop")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
@@ -111,7 +116,8 @@ test.describe("Form prompts", () => {
         bar.getByRole("button", { name }).evaluate((el, p) => getComputedStyle(el).getPropertyValue(p), prop);
       expect(await style("Discard", "color")).toBe(danger);
       expect(await style("Discard", "background-color")).toBe("rgba(0, 0, 0, 0)");
-      expect(await style("Keep editing", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
+      expect(await style("Discard", "border-top-color")).toBe(danger);
+      expect(await style("Keep editing", "background-color")).toBe(await bar.page().evaluate(() => getComputedStyle(document.body).color));
       expect(await style("Keep editing", "color")).not.toBe(danger);
     });
 
