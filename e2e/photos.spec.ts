@@ -136,6 +136,7 @@ test("Scanner closed without a photo leaves the form as it was and adds nothing"
   await expect(page.getByAltText("Back photo")).toHaveCount(0);
   await expect(page.getByLabel("Year", { exact: true })).toHaveValue("2024");
   await page.getByRole("button", { name: "Cancel" }).click();
+  await page.waitForTimeout(600); // Discard ignores taps for 500 ms
   await page.getByRole("button", { name: "Discard" }).click();
   await openCollection(page);
   await expect(page.getByTestId("shown")).toHaveText("Showing 0");
@@ -148,7 +149,8 @@ test("Cancel discards: scanned photos store nothing and returns to the dashboard
   await expect(page.getByAltText("Front photo")).toBeVisible();
   await expect(page.getByAltText("Back photo")).toBeVisible();
   await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByRole("alertdialog", { name: "Discard this card?" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Discard this card?" })).toBeVisible();
+  await page.waitForTimeout(600); // Discard ignores taps for 500 ms
   await page.getByRole("button", { name: "Discard" }).click();
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   const pending = await page.evaluate(async () => (await (window as unknown as Win).__ports.photos.pendingUploads()).length);

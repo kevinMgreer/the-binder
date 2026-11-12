@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
@@ -42,4 +42,20 @@ test("with the full photo stored the detail photo switches to it, with no downlo
   const { download, img } = await open(true);
   await waitFor(() => expect(img()?.getAttribute("src")).toBe("blob:full"));
   expect(download).not.toHaveBeenCalled();
+});
+
+test("the Delete dialog puts Delete (danger outline) before Keep (primary, focused)", () => {
+  render(
+    <PortsProvider ports={createFakePorts()}>
+      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} />
+    </PortsProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+  const dialog = screen.getByRole("alertdialog", { name: "Delete card" });
+  const row = within(dialog).getAllByRole("button");
+  expect(row.map((b) => b.textContent)).toEqual(["Delete", "Keep"]);
+  expect(row[0].className).toBe("danger outline");
+  expect(row[1].className).toBe("primary");
+  expect(row[0].parentElement?.className).toBe("actions detail-actions");
+  expect(document.activeElement).toBe(row[1]);
 });

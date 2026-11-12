@@ -129,6 +129,8 @@ function labelFor(key: FieldKey, draft: Draft): string {
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
+const DISCARD_DELAY_MS = 500;
+
 export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const [draft, setDraft] = useState(() => toDraft(card));
   const [photos, setPhotos] = useState<Photos>({});
@@ -157,7 +159,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
 
   const cancelButton = useRef<HTMLButtonElement>(null);
   const saveButton = useRef<HTMLButtonElement>(null);
-  // The form is inert while a prompt shows and an inert element cannot take focus, so commit the close first.
+  // The bar swaps its content, so Cancel is a new element: commit the close before focusing it.
   const keepEditing = () => {
     flushSync(() => setConfirming(false));
     cancelButton.current?.focus();
@@ -166,7 +168,15 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
     flushSync(() => setDuplicate(undefined));
     saveButton.current?.focus();
   };
-  const closePrompt = duplicate ? backToForm : keepEditing;
+
+  // Cancel and Discard share a spot, so a double tap on Cancel must not reach Discard.
+  const askedAt = useRef(0);
+  useEffect(() => {
+    if (confirming) askedAt.current = performance.now();
+  }, [confirming]);
+  const discard = () => {
+    if (performance.now() - askedAt.current >= DISCARD_DELAY_MS) onCancel();
+  };
 
   // Android back asks first, like Cancel; back again while asking means Keep editing.
   useEffect(() => {
@@ -295,7 +305,12 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
 
   return (
     <>
-    <form onSubmit={submit} noValidate inert={confirming || !!duplicate}>
+    <form
+      onSubmit={submit}
+      noValidate
+      inert={!!duplicate}
+      onKeyDown={(e) => e.key === "Escape" && confirming && keepEditing()}
+    >
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <div className="title-rule" aria-hidden="true" />
       <div className="photo-tiles">
@@ -368,60 +383,59 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
             Can't save yet. Check: {blocked.join(", ")}.
           </p>
         )}
-        <div className="actions">
-          <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>
-            Cancel
-          </button>
-          <button type="submit" className="primary" ref={saveButton} disabled={preparing.front || preparing.back}>
-            Save
-          </button>
-        </div>
-      </div>
-    </form>
-    {(confirming || duplicate) && (
-      <div className="backdrop center" onClick={closePrompt} onKeyDown={(e) => e.key === "Escape" && closePrompt()}>
-        {duplicate ? (
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-label="Duplicate card"
-            aria-describedby="duplicate-message"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p id="duplicate-message">This card is already in your collection ({duplicate.existing.quantity} owned).</p>
-            <button
-              type="button"
-              autoFocus
-              onClick={() =>
-                onSave({
-                  ...duplicate.existing,
-                  quantity: duplicate.existing.quantity + duplicate.added.quantity,
-                  updatedAt: new Date().toISOString(),
-                })
-              }
-            >
-              Increase quantity
+        {confirming ? (
+          <div key="ask" className="actions detail-actions" role="group" aria-label={question}>
+            <span id="discard-question" className="visually-hidden">{question}</span>
+            <button type="button" className="danger outline" aria-describedby="discard-question" onClick={discard}>
+              Discard
             </button>
-            <button type="button" onClick={() => onSave(duplicate.added, photos)}>
-              Add as separate card
-            </button>
-            <button type="button" onClick={backToForm}>
-              Back to form
+            <button type="button" className="primary" aria-describedby="discard-question" autoFocus onClick={keepEditing}>
+              Keep editing
             </button>
           </div>
         ) : (
-          <div role="alertdialog" aria-modal="true" aria-label={question} onClick={(e) => e.stopPropagation()}>
-            <p>{question}</p>
-            <div className="actions">
-              <button type="button" autoFocus onClick={keepEditing}>
-                Keep editing
-              </button>
-              <button type="button" className="danger" onClick={onCancel}>
-                Discard
-              </button>
-            </div>
+          <div className="actions">
+            <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>
+              Cancel
+            </button>
+            <button type="submit" className="primary" ref={saveButton} disabled={preparing.front || preparing.back}>
+              Save
+            </button>
           </div>
         )}
+      </div>
+    </form>
+    {duplicate && (
+      <div className="backdrop center" onClick={backToForm} onKeyDown={(e) => e.key === "Escape" && backToForm()}>
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Duplicate card"
+          aria-describedby="duplicate-message"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p id="duplicate-message">This card is already in your collection ({duplicate.existing.quantity} owned).</p>
+          <button
+            type="button"
+            className="primary"
+            autoFocus
+            onClick={() =>
+              onSave({
+                ...duplicate.existing,
+                quantity: duplicate.existing.quantity + duplicate.added.quantity,
+                updatedAt: new Date().toISOString(),
+              })
+            }
+          >
+            Increase quantity
+          </button>
+          <button type="button" onClick={() => onSave(duplicate.added, photos)}>
+            Add as separate card
+          </button>
+          <button type="button" onClick={backToForm}>
+            Back to form
+          </button>
+        </div>
       </div>
     )}
     </>

@@ -123,11 +123,12 @@ test("back on an add form with a typed Player asks, again keeps editing, Discard
   openAddForm();
   fireEvent.change(screen.getByLabelText("Player"), { target: { value: "Hank Aaron" } });
   await pressBack();
-  expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
+  expect(screen.getByRole("group", { name: "Discard this card?" })).toBeTruthy();
   await pressBack();
-  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(screen.queryByRole("group", { name: "Discard this card?" })).toBeNull();
   expect((screen.getByLabelText("Player") as HTMLInputElement).value).toBe("Hank Aaron");
   await pressBack();
+  await new Promise((r) => setTimeout(r, 550)); // Discard ignores taps for 500 ms
   fireEvent.click(screen.getByRole("button", { name: "Discard" }));
   await onList();
   expect(screen.queryByRole("button", { name: "Hank Aaron" })).toBeNull();
