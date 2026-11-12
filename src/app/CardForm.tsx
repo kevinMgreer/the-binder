@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { CONDITIONS, type Card, type CardSide, type Suggestion } from "../domain/card";
 import { isSerialNumbered } from "../domain/format";
-import { findDuplicate } from "../domain/query";
+import { findDuplicate, lastNameKey } from "../domain/query";
 import { REQUIRED_FIELDS, validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
 import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
 import { Field, fieldId } from "./Field";
@@ -41,10 +41,19 @@ interface Draft {
 const listedCondition = (stored: string) =>
   CONDITIONS.find((o) => o.toLowerCase() === stored.trim().toLowerCase()) ?? stored;
 
+/** What the list sorts the card by when it has no sort name. */
+const derivedSortName = (d: Pick<Draft, "player" | "team">) =>
+  lastNameKey({ player: d.player, team: d.team });
+
+function sortNameToStore(d: Draft, existing?: Card) {
+  const typed = d.sortName.trim();
+  return typed === existing?.sortName?.trim() || typed !== derivedSortName(d) ? typed : "";
+}
+
 function toDraft(c?: Card): Draft {
   return {
     player: c?.player ?? "",
-    sortName: c?.sortName ?? "",
+    sortName: c?.sortName?.trim() ? c.sortName : derivedSortName({ player: c?.player ?? "", team: c?.team ?? "" }),
     team: c?.team ?? "",
     year: c ? String(c.year) : "",
     manufacturer: c?.manufacturer ?? "",
@@ -81,7 +90,8 @@ function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): C
     ...existing,
     id: existing?.id ?? crypto.randomUUID(),
     player: d.player.trim(),
-    sortName: d.sortName.trim(),
+    // The derived value is not stored, so cards sort as before; a stored one stays as it was.
+    sortName: sortNameToStore(d, existing),
     team: d.team.trim(),
     year: d.year.trim() === "" ? Number.NaN : Number(d.year),
     manufacturer: d.manufacturer.trim(),
@@ -188,9 +198,16 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
 
+  // Sort name tracks Player and Team until the user types in it; a stored one is never replaced on its own.
+  const follow = useRef(!card?.sortName?.trim());
+  useEffect(() => {
+    if (follow.current) setDraft((d) => (d.sortName === derivedSortName(d) ? d : { ...d, sortName: derivedSortName(d) }));
+  }, [draft.player, draft.team]);
+
   // The user's own edit always wins: it clears the suggestion marker and blocks later suggestions for that field.
   const edit = <K extends keyof Draft>(key: K, value: Draft[K]) => {
     touched.current.add(key as DraftKey);
+    if (key === "sortName") follow.current = (value as string).trim() === "";
     setSuggested((s) => ({ ...s, [key]: undefined }));
     setFlagged((f) => new Set([...f].filter((k) => k !== key)));
     set(key, value);
@@ -333,7 +350,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       )}
       {note && <p role="status">{note}</p>}
       {text("player", "Player", "player")}
-      {text("sortName", "Sort name", undefined, "text", "Optional: how this card sorts, e.g. Acuña")}
+      {text("sortName", "Sort name", undefined, "text", "Follows the player's last name. Change it to sort differently, e.g. De La Cruz")}
       {text("team", "Team")}
       {text("year", "Year", "year", "number")}
       {text("manufacturer", "Manufacturer")}
