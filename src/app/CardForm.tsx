@@ -385,7 +385,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
         )}
         {confirming ? (
           <>
-            <p role="alert">{question}</p>
+            <div role="alert">{question}</div>
             <div className="actions detail-actions">
               <button type="button" className="danger outline" onClick={discard}>
                 Discard

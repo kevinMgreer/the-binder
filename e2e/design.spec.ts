@@ -493,6 +493,12 @@ test.describe("destructive actions stay apart", () => {
     await expect(dialog.getByRole("button", { name: "Keep" })).toHaveClass("primary");
     await expect(dialog.getByRole("button", { name: "Delete", exact: true })).toHaveClass("danger outline");
     expect(await css(dialog.getByRole("button", { name: "Delete", exact: true }), "color")).toBe(await danger(page));
+    const del = dialog.getByRole("button", { name: "Delete", exact: true });
+    const keep = dialog.getByRole("button", { name: "Keep" });
+    expect(Math.abs((await del.boundingBox())!.width - (await keep.boundingBox())!.width)).toBeLessThanOrEqual(1);
+    expect(await css(del, "background-color")).toBe("rgba(0, 0, 0, 0)");
+    expect(await css(del, "border-top-color")).toBe(await danger(page));
+    expect(await css(keep, "background-color")).toBe(await css(page.locator("body"), "color"));
   });
 
   test("Two portrait photos fill the row: 200 dp photos, Edit and Delete show without scrolling and a tap opens the zoom view", async ({ page }) => {

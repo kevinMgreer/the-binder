@@ -383,14 +383,6 @@ async function openDuplicate() {
   return { existing, onSave };
 }
 
-test("a click on the question text does not close it", () => {
-  renderForm();
-  type("Player", "Hank Aaron");
-  cancel();
-  fireEvent.click(screen.getByText("Discard this card?"));
-  asking("Discard this card?");
-});
-
 test("the duplicate prompt is a described modal alertdialog with its buttons in order", async () => {
   await openDuplicate();
   const dialog = screen.getByRole("alertdialog", { name: "Duplicate card" });

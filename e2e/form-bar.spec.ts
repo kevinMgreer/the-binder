@@ -112,6 +112,8 @@ test.describe("Form prompts", () => {
       expect(await style("Discard", "background-color")).toBe("rgba(0, 0, 0, 0)");
       expect(await style("Keep editing", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
       expect(await style("Keep editing", "color")).not.toBe(danger);
+      const ink = await color(page, "--color-ink");
+      expect(await bar.getByRole("alert").evaluate((el) => getComputedStyle(el).color)).toBe(ink);
     });
 
     test(`Duplicate prompt centred over the bar: ${scheme}`, async ({ page }) => {
@@ -127,7 +129,14 @@ test.describe("Form prompts", () => {
   test("Double tap on Cancel does not discard", async ({ page }) => {
     await openDiscard(page);
     await page.getByRole("button", { name: "Keep editing" }).click();
-    await page.getByRole("button", { name: "Cancel" }).dblclick();
+    const cancel = page.getByRole("button", { name: "Cancel" });
+    const box = (await cancel.boundingBox())!;
+    await cancel.dblclick();
+    const overDiscard = await page.evaluate(
+      ([x, y]) => !!document.elementFromPoint(x, y)?.closest("button")?.textContent?.includes("Discard"),
+      [box.x + box.width / 2, box.y + box.height / 2],
+    );
+    expect(overDiscard).toBe(true);
     await expect(page.getByRole("button", { name: "Keep editing" })).toBeVisible();
     await expect(page.getByLabel("Player", { exact: true })).toHaveValue("Hank Aaron");
     await page.waitForTimeout(600);
