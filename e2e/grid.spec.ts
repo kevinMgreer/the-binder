@@ -31,7 +31,14 @@ const names = (n: number): Item[] => Array.from({ length: n }, (_, i) => ({ play
 const tiles = (page: Page) => page.getByTestId("card-tile");
 const gridView = (page: Page) => page.getByRole("button", { name: "Grid view", exact: true });
 const listView = (page: Page) => page.getByRole("button", { name: "List view", exact: true });
-const sortButton = (page: Page) => page.getByRole("button", { name: /^Sort: / });
+const order = (page: Page) => page.getByTestId("order");
+const chooseOrder = async (page: Page, by: string, direction: string) => {
+  await page.getByRole("button", { name: /^Filter and sort/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Filter and sort" });
+  await sheet.getByRole("radio", { name: by, exact: true }).check();
+  await sheet.getByRole("radio", { name: direction }).check();
+  return sheet;
+};
 const box = async (loc: Locator) => (await loc.boundingBox())!;
 const ratioOf = async (loc: Locator) => {
   const b = await box(loc);
@@ -42,29 +49,29 @@ const gridNames = (page: Page) => page.locator(".grid-name").allTextContents();
 
 test.use({ viewport: { width: 360, height: 800 } });
 
-test("Toggle shares the Showing line: 5,000 cards, the toggle left of Sort, nothing overlapping or past the content edge", async ({ page }) => {
+test("Toggle shares the Showing line: 5,000 cards, count and order on one line, 8 dp before the toggle, nothing past the content edge", async ({ page }) => {
   await page.goto("/?seed=5000");
   await openCollection(page);
   const row = await box(page.locator(".shown-row"));
   // The text's own extent, not the paragraph's box: a word wider than its box spills out of it.
-  const text = await page.getByTestId("shown").evaluate((p) => {
+  const text = await page.locator("p.shown").evaluate((p) => {
     const range = document.createRange();
-    range.selectNodeContents(p);
+    range.selectNodeContents(p.querySelector("[data-testid=shown]")!);
+    const count = range.getBoundingClientRect();
+    range.selectNodeContents(p.querySelector("[aria-hidden]")!);
     const rects = [...range.getClientRects()];
-    const x = Math.min(...rects.map((r) => r.left));
-    return { x, y: 0, width: Math.max(...rects.map((r) => r.right)) - x, height: 0 };
+    const x = count.left;
+    return { x, width: Math.max(...rects.map((r) => r.right)) - x, lines: new Set([...rects].map((r) => Math.round(r.top))).size + (Math.abs(count.top - rects[0].top) > 2 ? 1 : 0) };
   });
-  const parts = [text, await box(gridView(page)), await box(sortButton(page))];
-  await expect(sortButton(page)).toHaveText(/^Sort: Last name ↑$/);
-  for (const b of [parts[1], parts[2]]) {
-    expect(b.y).toBeGreaterThanOrEqual(row.y - 0.5);
-    expect(b.y + b.height).toBeLessThanOrEqual(row.y + row.height + 0.5);
-  }
-  const [shown, toggle, sort] = parts;
-  expect(sort.x - (toggle.x + toggle.width)).toBeGreaterThanOrEqual(7.5);
-  expect(toggle.x - (shown.x + shown.width)).toBeGreaterThanOrEqual(7.5);
-  expect(sort.x + sort.width).toBeLessThanOrEqual(360 - 24 + 0.5);
-  console.log("showing-row widths", JSON.stringify({ shown: shown.width, toggle: toggle.width, sort: sort.width, content: 312 }));
+  const toggle = await box(gridView(page));
+  await expect(page.locator("p.shown")).toContainText("Showing 5000 · Last name ↑");
+  await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
+  expect(text.lines).toBe(1);
+  expect(toggle.y).toBeGreaterThanOrEqual(row.y - 0.5);
+  expect(toggle.y + toggle.height).toBeLessThanOrEqual(row.y + row.height + 0.5);
+  expect(toggle.x - (text.x + text.width)).toBeGreaterThanOrEqual(7.5);
+  expect(toggle.x + toggle.width).toBeLessThanOrEqual(360 - 24 + 0.5);
+  console.log("showing-row widths", JSON.stringify({ text: text.width, toggle: toggle.width, content: 312 }));
 });
 
 test("Toggle targets: the view button is at least 48 dp in both views", async ({ page }) => {
@@ -105,14 +112,9 @@ test("Filters, search and sort apply in Grid view", async ({ page }) => {
   ]);
   await gridView(page).click();
   await page.getByLabel("Search", { exact: true }).fill("acu");
-  await page.getByRole("button", { name: /^Filter/ }).click();
+  const sheet = await chooseOrder(page, "Year", "Descending");
   await page.getByLabel("Team", { exact: true }).selectOption("Atlanta Braves");
-  await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
-  await sortButton(page).click();
-  const sort = page.getByRole("dialog", { name: "Sort" });
-  await sort.getByRole("radio", { name: "Year", exact: true }).check();
-  await sort.getByRole("radio", { name: "Descending" }).check();
-  await sort.getByRole("button", { name: "Close" }).click();
+  await sheet.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
   await expect(page.getByRole("button", { name: "Remove Team filter: Atlanta Braves" })).toBeVisible();
   await expect(tiles(page)).toHaveCount(2);
   await expect(page.locator(".grid-year")).toHaveText(["2024", "2019"]);
@@ -308,17 +310,14 @@ test("Kept after a relaunch, Sort still resets", async ({ page }) => {
   await page.goto("/");
   await seed(page, names(3));
   await gridView(page).click();
-  await sortButton(page).click();
-  const sort = page.getByRole("dialog", { name: "Sort" });
-  await sort.getByRole("radio", { name: "Team", exact: true }).check();
-  await sort.getByRole("radio", { name: "Descending" }).check();
-  await sort.getByRole("button", { name: "Close" }).click();
-  await expect(sortButton(page)).toHaveText("Sort: Team ↓");
+  const sheet = await chooseOrder(page, "Team", "Descending");
+  await sheet.getByRole("button", { name: "Close" }).click();
+  await expect(order(page)).toContainText("· Team ↓");
   await page.reload();
   await openCollection(page);
   await expect(listView(page)).toBeVisible();
   await expect(tiles(page)).toHaveCount(3);
-  await expect(sortButton(page)).toHaveText("Sort: Last name ↑");
+  await expect(order(page)).toContainText("· Last name ↑");
 });
 
 test("Storage unavailable: List at first, Grid on a tap, no error", async ({ page }) => {
