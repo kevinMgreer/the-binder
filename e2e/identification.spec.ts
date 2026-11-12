@@ -21,6 +21,10 @@ async function configure(page: Page, which: "ocr" | "claude", result: object) {
 
 async function scanFront(page: Page) {
   await setNextPhoto(page);
+  // These cases are about the front only: close the back scanner that opens after it.
+  await page.evaluate(() => {
+    (window as unknown as Win).__ports.photoSource.nextBack = null;
+  });
   await page.getByRole("button", { name: "Add card", exact: true }).click();
   await page.getByRole("button", { name: "Add front photo" }).click();
   await page.getByRole("button", { name: "Scan front" }).click();

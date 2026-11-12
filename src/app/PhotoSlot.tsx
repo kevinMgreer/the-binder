@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { acquirePhoto } from "../photos/acquire";
 import { PermissionDeniedError, type CapturedPhoto } from "../ports";
@@ -16,9 +16,17 @@ interface Props {
   onChange: (photo: CapturedPhoto | null) => void;
   /** Lets the form hold Save while a photo is still being prepared. */
   onBusy?: (busy: boolean) => void;
+  /** After "Scan" (not Retake, not Pick) on an empty tile returned a photo. */
+  onScanned?: () => void;
+  ref?: Ref<PhotoSlotHandle>;
 }
 
-export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
+export interface PhotoSlotHandle {
+  /** Starts the camera scan as "Scan <side>" does, without the chooser. */
+  scan: () => void;
+}
+
+export function PhotoSlot({ side, card, captured, onChange, onBusy, onScanned, ref }: Props) {
   const { photoSource } = usePorts();
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -51,7 +59,10 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
     onBusy?.(true);
     try {
       const photo = await acquirePhoto(photoSource, side, how);
-      if (photo) onChange(photo);
+      if (photo) {
+        onChange(photo);
+        if (how === "camera" && !filled) onScanned?.();
+      }
     } catch (error) {
       setMessage(
         error instanceof PermissionDeniedError
@@ -63,6 +74,8 @@ export function PhotoSlot({ side, card, captured, onChange, onBusy }: Props) {
       onBusy?.(false);
     }
   }
+
+  useImperativeHandle(ref, () => ({ scan: () => void take("camera") }));
 
   return (
     <div className="photo-cell">

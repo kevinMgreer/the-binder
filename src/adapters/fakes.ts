@@ -178,12 +178,15 @@ export class InMemoryPhotoStore implements PhotoStore {
 
 export class FakePhotoSource implements PhotoSource {
   next: Blob | null = new Blob(["fake"], { type: "image/jpeg" });
+  /** When set, the back capture returns this instead of `next` (null: back scanner closed). */
+  nextBack?: Blob | null;
   error: Error | null = null;
   private result() {
     if (this.error) throw this.error;
     return this.next;
   }
-  async capture(_side: CardSide) {
+  async capture(side: CardSide) {
+    if (side === "back" && this.nextBack !== undefined && !this.error) return this.nextBack;
     return this.result();
   }
   async pick() {

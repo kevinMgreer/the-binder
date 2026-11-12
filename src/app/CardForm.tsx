@@ -5,7 +5,7 @@ import { findDuplicate } from "../domain/query";
 import { REQUIRED_FIELDS, validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
 import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
 import { Field, fieldId } from "./Field";
-import { PhotoSlot } from "./PhotoSlot";
+import { PhotoSlot, type PhotoSlotHandle } from "./PhotoSlot";
 import { usePorts } from "./ports-context";
 import { openSheets } from "./Sheet";
 import { flaggedKeys, suggestionPatch, type DraftKey } from "./suggestions";
@@ -155,6 +155,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
   const question = card ? "Discard changes?" : "Discard this card?";
 
   const cancelButton = useRef<HTMLButtonElement>(null);
+  const backSlot = useRef<PhotoSlotHandle>(null);
   const keepEditing = () => {
     setConfirming(false);
     cancelButton.current?.focus();
@@ -296,6 +297,8 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
             // A removed capture is simply gone; only a stored photo needs the null to be removed on save.
             onChange={(p) => setPhotos((s) => ({ ...s, [side]: p ?? (card?.photos[side] ? null : undefined) }))}
             onBusy={(b) => setPreparing((s) => ({ ...s, [side]: b }))}
+            ref={side === "back" ? backSlot : undefined}
+            onScanned={side === "front" ? () => !hasPhoto("back") && backSlot.current?.scan() : undefined}
           />
         ))}
       </div>

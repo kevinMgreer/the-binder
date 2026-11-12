@@ -217,7 +217,7 @@ test("closing the back scanner keeps the front and shows nothing", async () => {
   renderForm();
   scanFront();
   await vi.waitFor(() => expect(acquire).toHaveBeenCalledTimes(2));
-  await vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+  await vi.waitFor(() => expect(screen.queryByText("Processing photo…")).toBeNull());
   expect(screen.getByRole("button", { name: "Change front photo" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Add back photo" })).toBeTruthy();
   expect(screen.queryByRole("alert")).toBeNull();
@@ -241,7 +241,7 @@ test("no back scan follows a pick, a retake, a stored back or a back scan", asyn
   click("Change front photo");
   click("Retake front");
   await vi.waitFor(() => expect(acquire).toHaveBeenCalledTimes(2));
-  await vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+  await vi.waitFor(() => expect(screen.queryByText("Processing photo…")).toBeNull());
   expect(acquire).toHaveBeenCalledTimes(2);
   cleanup();
   acquire.mockReset();
@@ -262,7 +262,7 @@ test("no back scan follows a pick, a retake, a stored back or a back scan", asyn
 });
 
 test("after the chain Cancel then Discard saves nothing, and recognition ran once per side", async () => {
-  acquire.mockResolvedValueOnce(front).mockResolvedValueOnce(backPhoto);
+  acquire.mockResolvedValueOnce(front).mockImplementationOnce(() => new Promise((r) => setTimeout(() => r(backPhoto), 50)));
   const ports = createFakePorts();
   const recognize = vi.spyOn(ports.ocr, "recognize");
   const onCancel = vi.fn();

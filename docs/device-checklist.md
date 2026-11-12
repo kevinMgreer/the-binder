@@ -25,7 +25,8 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 
 ## Camera and photos (card-photos)
 
-- [ ] **Add card** opens the card form. **Scan front** opens the rear camera, takes the front and returns to the same form with the typed fields kept; the back slot offers **Scan back** and **Pick back from photos**.
+- [ ] **Add card** opens the card form. **Scan front** opens the rear camera, takes the front and returns to the same form with the typed fields kept; then the back scanner opens by itself.
+- [ ] [scan-back-chain, T-47] **Add card**, **Scan front**, accept: the back scanner opens at once; accept the back and both tiles fill. Again, and press Android back (or close) in the back scanner: the form shows the front only, no message. **Pick front from photos** and **Retake front** open no back scanner; editing a card that has a back, **Scan front** opens no back scanner.
 - [ ] Deny the camera permission: the app offers **Pick front from photos** (or back) instead and it works.
 - [ ] **Pick front from photos** uses the chosen image.
 - [ ] A 12 MP photo is stored at 500 KB or less and the serial number stamp is still readable when zoomed in.
