@@ -1,10 +1,11 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
 import { PermissionDeniedError, type CapturedPhoto } from "../ports";
 import { CardForm } from "./CardForm";
-import { PhotoSlot } from "./PhotoSlot";
+import { PhotoSlot, type PhotoSlotHandle } from "./PhotoSlot";
 import { PortsProvider } from "./ports-context";
 
 const acquire = vi.hoisted(() => vi.fn());
@@ -141,4 +142,69 @@ test("closing the scanner without a photo changes nothing and clears the status"
   fireEvent.click(choice("Scan front"));
   await vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
   expect(onChange).not.toHaveBeenCalled();
+});
+
+const photo: CapturedPhoto = { full: new Blob(["f"]), thumb: new Blob(["t"]) };
+const scanFront = () => {
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Scan front"));
+};
+
+test("onScanned is called once after Scan front on an empty tile returns a photo", async () => {
+  acquire.mockResolvedValue(photo);
+  const onScanned = vi.fn();
+  renderSlot({ onScanned });
+  scanFront();
+  await vi.waitFor(() => expect(onScanned).toHaveBeenCalledTimes(1));
+});
+
+test("onScanned is not called after a pick, a retake, a closed scanner or an error", async () => {
+  const onScanned = vi.fn();
+  const settled = () => vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+  acquire.mockResolvedValue(photo);
+  renderSlot({ onScanned });
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Pick front from photos"));
+  await settled();
+  cleanup();
+  renderSlot({ onScanned, captured: photo });
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(choice("Retake front"));
+  await settled();
+  cleanup();
+  renderSlot({ onScanned, card: makeCard({ photos: { front: stored, back: null } }) });
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(choice("Retake front"));
+  await settled();
+  cleanup();
+  acquire.mockResolvedValue(null);
+  renderSlot({ onScanned });
+  scanFront();
+  await settled();
+  cleanup();
+  acquire.mockRejectedValue(new PermissionDeniedError());
+  renderSlot({ onScanned });
+  scanFront();
+  await screen.findByRole("alert");
+  cleanup();
+  acquire.mockRejectedValue(new Error("bad image"));
+  renderSlot({ onScanned });
+  scanFront();
+  await screen.findByRole("alert");
+  expect(onScanned).not.toHaveBeenCalled();
+});
+
+test("scan() runs the camera path without the chooser and reports busy", async () => {
+  let finish: (p: CapturedPhoto | null) => void = () => {};
+  acquire.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+  const onBusy = vi.fn();
+  const ref = createRef<PhotoSlotHandle>();
+  renderSlot({ side: "back", onBusy, ref });
+  act(() => ref.current?.scan());
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect((await screen.findByRole("status")).textContent).toBe("Processing photo…");
+  expect(acquire).toHaveBeenCalledWith(expect.anything(), "back", "camera");
+  expect(onBusy.mock.calls).toEqual([[true]]);
+  finish(null);
+  await vi.waitFor(() => expect(onBusy.mock.calls).toEqual([[true], [false]]));
 });
