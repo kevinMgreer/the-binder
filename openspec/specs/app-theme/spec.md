@@ -169,9 +169,10 @@ The system SHALL show every card photo and the photo placeholder inside a tradin
 The system SHALL draw every screen on the ground colour with ink text, ruled tables instead of boxed buttons, and no translucent, blurred or shadowed surface:
 - Cards list: rows on the ground separated by 1 px rules, the search field as a ruled line (a tinted field with an ink underline and no box), the Filter button as an outlined box, applied filter chips as ink-filled pills with ground-coloured text, the shown count in uppercase label type; adding is the Add item of the bottom navigation, with no standalone button or band.
 - Card detail: the player title in the slab face with the serial stamp beside it, a rule below, the ruled fact list, framed photo strip, Edit as the primary button, Delete in danger text below a rule.
-- Card form: fields as ruled lines with uppercase labels, framed photo slots each closed by a rule, Identify with Claude set apart from the Scan and Pick buttons, Save as the primary button, Cancel as an ink-outlined button.
+- Card form: fields as ruled lines with uppercase labels, framed photo slots each closed by a rule, Identify with Claude set apart from the Scan and Pick buttons, Cancel as an ink-outlined button at the left of the action row and Save as the primary button at its right, the discard confirmation as a dialog with Keep editing ink-outlined and Discard in danger text.
 - Settings: groups as ruled stat-table rows, Sign out in danger text apart below a rule.
-- Filter sheet: the panel colour, slab group headings above a rule (distinct from the uppercase field labels), Year from and Year to side by side, a rule above the foot, Show cards as the primary button, Clear all ink-outlined.
+- Filter sheet: the full screen height, the panel colour, slab group headings above a rule (distinct from the uppercase field labels), Year from and Year to side by side, a rule above the foot, Show cards as the primary button, Clear all ink-outlined.
+- Sort sheet: the panel colour, only as tall as its content, slab group headings with tighter spacing than the filter sheet, option rows of one height with their radios in one column on one left edge, Ascending and Descending side by side in one row, a rule above the foot, Done as the primary button.
 - Sync error: the title row keeps only the dot and the short words "Sync problem"; the full wording ("Sync problem, retrying (N unsynced)") sits in a full-width status line under the title rule in the danger colour at 14 px.
 - Dialogs, banners and the empty state: the panel colour with a 1 px rule border, no gradient.
 
@@ -188,5 +189,5 @@ The system SHALL draw every screen on the ground colour with ink text, ruled tab
 - **THEN** its chip's background computes to the ink colour and its text to the ground colour, at least 4.5 to 1
 
 #### Scenario: Screens at phone size in both themes
-- **WHEN** the list, detail, form, Settings and filter sheet are shown at 360 by 800 in each theme
+- **WHEN** the list, detail, form, Settings, filter sheet and sort sheet are shown at 360 by 800 in each theme
 - **THEN** the page background is the ground colour, text is legible, the touch-target rule holds and nothing scrolls sideways

@@ -6,7 +6,7 @@ Lets the owner photograph the front and back of each card with the phone camera,
 ## Requirements
 
 ### Requirement: Photos are taken from the card form
-The system SHALL offer, in the photo section of the add and edit card forms, for each of front and back, a Scan action (the rear-camera scanner of the `card-scanner` capability, with its system-camera fallback) and a Pick from photos action. After a photo is taken or picked, the user SHALL be on the same form with that photo attached to its side and every field value, suggestion marker and the other side's photo kept. Closing the scanner or picker without a photo SHALL leave the form as it was. Cancel on the add form SHALL discard the new card and every photo taken for it. On-device recognition SHALL run when a new photo is attached and SHALL fill only fields the user has not edited; Claude SHALL be called only when the user taps "Identify with Claude".
+The system SHALL offer, in the photo section of the add and edit card forms, for each of front and back, a Scan action (the rear-camera scanner of the `card-scanner` capability, with its system-camera fallback) and a Pick from photos action. After a photo is taken or picked, the user SHALL be on the same form with that photo attached to its side and every field value, suggestion marker and the other side's photo kept. Closing the scanner or picker without a photo SHALL leave the form as it was. Cancel on the add form, once the user confirms Discard (see the `card-form-guidance` capability), SHALL discard the new card and every photo taken for it. On-device recognition SHALL run when a new photo is attached and SHALL fill only fields the user has not edited; Claude SHALL be called only when the user taps "Identify with Claude".
 
 #### Scenario: Photo slots on the add form
 - **WHEN** the add form opens from Add card
@@ -27,7 +27,7 @@ The system SHALL offer, in the photo section of the add and edit card forms, for
 - **THEN** the form shows that image as the back photo
 
 #### Scenario: Cancel discards
-- **WHEN** the user scans a front photo on the add form and taps Cancel
+- **WHEN** the user scans a front photo on the add form, taps Cancel and then Discard in the confirmation
 - **THEN** no card is added, no photo is stored on the device or queued for Drive, and the screen the user came from is shown
 
 #### Scenario: Identification triggers unchanged
