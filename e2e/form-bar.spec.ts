@@ -34,6 +34,7 @@ async function openDuplicate(page: Page, scheme: "light" | "dark" = "light") {
   await page.goto("/");
   await page.evaluate(async () => {
     const { makeCard } = await import("/src/domain/fixtures.ts");
+    await (window as any).__ports.collection.clear();
     await (window as any).__ports.collection.putMany([makeCard()]);
   });
   await page.reload();
@@ -46,11 +47,12 @@ async function openDuplicate(page: Page, scheme: "light" | "dark" = "light") {
   return page.getByRole("alertdialog", { name: "Duplicate card" });
 }
 
+/** Centred in the area above the 48 px bottom inset, which the dialog respects like the Delete dialog. */
 const centre = async (page: Page, dialog: ReturnType<Page["locator"]>) => {
   const box = (await dialog.boundingBox())!;
   const vp = page.viewportSize()!;
   expect(Math.abs(box.x + box.width / 2 - vp.width / 2)).toBeLessThanOrEqual(8);
-  expect(Math.abs(box.y + box.height / 2 - vp.height / 2)).toBeLessThanOrEqual(8);
+  expect(Math.abs(box.y + box.height / 2 - (vp.height - 48) / 2)).toBeLessThanOrEqual(8);
 };
 
 const underBar = (page: Page, name: "Save" | "Cancel") =>
