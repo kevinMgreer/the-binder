@@ -141,11 +141,14 @@ for (const size of PHONES) {
       const filter = page.getByRole("button", { name: /^Filter/ });
       const add = page.getByRole("button", { name: "Add card", exact: true });
       const sort = page.getByRole("button", { name: /^Sort: / });
-      for (const el of [status, gear, search, filter, shown, sort, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
+      const toggle = page.getByRole("button", { name: "Grid view", exact: true });
+      for (const el of [status, gear, search, filter, shown, toggle, sort, add, page.getByTestId("card-row").first()]) await expect(el).toBeInViewport();
       const rowBox = (await page.locator(".shown-row").boundingBox())!;
-      const sortBox = (await sort.boundingBox())!;
-      expect(sortBox.y).toBeGreaterThanOrEqual(rowBox.y - 0.5);
-      expect(sortBox.y + sortBox.height).toBeLessThanOrEqual(rowBox.y + rowBox.height + 0.5);
+      for (const el of [sort, toggle]) {
+        const b = (await el.boundingBox())!;
+        expect(b.y).toBeGreaterThanOrEqual(rowBox.y - 0.5);
+        expect(b.y + b.height).toBeLessThanOrEqual(rowBox.y + rowBox.height + 0.5);
+      }
       expect((await status.boundingBox())!.y).toBeLessThan((await search.boundingBox())!.y);
       expect(Math.abs((await search.boundingBox())!.y - (await filter.boundingBox())!.y)).toBeLessThan(24);
       const scrollerBottom = await bottom(scroller);
@@ -157,6 +160,29 @@ for (const size of PHONES) {
         if (box && box.y + box.height <= scrollerBottom) clear++;
       }
       expect(clear).toBeGreaterThanOrEqual(3);
+    });
+
+    test("First screen in Grid view: the same controls, then two rows of tiles above the scroller's end", async ({ page }) => {
+      await page.evaluate(async () => {
+        document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
+        document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px");
+        const { makeCard } = await import("/src/domain/fixtures.ts");
+        await (window as unknown as Win).__ports.collection.putMany(Array.from({ length: 8 }, (_, i) => makeCard({ player: `Extra ${i}`, cardNumber: `E${i}` })));
+      });
+      await page.reload();
+      await openCollection(page);
+      await page.getByRole("button", { name: "Grid view", exact: true }).click();
+      await showUpdateBanner(page);
+      for (const el of [page.locator("header").getByTestId("sync-status"), page.getByRole("button", { name: "Settings", exact: true }), page.getByLabel("Search", { exact: true }), page.getByRole("button", { name: /^Filter/ }), page.getByTestId("shown"), page.getByRole("button", { name: "List view", exact: true }), page.getByRole("button", { name: /^Sort: / })]) await expect(el).toBeInViewport();
+      const scrollerBottom = await bottom(page.locator(".list-scroller"));
+      const add = (await page.getByRole("button", { name: "Add card", exact: true }).boundingBox())!;
+      expect(add.y - scrollerBottom).toBeGreaterThanOrEqual(7.5);
+      let clear = 0;
+      for (const t of await page.getByTestId("card-tile").all()) {
+        const b = await t.boundingBox();
+        if (b && b.y + b.height <= scrollerBottom) clear++;
+      }
+      expect(clear).toBeGreaterThanOrEqual(6);
     });
 
     test("One tap to the form: Add card opens the add form with no sheet", async ({ page }) => {
@@ -658,7 +684,7 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
     await page.getByRole("button", { name: /^Sort: / }).click();
     await expectTouchable(page, "sort sheet");
-    await page.getByRole("button", { name: "Done" }).click();
+    await page.getByRole("dialog", { name: "Sort" }).getByRole("button", { name: "Close" }).click();
     await applyYearFrom(page, "2000");
     await expectTouchable(page, "applied chip");
     await page.getByTestId("card-row").first().click();
@@ -1107,9 +1133,11 @@ test.describe("Form actions and Sort sheet", () => {
     const lefts = await Promise.all(["Last name", "Year", "Team", "Set", "Ascending"].map(async (n) => (await left(n)).x));
     expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
     expect((await left("Descending")).y).toBeCloseTo((await left("Ascending")).y, 0);
-    const done = (await sort.getByRole("button", { name: "Done" }).boundingBox())!;
-    expect(done.width).toBeGreaterThan(sheet.width - 80);
-    await page.getByRole("button", { name: "Done" }).click();
+    await expect(sort.getByRole("button", { name: "Done" })).toHaveCount(0);
+    await expect(sort.locator(".sheet-foot")).toHaveCount(0);
+    const lastRow = (await sort.locator("label.check").last().boundingBox())!;
+    expect(sheet.y + sheet.height - (lastRow.y + lastRow.height)).toBeLessThan(48);
+    await sort.getByRole("button", { name: "Close" }).click();
     await page.getByRole("button", { name: /^Filter/ }).click();
     const filters = (await page.getByRole("dialog", { name: "Filters" }).boundingBox())!;
     expect(filters.y + filters.height).toBeCloseTo(800, 0);
@@ -1349,6 +1377,18 @@ test.describe("Card-back look", () => {
     near(await ratioOf(row("Portrait Pat").locator(".frame")), 2.5 / 3.5);
     near(await ratioOf(row("Plain Pam").locator(".frame")), 2.5 / 3.5);
     for (const f of [row("Plain Pam").locator(".frame"), row("Portrait Pat").locator(".frame")]) {
+      expect(await css(f, "border-top-width")).toBe("1px");
+      expect(await css(f, "border-top-left-radius")).toBe("6px");
+    }
+
+    await page.getByRole("button", { name: "Grid view", exact: true }).click();
+    const tile = (name: string) => page.getByTestId("card-tile").filter({ hasText: name });
+    await expect(tile("Landscape Lou").locator(".frame")).toHaveAttribute("data-orientation", "landscape");
+    near(await ratioOf(tile("Landscape Lou").locator(".frame")), 3.5 / 2.5);
+    near(await ratioOf(tile("Landscape Lou").locator("img")), 448 / 320);
+    near(await ratioOf(tile("Portrait Pat").locator(".frame")), 2.5 / 3.5);
+    near(await ratioOf(tile("Plain Pam").locator(".frame")), 2.5 / 3.5);
+    for (const f of [tile("Plain Pam").locator(".frame"), tile("Portrait Pat").locator(".frame")]) {
       expect(await css(f, "border-top-width")).toBe("1px");
       expect(await css(f, "border-top-left-radius")).toBe("6px");
     }

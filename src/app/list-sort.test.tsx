@@ -100,15 +100,15 @@ test("the order survives opening a card and the dashboard", async () => {
   expect(sortButton().textContent).toBe("Sort: Year ↑");
 });
 
-test("the Sort sheet is compact with a primary Done footer; Done closes it and keeps the choice", async () => {
+test("the Sort sheet is compact with Close as its only close control; Close keeps the choice", async () => {
   await renderList();
   fireEvent.click(sortButton());
   const dialog = screen.getByRole("dialog", { name: "Sort" });
   expect(dialog.classList.contains("compact")).toBe(true);
-  const done = within(dialog).getByRole("button", { name: "Done" });
-  expect(done.classList.contains("primary")).toBe(true);
+  expect(within(dialog).queryByRole("button", { name: "Done" })).toBeNull();
+  expect(within(dialog).getAllByRole("button")).toHaveLength(1);
   fireEvent.click(within(dialog).getByRole("radio", { name: "Team" }));
-  fireEvent.click(done);
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
   expect(screen.queryByRole("dialog", { name: "Sort" })).toBeNull();
   expect(sortButton().textContent).toBe("Sort: Team ↑");
 });

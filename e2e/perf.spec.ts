@@ -33,6 +33,33 @@ test("Large collection: the dashboard shows 5,000 cards within 1 s with 4x CPU t
   expect(ready).toBeLessThan(1000);
 });
 
+test("Large collection: the grid shows its first tiles within 1 s of tapping the Cards tab", async ({ page, context }) => {
+  await throttledReload(page, context);
+  await expect(cardsTile(page)).toHaveAttribute("aria-label", /^Cards, 5\D?000$/);
+  const nav = page.getByRole("navigation", { name: "Main" });
+  // The view is kept while the app runs: choose Grid, leave the screen, and time the way back.
+  await nav.getByRole("button", { name: "Cards", exact: true }).click();
+  await page.getByRole("button", { name: "Grid view", exact: true }).click();
+  await nav.getByRole("button", { name: "Dashboard", exact: true }).click();
+  await page.evaluate(() => {
+    performance.clearMarks("collection-first-render");
+    document.addEventListener(
+      "click",
+      (e) => {
+        if ((e.target as Element).closest("nav button")?.textContent === "Cards") performance.mark("cards-tap");
+      },
+      true,
+    );
+  });
+  await nav.getByRole("button", { name: "Cards", exact: true }).click();
+  await expect(page.getByTestId("card-tile").first()).toBeVisible();
+  const ms = await page.evaluate(
+    () => performance.getEntriesByName("collection-first-render")[0].startTime - performance.getEntriesByName("cards-tap")[0].startTime,
+  );
+  test.info().annotations.push({ type: "grid-ms", description: String(Math.round(ms)) });
+  expect(ms).toBeLessThan(1000);
+});
+
 test("Large collection: the list shows its first rows within 1 s of tapping the Cards tab", async ({ page, context }) => {
   await throttledReload(page, context);
   await expect(cardsTile(page)).toHaveAttribute("aria-label", /^Cards, 5\D?000$/);
