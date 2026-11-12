@@ -2,8 +2,9 @@ import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { PermissionDeniedError, type PhotoSource } from "../ports";
 
 export class CapacitorCameraPhotoSource implements PhotoSource {
-  capture() {
-    return this.get(CameraSource.Camera);
+  async capture() {
+    const photo = await this.get(CameraSource.Camera);
+    return photo ? [photo] : [];
   }
 
   pick() {

@@ -8,7 +8,7 @@ import { PhotoSlot } from "./PhotoSlot";
 import { PortsProvider } from "./ports-context";
 
 const acquire = vi.hoisted(() => vi.fn());
-vi.mock("../photos/acquire", () => ({ acquirePhoto: acquire }));
+vi.mock("../photos/acquire", () => ({ acquirePhotos: acquire }));
 
 afterEach(() => {
   cleanup();
@@ -67,7 +67,7 @@ test("choosing Remove reports null and closes the chooser", () => {
 });
 
 test("focus returns to the tile after Close, Remove and a finished action", async () => {
-  acquire.mockResolvedValue(null);
+  acquire.mockResolvedValue([]);
   renderSlot({ card: makeCard({ photos: { front: stored, back: null } }) });
   const focused = () => expect(document.activeElement).toBe(tile("Change front photo"));
   fireEvent.click(tile("Change front photo"));
@@ -82,7 +82,7 @@ test("focus returns to the tile after Close, Remove and a finished action", asyn
 });
 
 test("choosing an action closes the chooser", async () => {
-  acquire.mockResolvedValue(null);
+  acquire.mockResolvedValue([]);
   renderSlot();
   fireEvent.click(tile("Add front photo"));
   fireEvent.click(choice("Pick front from photos"));
@@ -116,7 +116,7 @@ test("a load error still shows as an alert", async () => {
 });
 
 test("Save is disabled while either tile is preparing a photo, and enabled again after", async () => {
-  let finish: (photo: CapturedPhoto | null) => void = () => {};
+  let finish: (photos: CapturedPhoto[]) => void = () => {};
   acquire.mockReturnValue(new Promise((resolve) => (finish = resolve)));
   render(
     <PortsProvider ports={createFakePorts()}>
@@ -129,16 +129,86 @@ test("Save is disabled while either tile is preparing a photo, and enabled again
   fireEvent.click(choice("Scan back", "Back photo"));
   await vi.waitFor(() => expect(save().disabled).toBe(true));
   expect(screen.getByRole("status").textContent).toBe("Processing photo…");
-  finish(null);
+  finish([]);
   await vi.waitFor(() => expect(save().disabled).toBe(false));
 });
 
 test("closing the scanner without a photo changes nothing and clears the status", async () => {
-  acquire.mockResolvedValue(null);
+  acquire.mockResolvedValue([]);
   const onChange = vi.fn();
   renderSlot({ onChange });
   fireEvent.click(tile("Add front photo"));
   fireEvent.click(choice("Scan front"));
   await vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
   expect(onChange).not.toHaveBeenCalled();
+});
+
+const photo: CapturedPhoto = { full: new Blob(["f"]), thumb: new Blob(["t"]) };
+const backPhoto: CapturedPhoto = { full: new Blob(["b"]), thumb: new Blob(["bt"]) };
+const scanFront = () => {
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Scan front"));
+};
+const settled = () => vi.waitFor(() => expect(screen.queryByRole("status")).toBeNull());
+
+test("with onBackPage, Scan front on an empty tile asks for two pages and hands the second to it", async () => {
+  acquire.mockResolvedValue([photo, backPhoto]);
+  const onChange = vi.fn();
+  const onBackPage = vi.fn();
+  renderSlot({ onChange, onBackPage });
+  scanFront();
+  await vi.waitFor(() => expect(onBackPage).toHaveBeenCalledWith(backPhoto));
+  expect(onChange.mock.calls).toEqual([[photo]]);
+  expect(acquire).toHaveBeenCalledWith(expect.anything(), "front", "camera", 2);
+});
+
+test("a two-page scan finished after the front hands over only the front", async () => {
+  acquire.mockResolvedValue([photo]);
+  const onChange = vi.fn();
+  const onBackPage = vi.fn();
+  renderSlot({ onChange, onBackPage });
+  scanFront();
+  await settled();
+  expect(onChange.mock.calls).toEqual([[photo]]);
+  expect(onBackPage).not.toHaveBeenCalled();
+});
+
+test("Retake, Pick and a tile without onBackPage ask for one page", async () => {
+  acquire.mockResolvedValue([photo]);
+  const onBackPage = vi.fn();
+  renderSlot({ onBackPage, captured: photo });
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(choice("Retake front"));
+  await settled();
+  cleanup();
+  renderSlot({ onBackPage });
+  fireEvent.click(tile("Add front photo"));
+  fireEvent.click(choice("Pick front from photos"));
+  await settled();
+  cleanup();
+  renderSlot();
+  scanFront();
+  await settled();
+  expect(acquire.mock.calls.map((c) => c.slice(1))).toEqual([
+    ["front", "camera", 1],
+    ["front", "pick", 1],
+    ["front", "camera", 1],
+  ]);
+  expect(onBackPage).not.toHaveBeenCalled();
+});
+
+test("a closed or failed two-page scan hands over nothing", async () => {
+  const onChange = vi.fn();
+  const onBackPage = vi.fn();
+  acquire.mockResolvedValue([]);
+  renderSlot({ onChange, onBackPage });
+  scanFront();
+  await settled();
+  cleanup();
+  acquire.mockRejectedValue(new PermissionDeniedError());
+  renderSlot({ onChange, onBackPage });
+  scanFront();
+  expect((await screen.findByRole("alert")).textContent).toContain("Camera permission denied");
+  expect(onChange).not.toHaveBeenCalled();
+  expect(onBackPage).not.toHaveBeenCalled();
 });

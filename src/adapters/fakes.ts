@@ -178,13 +178,18 @@ export class InMemoryPhotoStore implements PhotoStore {
 
 export class FakePhotoSource implements PhotoSource {
   next: Blob | null = new Blob(["fake"], { type: "image/jpeg" });
+  /** Page 2 of a two-page capture, the back; unset: same as `next`, null: Done after the front. */
+  nextBack?: Blob | null;
   error: Error | null = null;
   private result() {
     if (this.error) throw this.error;
     return this.next;
   }
-  async capture(_side: CardSide) {
-    return this.result();
+  async capture(_side: CardSide, pages = 1) {
+    const first = this.result();
+    if (!first) return [];
+    const back = this.nextBack === undefined ? first : this.nextBack;
+    return pages === 2 && back ? [first, back] : [first];
   }
   async pick() {
     return this.result();
