@@ -7,10 +7,12 @@ interface Props {
   label: string;
   onClose: () => void;
   foot?: ReactNode;
+  /** Sized to its content instead of full height. */
+  compact?: boolean;
   children: ReactNode;
 }
 
-export function Sheet({ label, onClose, foot, children }: Props) {
+export function Sheet({ label, onClose, foot, compact, children }: Props) {
   useEffect(() => {
     openSheets.push(onClose);
     return () => void openSheets.splice(openSheets.lastIndexOf(onClose), 1);
@@ -18,7 +20,7 @@ export function Sheet({ label, onClose, foot, children }: Props) {
 
   return (
     <div className="backdrop" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={label} className="sheet"
+      <div role="dialog" aria-modal="true" aria-label={label} className={compact ? "sheet compact" : "sheet"}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >

@@ -488,7 +488,7 @@ test.describe("polish after the second phone review", () => {
 });
 
 type Box = { x: number; y: number; width: number; height: number };
-const CONTROLS = "button, a[href], input:not([type=checkbox]), select, textarea, summary, label.check, [data-testid=card-row] > button";
+const CONTROLS = "button, a[href], input:not([type=checkbox]):not([type=radio]), select, textarea, summary, label.check, [data-testid=card-row] > button";
 
 async function controls(page: Page) {
   return page.evaluate((selector) => {
@@ -537,6 +537,9 @@ test.describe("Touch targets", () => {
     await page.getByRole("button", { name: /^Filter/ }).click();
     await expectTouchable(page, "filter sheet");
     await page.getByRole("button", { name: /^Show \d+ cards?$/ }).click();
+    await page.getByRole("button", { name: /^Sort: / }).click();
+    await expectTouchable(page, "sort sheet");
+    await page.getByRole("button", { name: "Done" }).click();
     await applyYearFrom(page, "2000");
     await expectTouchable(page, "applied chip");
     await page.getByTestId("card-row").first().click();
@@ -905,6 +908,12 @@ test.describe("Bottom navigation and header", () => {
     const frame = add.locator(".nav-add");
     expect(await css(frame, "background-color")).toBe("rgb(28, 43, 74)");
     expect(await css(frame, "border-top-left-radius")).toBe("6px");
+    const frameBox = (await frame.boundingBox())!;
+    const neighbour = (await item(page, "Dashboard").locator("svg").boundingBox())!;
+    expect(frameBox.width).toBeCloseTo(48, 0);
+    expect(frameBox.height).toBeCloseTo(32, 0);
+    expect(frameBox.width).toBeGreaterThanOrEqual(neighbour.width * 2 - 0.5);
+    expect(frameBox.height).toBeGreaterThanOrEqual(neighbour.height + 8 - 0.5);
     await expect(add.locator("svg[aria-hidden=true]")).toHaveCount(1);
     await item(page, "Cards").click();
     await add.click();
@@ -912,6 +921,79 @@ test.describe("Bottom navigation and header", () => {
     await hardwareBack(page);
     await expect(page.getByTestId("shown")).toBeVisible();
     await expect(item(page, "Cards")).toHaveAttribute("aria-current", "page");
+  });
+});
+
+test.describe("System navigation bar strip", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  const inset = (page: Page) => page.evaluate(() => document.documentElement.style.setProperty("--safe-area-inset-bottom", "48px"));
+  const strip = (page: Page) =>
+    page.evaluate(() => {
+      const s = getComputedStyle(document.body, "::after");
+      return { position: s.position, height: s.height, events: s.pointerEvents, background: s.backgroundColor };
+    });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`A solid ground strip sits under the system buttons on the form: ${scheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto("/");
+      await inset(page);
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      const ground = await pageBackground(page);
+      expect(await strip(page)).toEqual({ position: "fixed", height: "48px", events: "none", background: ground });
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      expect(await bottom(page.getByRole("button", { name: "Save" }))).toBeLessThanOrEqual(800 - 48);
+    });
+  }
+
+  test("The bottom bar is painted over the strip", async ({ page }) => {
+    await page.goto("/");
+    await inset(page);
+    const hit = await page.evaluate(() => document.elementFromPoint(180, 795)?.closest("nav")?.getAttribute("aria-label"));
+    expect(hit).toBe("Main");
+  });
+});
+
+test.describe("Form actions and Sort sheet", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test("Cancel sits left of a wider Save and a typed form asks before back leaves", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Add card", exact: true }).click();
+    const cancel = (await page.getByRole("button", { name: "Cancel" }).boundingBox())!;
+    const save = (await page.getByRole("button", { name: "Save" }).boundingBox())!;
+    expect(save.x - (cancel.x + cancel.width)).toBeGreaterThanOrEqual(8);
+    expect(save.width).toBeGreaterThan(cancel.width);
+    await page.getByLabel("Player").fill("Hank Aaron");
+    await hardwareBack(page);
+    await expect(page.getByRole("alertdialog", { name: "Discard this card?" })).toBeVisible();
+    await hardwareBack(page);
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+    await expect(page.getByLabel("Player")).toHaveValue("Hank Aaron");
+  });
+
+  test("the Sort sheet is compact and aligned; the Filters sheet stays full height", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, CARDS);
+    const sort = page.getByRole("dialog", { name: "Sort" });
+    await page.getByRole("button", { name: /^Sort: / }).click();
+    const sheet = (await sort.boundingBox())!;
+    expect(sheet.height).toBeLessThan(800 * (2 / 3));
+    const rows = await sort.locator("label.check").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+    expect(rows.length).toBe(6);
+    for (const h of rows) expect(h).toBeGreaterThanOrEqual(47.5);
+    expect(Math.max(...rows) - Math.min(...rows)).toBeLessThan(1);
+    const left = async (name: string) => (await sort.getByRole("radio", { name, exact: true }).boundingBox())!;
+    const lefts = await Promise.all(["Last name", "Year", "Team", "Set", "Ascending"].map(async (n) => (await left(n)).x));
+    expect(Math.max(...lefts) - Math.min(...lefts)).toBeLessThanOrEqual(1);
+    expect((await left("Descending")).y).toBeCloseTo((await left("Ascending")).y, 0);
+    const done = (await sort.getByRole("button", { name: "Done" }).boundingBox())!;
+    expect(done.width).toBeGreaterThan(sheet.width - 80);
+    await page.getByRole("button", { name: "Done" }).click();
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    const filters = (await page.getByRole("dialog", { name: "Filters" }).boundingBox())!;
+    expect(filters.y + filters.height).toBeCloseTo(800, 0);
   });
 });
 

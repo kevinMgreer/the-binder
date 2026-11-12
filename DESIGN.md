@@ -150,8 +150,8 @@ components:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.ground}"
     rounded: "{rounded.frame}"
-    width: "40px"
-    height: "24px"
+    width: "48px"
+    height: "32px"
 ---
 
 # Design System: The Binder
@@ -179,7 +179,7 @@ The phone owns the theme. Light and dark both ship and follow `prefers-color-sch
 A cream-and-navy neutral world. Status is a single danger red.
 
 ### Primary
-- **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Save, Edit, Show cards in the sheet, Sign in with Google) and the Add frame in the bottom navigation, always with ground-coloured text (cream on navy in light, navy on cream in dark). There is no gold.
+- **Ink Fill** (ink #1c2b4a light, #f3ecdc dark): the primary button fill (Save, Edit, Show cards in the sheet, Sign in with Google) and the Add frame in the bottom navigation, always with ground-coloured text (cream on navy in light, navy on cream in dark). There is no gold. On the card form Cancel (ink-outlined) sits left of Save, which takes the rest of the row.
 
 ### Neutral
 - **Cardboard Cream** (ground #f3ecdc / night-ground #101a30): app background.
@@ -227,9 +227,9 @@ A cream-and-navy neutral world. Status is a single danger red.
 
 Single column, full-bleed phone layout with a 24px gutter (`--gutter`). Rhythm runs on the 4px scale plus named tokens: `--gap-section` 32 between sections, `--gap-field` 24 between form fields, `--gap-label` 8 from a label to its field, `--pad-cell` 16 inside stat cells, team rows and fact rows, `--pad-row` 16 between a list thumbnail and its text (list rows are padded 0 0 8px so they stay 100px), `--gap-frame` 12 between Recently added frames, `--gap-caption` 8 from frame to caption. Related controls sit 8px apart; the danger zone is separated by 32px plus a keyline.
 
-The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). Add card is the middle item of that bar, so there is no separate button or band; the list scroller and the dashboard reserve the room beneath so their last row clears the bar.
+The app draws under the system bars: `#root` and scrolling screens add the safe-area insets (Capacitor `--safe-area-*` variables, `env()` fallback). The bottom navigation is fixed to the bottom edge (64px plus the inset). Add card is the middle item of that bar, so there is no separate button or band; the list scroller and the dashboard reserve the room beneath so their last row clears the bar. Where there is no bottom navigation (form, detail, Settings) a fixed, touch-through strip of the bottom-inset height in the ground colour (`body::after`) sits under the system navigation buttons so scrolled content never shows behind them; the bottom bar paints over it.
 
-Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a single 1px rule; Sign in again, the missing-file choice and the full sync error line appear below the rule while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the rule under their title.
+Headers are one row at a minimum of 56px: the screen title ("Dashboard", "Cards") at the left, the sync state beside the Settings gear at the right, then a single 1px rule; Sign in again, the missing-file choice and the full sync error line appear below the rule while their state lasts. The app name "The Binder" appears only on the sign-in screen. Detail, form and Settings screens also carry the rule under their title. Cancel on the card form, or Android back, asks "Discard this card?" (add) or "Discard changes?" (edit) when the form holds a change or a photo; an untouched form closes at once.
 
 The dashboard is a six-tile stat table (two columns by three rows), a Top teams and a Top players stat table of up to five rows each, then a Recently added row of four trading-card frames. The list is virtualised with absolutely positioned rows. Hit targets: `--target-min` is 48px.
 
@@ -256,7 +256,7 @@ Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons,
 - **Primary:** Ink fill and border, ground-coloured text, Inter 600 at 1rem, frame radius, 48px high. One per screen footer or sheet footer; in a row it takes the remaining width.
 - **Danger:** no border, Danger text, weight 600; sits apart under a keyline in the danger zone, left-aligned.
 - **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset.
-- **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a plus in a 40x24 ink-filled frame with the frame radius, ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
+- **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a 24px plus in a 48x32 ink-filled frame with the frame radius (larger than the 24px icons beside it), ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
 
 ### Bottom navigation
 Fixed to the bottom of the two top-level screens only (never on detail, forms, Settings or under a sheet's scrim), 64px plus the bottom inset, panel background with a keyline top border. Dashboard, Add and Cards share the width with 8px gaps; each is a button of at least 48x48 with a 24px inline-SVG icon above a label. Active is ink text at weight 600 with a solid icon and `aria-current="page"`; inactive destinations are Muted Ink at weight 400 with an outline icon (same shape, stroked), so the cue is weight and shape as well as colour; there is no underline or pill. Add keeps an ink label at weight 500. Tapping the active item does nothing. Settings stays a header action.
@@ -276,7 +276,7 @@ Two ruled stat tables of the same shape: up to five rows of at least 56px (`--si
 ### Chips and badge
 Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
 
-The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a sheet with two radio groups, Order (Last name, Year, Team, Set) and Direction (Ascending, Descending).
+The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a bottom sheet as tall as its content (the Filters sheet stays full height) with two radio groups, Order (Last name, Year, Team, Set; one column of 48dp rows on one left edge) and Direction (Ascending and Descending side by side), and a primary Done footer. A choice applies at once; Done and Close only close the sheet.
 
 ### Tag
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.
@@ -320,5 +320,5 @@ The dashboard is the start destination: Android's back closes the app from there
 
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
-- Fixed sizes are tokens: `--size-tile-min` 72px (stat cell button), `--size-team-min` 56px (Top teams row), `--size-nav-add-w` 40px and `--size-nav-add-h` 24px (the Add frame), `--size-nav-icon` 20px (its plus).
+- Fixed sizes are tokens: `--size-tile-min` 72px (stat cell button), `--size-team-min` 56px (Top teams row), `--size-nav-add-w` 48px and `--size-nav-add-h` 32px (the Add frame), `--size-nav-icon` 24px (its plus).
 - Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 140px photo thumb, 96px photo slot and textarea, 67px list slot, 60vh zoom, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.

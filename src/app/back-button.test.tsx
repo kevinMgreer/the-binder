@@ -117,6 +117,22 @@ test("back from the add form opened on the dashboard shows the dashboard", async
   expect(native.exitApp).not.toHaveBeenCalled();
 });
 
+test("back on an add form with a typed Player asks, again keeps editing, Discard leaves", async () => {
+  await renderSignedIn();
+  await openList();
+  openAddForm();
+  fireEvent.change(screen.getByLabelText("Player"), { target: { value: "Hank Aaron" } });
+  await pressBack();
+  expect(screen.getByRole("alertdialog", { name: "Discard this card?" })).toBeTruthy();
+  await pressBack();
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect((screen.getByLabelText("Player") as HTMLInputElement).value).toBe("Hank Aaron");
+  await pressBack();
+  fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+  await onList();
+  expect(screen.queryByRole("button", { name: "Hank Aaron" })).toBeNull();
+});
+
 test("back from the add form opened on the list shows the list", async () => {
   await renderSignedIn();
   await openList();

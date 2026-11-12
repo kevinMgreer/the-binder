@@ -134,6 +134,7 @@ test("Serial above print run: card is not saved and the serial field shows an er
   await tryAddCard(page, { ...base, parallel: "Gold", serial: "100", printRun: "99" });
   await expect(page.getByLabel("Serial", { exact: true })).toHaveAttribute("aria-invalid", "true");
   await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: "Discard" }).click();
   await expect(rows(page)).toHaveCount(0);
 });
 
