@@ -49,7 +49,54 @@ test("Sort name follows Player, is optional and carries its hint", () => {
   expect(fields.indexOf("f-sort-name")).toBe(fields.indexOf("f-player") + 1);
   const input = screen.getByLabelText("Sort name");
   expect(input.getAttribute("aria-required")).toBeNull();
-  expect(screen.getByText("Optional: how this card sorts, e.g. Acuña")).toBeTruthy();
+  expect(screen.getByText("Follows the player's last name. Change it to sort differently, e.g. De La Cruz")).toBeTruthy();
+});
+
+const sortName = () => (screen.getByLabelText("Sort name") as HTMLInputElement).value;
+
+test("Sort name follows Player and Team until the user edits it, and again once cleared", () => {
+  renderForm();
+  type("Player", "Ronald Acuña Jr.");
+  expect(sortName()).toBe("Acuña");
+  type("Team", "Atlanta Braves");
+  type("Player", "Atlanta Braves Team Card");
+  expect(sortName()).toBe("Atlanta Braves Team Card");
+  type("Sort name", "De La Cruz");
+  type("Player", "Elly De La Cruz Jr.");
+  expect(sortName()).toBe("De La Cruz");
+  type("Sort name", "");
+  type("Player", "Mookie Betts");
+  expect(sortName()).toBe("Betts");
+});
+
+test("a stored Sort name is never replaced when Player changes", () => {
+  renderForm(makeCard({ player: "Elly De La Cruz", sortName: "De La Cruz" }));
+  type("Player", "Elly De la Cruz");
+  expect(sortName()).toBe("De La Cruz");
+});
+
+test("a card with no stored Sort name opens showing the derived one and is not dirty", () => {
+  renderForm(makeCard({ player: "Fernando Tatis Jr.", sortName: undefined }));
+  expect(sortName()).toBe("Tatis");
+  fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+  expect(screen.queryByText("Discard changes?")).toBeNull();
+});
+
+test("a derived Sort name is saved as none, an overridden one as typed", async () => {
+  const onSave = renderForm();
+  fillMinimum();
+  type("Player", "Mookie Betts");
+  save();
+  await vi.waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].sortName).toBe("");
+  cleanup();
+  const again = renderForm();
+  fillMinimum();
+  type("Player", "Elly De La Cruz");
+  type("Sort name", "De La Cruz");
+  save();
+  await vi.waitFor(() => expect(again).toHaveBeenCalledTimes(1));
+  expect(again.mock.calls[0][0].sortName).toBe("De La Cruz");
 });
 
 test("saving with a Sort name stores it, trimmed; editing shows it and keeps it", async () => {
