@@ -14,6 +14,7 @@ interface AnthropicCall {
 }
 
 let anthropicCalls: AnthropicCall[];
+let googleKeyFetches: number;
 let anthropicReply: () => Response;
 let keyPair: CryptoKeyPair;
 let otherKeyPair: CryptoKeyPair;
@@ -37,9 +38,9 @@ const generate = () =>
 
 async function makeToken(
   claims: Record<string, unknown> = {},
-  options: { key?: CryptoKey; alg?: string } = {},
+  options: { key?: CryptoKey; alg?: string; kid?: string } = {},
 ) {
-  const header = b64url(JSON.stringify({ alg: options.alg ?? "RS256", kid: "test-key", typ: "JWT" }));
+  const header = b64url(JSON.stringify({ alg: options.alg ?? "RS256", kid: options.kid ?? "test-key", typ: "JWT" }));
   const payload = b64url(
     JSON.stringify({
       iss: "https://accounts.google.com",
@@ -74,7 +75,10 @@ async function startWorker(vars: Record<string, string> = {}) {
     },
     outboundService: async (request: Request) => {
       const url = new URL(request.url);
-      if (url.host === "www.googleapis.com") return Response.json({ keys: [publicJwk] });
+      if (url.host === "www.googleapis.com") {
+        googleKeyFetches++;
+        return Response.json({ keys: [publicJwk] });
+      }
       if (url.host === "api.anthropic.com") {
         anthropicCalls.push({ headers: Object.fromEntries(request.headers), body: await request.json() });
         return anthropicReply();
@@ -142,6 +146,7 @@ afterAll(async () => {
 
 beforeEach(() => {
   anthropicCalls = [];
+  googleKeyFetches = 0;
   anthropicReply = () =>
     claudeSuggestion({
       player: "Ronald Acuña Jr.",
@@ -202,6 +207,16 @@ describe("proxy serves only the owner", () => {
     const response = await identify(identifyRequest({ token: `${header}.${payload}.` }));
     expect(response.status).toBe(401);
     expect(anthropicCalls).toHaveLength(0);
+  });
+});
+
+describe("Google key lookups", () => {
+  test("forged tokens with unknown key ids cannot force repeated key fetches", async () => {
+    const fresh = await startWorker();
+    const send = async (token: string) => fresh.dispatchFetch("http://worker.test/identify", identifyRequest({ token }) as any);
+    for (let i = 0; i < 5; i++) expect((await send(await makeToken({}, { kid: `forged-${i}` }))).status).toBe(401);
+    expect(googleKeyFetches).toBe(1);
+    expect((await send(await makeToken())).status).toBe(200);
   });
 });
 
@@ -278,6 +293,17 @@ describe("spend limits", () => {
     expect(third.status).toBe(429);
     expect(await third.json()).toEqual({ error: "daily_limit" });
     expect(anthropicCalls).toHaveLength(2);
+  });
+
+  test("a failed Claude call does not use up the daily cap", async () => {
+    const capped = await startWorker({ DAILY_LIMIT: "1" });
+    const send = async () => capped.dispatchFetch("http://worker.test/identify", identifyRequest({ token: await makeToken() }) as any);
+    const good = anthropicReply;
+    anthropicReply = () => new Response("down", { status: 500 });
+    expect((await send()).status).toBe(502);
+    anthropicReply = good;
+    expect((await send()).status).toBe(200);
+    expect((await send()).status).toBe(429);
   });
 
   test("oversized and unauthorized requests do not use up the daily cap", async () => {

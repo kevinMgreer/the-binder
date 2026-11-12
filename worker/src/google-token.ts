@@ -4,10 +4,19 @@ const KEYS_TTL_MS = 60 * 60 * 1000;
 
 type Jwk = JsonWebKey & { kid?: string };
 
+// At most one fetch a minute, win or lose: an unknown kid (forged or a real key rotation) is answered from the cache in between.
+const MIN_FETCH_GAP_MS = 60 * 1000;
+
 let cache: { keys: Jwk[]; fetchedAt: number } | undefined;
+let attemptedAt = -Infinity;
 
 async function googleKeys(now: number, refresh: boolean): Promise<Jwk[]> {
   if (!refresh && cache && now - cache.fetchedAt < KEYS_TTL_MS) return cache.keys;
+  if (now - attemptedAt < MIN_FETCH_GAP_MS) {
+    if (cache) return cache.keys;
+    throw new Error("Google keys unavailable");
+  }
+  attemptedAt = now;
   const response = await fetch(KEYS_URL);
   if (!response.ok) throw new Error("Google keys unavailable");
   const { keys } = (await response.json()) as { keys: Jwk[] };
