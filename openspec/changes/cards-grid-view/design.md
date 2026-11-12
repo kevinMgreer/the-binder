@@ -38,7 +38,7 @@ See proposal.md for why. Read on branch `agent/photo-detail-polish` (PR #39, not
 - **Switching views starts at the top.** The first visible card of one view is not a natural anchor in the other, and the toggle keeps its own focus.
   Alternatives: keep the first visible card in view across the switch (more code for a rare action). $0: none.
 
-- **Sort sheet: Close only, no Done footer.** The sheet had two close controls (the head's Close and a primary Done). `CollectionScreen` stops passing `foot` to the Sort `Sheet`; the head's Close stays (it takes the autofocus), back and the scrim still close it, and the choice applies at once as before. The Filters sheet keeps its footer (Show cards applies and closes, Clear all clears). Modifies `collection-list` "The user chooses the list order" and the Sort sheet line of `app-theme` "Every screen wears the card-back look".
+- **Sort sheet: Close only, no Done footer.** The sheet had two close controls (the head's Close and a primary Done). `CollectionScreen` stops passing `foot` to the Sort `Sheet`; the head's Close stays (it takes the autofocus), back and the scrim still close it, and the choice applies at once as before. The Filters sheet keeps its footer (Show cards applies and closes, Clear all clears). Modifies `collection-list` "The user chooses the list order" (the scenario "Done closes the sheet and keeps the choice" keeps its name on purpose: `openspec archive` refuses a modified block that drops a scenario name from main) and the Sort sheet line of `app-theme` "Every screen wears the card-back look".
   Alternatives: keep Done and drop the head Close (the Filters sheet and the photo sheet use the head Close, so Sort would differ). $0: removes a button.
 
 ## Risks / Trade-offs

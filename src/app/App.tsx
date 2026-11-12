@@ -54,6 +54,11 @@ export function App() {
     };
   }, [view]);
 
+  // The screen reads returnTo in its mount effect, which runs before this one; clearing it stops a later remount replaying the return.
+  useEffect(() => {
+    if (view.name === "list" && view.returnTo) setView({ name: "list" });
+  }, [view]);
+
   if (view.name === "settings") {
     return (
       <SettingsScreen

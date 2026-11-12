@@ -4,7 +4,7 @@ import type { Card } from "../domain/card";
 import { useReturnTo } from "./CardList";
 import { Thumb } from "./Thumb";
 
-// A first-row guess at 360 dp (3 columns); the measured tile height replaces it after the first row.
+// A tile-height guess at 360 dp (3 columns); drawn tiles are measured, tiles not yet drawn keep this estimate.
 const ESTIMATE = 190;
 const WIDE = "(min-width: 480px)";
 
@@ -35,8 +35,6 @@ export function CardGrid({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (
   });
 
   useReturnTo(virtualizer, cards, returnTo, scroller);
-
-  useEffect(() => virtualizer.measure(), [lanes, virtualizer]);
 
   useEffect(() => {
     if (performance.getEntriesByName("collection-first-render").length === 0) performance.mark("collection-first-render");

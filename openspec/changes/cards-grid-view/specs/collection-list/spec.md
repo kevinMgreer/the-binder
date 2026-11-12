@@ -92,7 +92,7 @@ The system SHALL let the user order the collection list by Last name, Year, Team
 - **THEN** the collection screen shows Last name ascending and the Sort button reads "Sort: Last name ↑"
 
 #### Scenario: Done closes the sheet and keeps the choice
-- **WHEN** the user opens Sort, picks Team, and taps Close (the scenario keeps its old name because `openspec validate` matches scenarios by name; rename it to "Close closes the sheet and keeps the choice" when the change is archived)
+- **WHEN** the user opens Sort, picks Team, and taps Close
 - **THEN** the Sort sheet is closed, the list is in Team order and the Sort button reads "Sort: Team ↑"
 
 #### Scenario: Close is the only close control
