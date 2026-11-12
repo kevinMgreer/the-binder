@@ -66,6 +66,21 @@ test("choosing Remove reports null and closes the chooser", () => {
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
+test("focus returns to the tile after Close, Remove and a finished action", async () => {
+  acquire.mockResolvedValue(null);
+  renderSlot({ card: makeCard({ photos: { front: stored, back: null } }) });
+  const focused = () => expect(document.activeElement).toBe(tile("Change front photo"));
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+  focused();
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(choice("Remove front photo"));
+  focused();
+  fireEvent.click(tile("Change front photo"));
+  fireEvent.click(choice("Retake front"));
+  await vi.waitFor(focused);
+});
+
 test("choosing an action closes the chooser", async () => {
   acquire.mockResolvedValue(null);
   renderSlot();

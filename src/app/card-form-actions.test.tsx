@@ -140,6 +140,27 @@ test("saving after Remove hands null for that side to onSave", async () => {
   expect((onSave.mock.calls[0] as unknown[])[1]).toEqual({ front: null });
 });
 
+test("Identify with Claude sends no front photo after the stored front was removed", async () => {
+  const stored = makeCard({ photos: { front: { fileId: "f", thumbId: "t", name: "front.jpg" }, back: null } });
+  const ports = createFakePorts();
+  const recognize = vi.spyOn(ports.claude, "recognize");
+  const back: CapturedPhoto = { full: new Blob(["b"]), thumb: new Blob(["bt"]) };
+  acquire.mockResolvedValue(back);
+  render(
+    <PortsProvider ports={ports}>
+      <CardForm card={stored} cards={[]} onSave={async () => {}} onCancel={() => {}} />
+    </PortsProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Change front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove front photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Add back photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Scan back" }));
+  await screen.findByRole("button", { name: "Change back photo" });
+  fireEvent.click(screen.getByRole("button", { name: "Identify with Claude" }));
+  await vi.waitFor(() => expect(recognize).toHaveBeenCalledTimes(1));
+  expect(recognize).toHaveBeenCalledWith({ front: undefined, back: back.full });
+});
+
 test("Keep editing returns focus to Cancel, by tap and by back", () => {
   renderForm();
   type("Player", "Hank Aaron");
