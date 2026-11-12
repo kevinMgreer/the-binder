@@ -1,5 +1,10 @@
 Archives after `photo-detail-polish` (see design.md). Each group is one implementer run. Write each test first, see it fail, then write the code.
 
+## 0. Sort sheet keeps one close control
+
+- [x] 0.1 Update `src/app/list-sort.test.tsx` and `e2e/design.spec.ts` for the MODIFIED "The user chooses the list order" (Close is the only close control, no Done, no footer). Verify: `npx vitest run src/app/list-sort.test.tsx` fails before the code change.
+- [x] 0.2 In `src/app/CollectionScreen.tsx` drop the `foot` (Done) from the Sort `Sheet`; update `DESIGN.md` (Sort sheet paragraph) and the Sort line of `docs/device-checklist.md`. Verify: `npx vitest run src/app/list-sort.test.tsx` and `npx playwright test e2e/design.spec.ts` pass.
+
 ## 1. Toggle and Grid view
 
 - [ ] 1.1 Write the failing e2e tests (new `e2e/grid.spec.ts`, using the helpers in `e2e/helpers.ts`) for `collection-list` "Toggle shares the Showing line", "Toggle targets", "Default is List", "Switch to Grid", "Filters, search and sort apply in Grid view", "Empty and no-match in Grid view", "Kept while the app runs", "Three columns on a phone", "Four columns on a wider screen", "Tile content", "Landscape photo not cropped", "No front photo", "Long player name", "Tap opens the card", "List semantics", "Both themes", "Last tile reachable", and "Only nearby tiles exist" (`/?seed=5000`, count `card-tile` test ids); extend the first-screen test in `e2e/design.spec.ts` for the toggle and add "First screen in Grid view"; extend the `app-theme` frame-ratio checks for the grid. Run "Toggle shares the Showing line" first: if it cannot pass with `p.shown` wrapping and 8 dp gaps, stop and report (design.md, Risks). Verify: `npx playwright test e2e/grid.spec.ts e2e/design.spec.ts` fails only on the new tests.

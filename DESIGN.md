@@ -276,7 +276,7 @@ Two ruled stat tables of the same shape: up to five rows of at least 56px (`--si
 ### Chips and badge
 Removable filter chip: ink fill, ground-coloured text, weight 500, pill radius, 48px min height, a trailing close mark; one per active filter, wrapping with 8px gaps; tapping removes the filter. The filter count badge is ink-filled, pill, label size 600.
 
-The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a bottom sheet as tall as its content (the Filters sheet stays full height) with two radio groups, Order (Last name, Year, Team, Set; one column of 48dp rows on one left edge) and Direction (Ascending and Descending side by side), and a primary Done footer. A choice applies at once; Done and Close only close the sheet.
+The Sort button sits at the right end of the "Showing N" line, reads "Sort: Last name ↑" and opens a bottom sheet as tall as its content (the Filters sheet stays full height) with two radio groups, Order (Last name, Year, Team, Set; one column of 48dp rows on one left edge) and Direction (Ascending and Descending side by side), and no footer. A choice applies at once; the head's Close is the one close control (back and the scrim close it too).
 
 ### Tag
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.

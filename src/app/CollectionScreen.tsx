@@ -167,7 +167,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
       )}
       <BottomNav active="list" onNavigate={onNavigate} onAdd={onAdd} />
       {sortOpen && (
-        <Sheet label="Sort" onClose={closeSort} compact foot={<button className="primary" onClick={closeSort}>Done</button>}>
+        <Sheet label="Sort" onClose={closeSort} compact>
           <div className="group">
             <h3>Order</h3>
             {(Object.keys(SORT_LABELS) as SortBy[]).map((by) =>

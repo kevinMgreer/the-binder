@@ -37,6 +37,9 @@ See proposal.md for why. Read on branch `agent/photo-detail-polish` (PR #39, not
 - **Switching views starts at the top.** The first visible card of one view is not a natural anchor in the other, and the toggle keeps its own focus.
   Alternatives: keep the first visible card in view across the switch (more code for a rare action). $0: none.
 
+- **Sort sheet: Close only, no Done footer.** The sheet had two close controls (the head's Close and a primary Done). `CollectionScreen` stops passing `foot` to the Sort `Sheet`; the head's Close stays (it takes the autofocus), back and the scrim still close it, and the choice applies at once as before. The Filters sheet keeps its footer (Show cards applies and closes, Clear all clears). Modifies `collection-list` "The user chooses the list order" and the Sort sheet line of `app-theme` "Every screen wears the card-back look".
+  Alternatives: keep Done and drop the head Close (the Filters sheet and the photo sheet use the head Close, so Sort would differ). $0: removes a button.
+
 ## Risks / Trade-offs
 
 - [The "Showing N" row may not fit "Showing 5000", the 96 dp toggle and "Sort: Last name ↑" at 360 dp (312 dp of content).] → The e2e scenario "Toggle shares the Showing line" checks it first (task 1.1). If it fails with `p.shown` allowed to wrap and 8 dp gaps, the implementer stops and reports: the owner chooses between a single flip button and moving the toggle to the search row.
