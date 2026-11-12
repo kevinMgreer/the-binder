@@ -16,6 +16,21 @@ jobs:
       VITE_IDENTIFY_URL: ${{ vars.IDENTIFY_URL }}
       VITE_GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
     steps:
+      - name: Require release variables
+        env:
+          IDENTIFY_URL: ${{ vars.IDENTIFY_URL }}
+          GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
+          RELEASE_CERT_SHA256: ${{ vars.RELEASE_CERT_SHA256 }}
+        run: |
+          missing=""
+          [ -n "$IDENTIFY_URL" ] || missing="$missing IDENTIFY_URL"
+          [ -n "$GOOGLE_WEB_CLIENT_ID" ] || missing="$missing GOOGLE_WEB_CLIENT_ID"
+          [ -n "$RELEASE_CERT_SHA256" ] || missing="$missing RELEASE_CERT_SHA256"
+          if [ -n "$missing" ]; then
+            echo "::error::Repository variables not set:$missing. Set them under Settings > Secrets and variables > Actions > Variables (see docs/setup.md)."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -47,7 +62,10 @@ jobs:
           npx cap sync android
 
       - name: Install Android SDK packages
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
+        # Without pipefail the pipe's status is sdkmanager's, so `yes` dying of SIGPIPE (141) cannot fail the step.
+        run: |
+          set +o pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Decode signing keystore
         env:
@@ -67,14 +85,16 @@ jobs:
 
       - name: Verify the signature
         env:
-          # Optional: the release key's SHA-256 certificate digest (public). When set, a mismatch fails the build.
+          # The release key's SHA-256 certificate digest (public); a mismatch fails the build.
           EXPECTED_CERT_SHA256: ${{ vars.RELEASE_CERT_SHA256 }}
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           OUT=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK")
           echo "$OUT"
           if echo "$OUT" | grep -qi "Android Debug"; then echo "Signed with a debug key"; exit 1; fi
-          if [ -n "$EXPECTED_CERT_SHA256" ] && ! echo "$OUT" | grep -qi "$EXPECTED_CERT_SHA256"; then
+          # keytool's AB:CD:.. form (as stored) vs apksigner's plain hex
+          want=$(printf '%s' "$EXPECTED_CERT_SHA256" | tr -d ': ')
+          if ! echo "$OUT" | grep -qi "SHA-256 digest: $want"; then
             echo "Signing certificate does not match RELEASE_CERT_SHA256"; exit 1
           fi
           mkdir -p out

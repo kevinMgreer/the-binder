@@ -50,7 +50,7 @@ Android only installs an update if it is signed with the same key as the install
    gh secret set ANDROID_KEY_PASSWORD -R kevinMgreer/the-binder
    gh variable set RELEASE_CERT_SHA256 -R kevinMgreer/the-binder --body "<the SHA-256 from step 3>"
    ```
-   The alias is `thebinder`. `RELEASE_CERT_SHA256` is optional but recommended: a release build then fails if it is signed with any other key.
+   The alias is `thebinder`. `RELEASE_CERT_SHA256`, `GOOGLE_WEB_CLIENT_ID` (step 2) and `IDENTIFY_URL` (step 3) are all required GitHub variables: the release build stops at its first step if any is empty, and fails if the APK is signed with any key other than `RELEASE_CERT_SHA256`.
 
 Check: `gh secret list -R kevinMgreer/the-binder` shows the four secrets.
 
