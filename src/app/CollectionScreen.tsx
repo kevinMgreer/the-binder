@@ -156,13 +156,9 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         <p className="shown" data-testid="shown">
           Showing {shown.length}
         </p>
-        <div role="group" aria-label="View" className="view-toggle">
-          {(["list", "grid"] as const).map((v) => (
-            <button key={v} className="icon-button" aria-label={`${v === "list" ? "List" : "Grid"} view`} aria-pressed={view === v} onClick={() => onViewChange(v)}>
-              <Icon name={v} />
-            </button>
-          ))}
-        </div>
+        <button className="icon-button" aria-label={`${view === "grid" ? "List" : "Grid"} view`} onClick={() => onViewChange(view === "grid" ? "list" : "grid")}>
+          <Icon name={view === "grid" ? "list" : "grid"} />
+        </button>
         <button aria-label={`Sort: ${sortLabel}, ${sort.descending ? "descending" : "ascending"}`} onClick={() => setSortOpen(true)}>
           Sort: {sortLabel} {sort.descending ? "↓" : "↑"}
         </button>
