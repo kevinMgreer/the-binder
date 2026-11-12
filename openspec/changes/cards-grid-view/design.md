@@ -1,0 +1,54 @@
+## Context
+
+See proposal.md for why. Read on branch `agent/photo-detail-polish` (PR #39, not merged yet), which this branch is based on:
+
+- `src/app/CollectionScreen.tsx` renders the header, the search row, the chips, `.shown-row` (`p.shown` "Showing N" at label size, then the Sort button), then `CardList` or the `empty-state` / `no-match` paragraph. Filters and Sort live in `App.tsx` state (`useState`), so they survive opening a card; Sort is not stored.
+- `src/app/CardList.tsx` virtualizes with `useVirtualizer` from `@tanstack/react-virtual` (installed 3.19, which supports `lanes`): fixed `ROW_HEIGHT = 112`, `overscan: 8`, absolutely positioned `li` (`translateY`) inside `ul.list` inside `div.list-scroller`. It sets the performance mark `collection-first-render` that `e2e/perf.spec.ts` reads for "the list shows its first rows within 1 s of tapping the Cards tab" (5,000 cards, 4x CPU throttling).
+- `src/app/Thumb.tsx` puts `Frame` (orientation learned per photo and cached by key) in a `.thumb-slot`; `useThumbUrl` reads the stored thumbnail through `photos.getThumb` (local IndexedDB, never the network). Thumbnails are 320 px on the long edge.
+- Dashboard "Recently added" already shows framed thumbnails in a 4-column CSS grid (`.recent`, `.recent .thumb-slot { width: 100%; aspect-ratio: var(--frame-ratio) }`, `.recent-name` clamped to two lines, `--gap-frame` 12, `--gap-caption` 8).
+- Scroll and focus on back: `App.tsx` unmounts `CollectionScreen` while a card is open, so back from a card shows the list at its top and nothing is focused. There is no `localStorage` use in the app yet.
+- Layout: `.collection` has the 24 dp gutter as padding; at 360 dp the content is 312 dp wide.
+
+**Archive order.** `photo-detail-polish` is still active and modifies `collection-list` "Each card is a ruled row" and "The card detail screen is a tidy fact sheet", and `app-theme` "Destructive actions stay apart", "Destructive actions are distinct" and "Generous spacing from tokens". This change does not touch those requirements. It modifies `collection-list` "The list leads with finding a card" and "The first screen holds with the bottom navigation", and `app-theme` "Photos sit in trading-card frames", which `photo-detail-polish` leaves as they are in the main specs; the List view refers to the ruled-row requirement as `photo-detail-polish` leaves it (112 dp rows, 96 dp thumbnails). **This change archives after `photo-detail-polish`.**
+
+## Goals / Non-Goals
+
+**Goals:** see proposal.md, What Changes, and the specs.
+
+**Non-Goals:** the proposal's Out of scope list; no change to `CardList` row markup or CSS; no new port, adapter or dependency; no change to how thumbnails are made or fetched.
+
+## Decisions
+
+- **Toggle: two icon buttons in the "Showing N" row, left of Sort.** `CollectionScreen` renders `<div role="group" aria-label="View" className="view-toggle">` with two `button.icon-button`s (`aria-label` "List view" / "Grid view", `aria-pressed`), each 48 by 48, joined as one segmented control (shared 1 px ink border, frame radius on the outer corners); the pressed one is ink-filled with a ground-coloured icon. Icons are two new inline paths, `list` and `grid`, in `src/app/Icon.tsx`. `p.shown` gets `flex: 1; min-width: 0` so it is the part that gives way (it may wrap "Showing" and the number onto two label-size lines inside the 48 dp row) and Sort stays at the right end.
+  Alternatives: one icon button that flips between the views (narrower, but its name must change with the state or rely on `aria-pressed` alone, and the owner asked for a choice of two); the toggle in the search row (makes the search field narrower); a "View" entry in the Sort sheet (hidden behind a tap). $0: markup and CSS.
+
+- **Grid: a new `CardGrid` with `useVirtualizer({ lanes })`.** `src/app/CardGrid.tsx` mirrors `CardList`: same scroller class (so the bottom-bar margin and first-screen rules hold), `ul.list.grid` with `role="list"` kept explicit, one absolutely positioned `li` per card. `lanes` is 3, or 4 when `matchMedia("(min-width: 480px)")` matches (re-read on change); each `li` gets `left`/`width` from CSS using `--cols` and its `lane` (`width: calc((100% - (var(--cols) - 1) * var(--gap-frame)) / var(--cols))`, `left: calc(var(--lane) * (that width + var(--gap-frame)))`) and `translateY(start)`. Row height is measured, not hard-coded: the caption has a fixed two-line height in CSS, every tile is the same height, and `ref={virtualizer.measureElement}` with `data-index` lets the virtualizer learn it; `estimateSize` returns a 3-column guess at 360 dp (about 190 dp). `overscan` stays 8, so a few rows above and below exist. `CardGrid` sets the same `collection-first-render` mark on mount, so the perf test measures either view.
+  Alternatives: virtualize rows of 3 or 4 cards, each a CSS grid (a row wrapper between `ul` and `li` breaks list semantics, or needs `role="presentation"` tricks); a plain CSS grid of all cards (5,000 tiles and image reads at once, fails the perf spec); a fixed tile height in JS (duplicates the tokens and breaks with the text size). $0: existing dependency.
+
+- **Tile: reuse `Thumb` and the Recently added look.** Each tile is `button.grid-card` holding `<Thumb card={c} />` (the slot made full-width with the frame ratio, like `.recent .thumb-slot`, so a landscape photo turns its frame inside the same portrait-shaped slot and every tile is the same height) and a caption: `span.grid-name` (player, one line, ellipsis, label size, weight 500) and `span.grid-year` (year, muted, label size) with the existing `.badge` "×N" when `quantity > 1`. The button's `aria-label` is built from the card: player, "year set", "number N" when there is a number, "N copies" when above one; it contains the visible text, so label-in-name holds. Tap calls the same `onOpen`. No serial stamp on the tile. Tokens only (`--gap-frame`, `--gap-caption`, `--type-label`, `--color-ink-muted`); no new token, so light and dark come from the existing values.
+  Alternatives: the player name printed inside the placeholder frame when there is no photo (repeats the caption right under it); "year set" on the second caption line (the set rarely fits in about 96 dp and pushes the badge out; it is in the accessible name and on the detail screen); a serial stamp over the frame corner (covers the photo; out of scope). $0: none.
+
+- **View state in `App`, kept in `localStorage`.** `App` holds `cardsView: "list" | "grid"` next to `sort`, so it survives opening a card, Settings and the dashboard. `src/app/cards-view.ts` exports `loadCardsView()` (reads key `binder.cardsView`; anything but `"grid"` is `"list"`) and `saveCardsView(view)`, both inside `try/catch` that fall back silently (a WebView with storage disabled or full must not break the screen). The value holds no personal data. Sort stays unstored, as its requirement says.
+  Alternatives: reset to List on a fresh start like Sort (the owner would re-pick Grid every launch); Capacitor Preferences (a new plugin dependency for one flag); keep it in the Drive data (syncs a per-device convenience and needs a schema field). $0: device storage only.
+
+- **Back returns to the opened card, in both views.** `View`'s screen variant gains `returnTo?: string`; `goBack` from a detail opened from the list sets `{ name: "list", returnTo: view.id }` (`onDelete`, the bottom navigation and the toggle set no `returnTo`). `CollectionScreen` passes it to `CardList` / `CardGrid`, which on mount find the card's index in the shown cards, call `virtualizer.scrollToIndex(index, { align: "auto" })`, and focus its button once it is rendered (one small shared hook in `CardList.tsx`, used by both). A card no longer shown leaves the view at the top. List rows keep their markup; only their scroll and focus on back change, which today return to the top.
+  Alternatives: keep today's return to the top (losing your place in a grid of thumbnails is worse than in a list); keep the scroller mounted and hidden while the detail is open (holds 5,000-card state and image reads alive behind the detail screen); remember the pixel offset (wrong after the cards change or the column count changes). $0: none.
+
+- **Switching views starts at the top.** The first visible card of one view is not a natural anchor in the other, and the toggle keeps its own focus.
+  Alternatives: keep the first visible card in view across the switch (more code for a rare action). $0: none.
+
+## Risks / Trade-offs
+
+- [The "Showing N" row may not fit "Showing 5000", the 96 dp toggle and "Sort: Last name ↑" at 360 dp (312 dp of content).] → The e2e scenario "Toggle shares the Showing line" checks it first (task 1.1). If it fails with `p.shown` allowed to wrap and 8 dp gaps, the implementer stops and reports: the owner chooses between a single flip button and moving the toggle to the search row.
+- [Measured row heights could shift tiles while thumbnails load.] → The slot has a fixed aspect ratio and the caption a fixed height, so a tile's height does not depend on the image; the measured size equals the estimate after the first row.
+- [`lanes` positions items by lane; a column count change needs a new layout.] → `CardGrid` re-renders with the new `lanes` and calls `virtualizer.measure()` when the media query changes.
+- [About 30 tiles decode a 320 px thumbnail each on the first screen, against 5 rows in the list.] → The thumbnails are small local blobs; the perf scenario "First tiles within 1 s" and the "fewer than 100 tiles" check guard it, and the phone check covers smooth scrolling.
+- [Focus moved on return could surprise a sighted user.] → It is a focus without a visible ring unless the device uses keyboard focus (`:focus-visible`); TalkBack announces the card the user came from.
+
+## Migration Plan
+
+None. A device without a stored view opens in List, as today. Rollback is a revert; the stored key is then ignored.
+
+## Open Questions
+
+- Should the second caption line read "year set" (cut with an ellipsis) instead of the year alone? Deferrable: a CSS and text change inside the tile, no spec structure change beyond the Tile content scenario.
