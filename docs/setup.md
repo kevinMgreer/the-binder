@@ -39,9 +39,11 @@ No billing account is needed or wanted; do not add one.
 
 ## 3. Cloudflare Worker (Claude proxy)
 
-Free plan only. Run these from the `worker/` folder.
+Free plan only. Run `npm install` once at the repo root (wrangler is a dev dependency there), then run these from the `worker/` folder.
 
-1. Create a free account at https://dash.cloudflare.com, then `npx wrangler login`.
+If `npx wrangler` answers "'wrangler' is not recognized", the launcher files are missing from `node_modules/.bin`. Run `npm install` again, or call wrangler through node: from `worker/` use `node ..\node_modules\wrangler\bin\wrangler.js` in place of `npx wrangler` in every command below.
+
+1. Create a free account at https://dash.cloudflare.com, then `npx wrangler login`. If the browser step fails (a VPN or firewall blocks the localhost callback on port 8976), create an API token instead: Cloudflare dashboard, My Profile, API Tokens, Create Token, the "Edit Cloudflare Workers" template. Set it for the terminal session with `$env:CLOUDFLARE_API_TOKEN = "<token>"` (PowerShell) and check it with `npx wrangler whoami`. Never put the token in a file or the repo.
 2. `npx wrangler kv namespace create COUNTER` and paste the printed `id` into `wrangler.toml` (this id is not secret).
 3. Set the three secrets (each command asks you to type the value, so it never lands in shell history or files):
    ```
