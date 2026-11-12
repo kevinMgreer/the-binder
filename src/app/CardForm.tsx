@@ -384,17 +384,14 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
           </p>
         )}
         {confirming ? (
-          <>
-            <div role="alert">{question}</div>
-            <div className="actions detail-actions">
-              <button type="button" className="danger outline" onClick={discard}>
-                Discard
-              </button>
-              <button type="button" className="primary" autoFocus onClick={keepEditing}>
-                Keep editing
-              </button>
-            </div>
-          </>
+          <div key="ask" className="actions detail-actions" role="group" aria-label={question}>
+            <button type="button" className="danger outline" onClick={discard}>
+              Discard
+            </button>
+            <button type="button" className="primary" autoFocus onClick={keepEditing}>
+              Keep editing
+            </button>
+          </div>
         ) : (
           <div className="actions">
             <button type="button" ref={cancelButton} onClick={() => (dirty ? setConfirming(true) : onCancel())}>

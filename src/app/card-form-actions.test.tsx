@@ -36,7 +36,8 @@ const discard = () => {
 };
 const asking = (text: string) => {
   const bar = document.querySelector(".form-bar") as HTMLElement;
-  expect(within(bar).getByRole("alert").textContent).toBe(text);
+  expect(within(bar).getByRole("group", { name: text })).toBeTruthy();
+  expect(within(bar).queryByText(text)).toBeNull();
   return bar;
 };
 

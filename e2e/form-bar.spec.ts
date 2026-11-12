@@ -88,7 +88,8 @@ test.describe("Form prompts", () => {
     expect(after.x).toBeCloseTo(before.x, 0);
     expect(after.width).toBeCloseTo(before.width, 0);
     expect(after.y + after.height).toBeCloseTo(before.y + before.height, 0);
-    await expect(bar.getByRole("alert")).toHaveText("Discard this card?");
+    await expect(bar.getByRole("group", { name: "Discard this card?" })).toBeVisible();
+    expect((await bar.innerText()).split("\n").map((s) => s.trim()).filter(Boolean)).toEqual(["Discard", "Keep editing"]);
     await expect(page.locator(".backdrop")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
@@ -112,8 +113,6 @@ test.describe("Form prompts", () => {
       expect(await style("Discard", "background-color")).toBe("rgba(0, 0, 0, 0)");
       expect(await style("Keep editing", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
       expect(await style("Keep editing", "color")).not.toBe(danger);
-      const ink = await color(page, "--color-ink");
-      expect(await bar.getByRole("alert").evaluate((el) => getComputedStyle(el).color)).toBe(ink);
     });
 
     test(`Duplicate prompt centred over the bar: ${scheme}`, async ({ page }) => {

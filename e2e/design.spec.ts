@@ -1133,10 +1133,10 @@ test.describe("Form actions", () => {
     await page.getByLabel("Player").fill("Hank Aaron");
     await hardwareBack(page);
     const bar = page.locator(".form-bar");
-    await expect(bar.getByRole("alert")).toHaveText("Discard this card?");
+    await expect(bar.getByRole("group", { name: "Discard this card?" })).toBeVisible();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await hardwareBack(page);
-    await expect(bar.getByRole("alert")).toHaveCount(0);
+    await expect(bar.getByRole("group", { name: "Discard this card?" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel" })).toBeFocused();
     await expect(page.getByLabel("Player")).toHaveValue("Hank Aaron");
   });

@@ -149,7 +149,7 @@ test("Cancel discards: scanned photos store nothing and returns to the dashboard
   await expect(page.getByAltText("Front photo")).toBeVisible();
   await expect(page.getByAltText("Back photo")).toBeVisible();
   await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByText("Discard this card?")).toBeVisible();
+  await expect(page.getByRole("group", { name: "Discard this card?" })).toBeVisible();
   await page.waitForTimeout(600); // Discard ignores taps for 500 ms
   await page.getByRole("button", { name: "Discard" }).click();
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
