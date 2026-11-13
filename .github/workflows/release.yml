@@ -49,6 +49,9 @@ jobs:
         run: npm test
 
       - name: End-to-end tests
+        # The tests use a fake Claude; the real Worker URL must not be baked into this build.
+        env:
+          VITE_IDENTIFY_URL: ""
         run: |
           npx playwright install --with-deps chromium
           npx playwright test
