@@ -6,7 +6,7 @@ Lets the owner sign in with their Google account so the app can read and write i
 ## Requirements
 
 ### Requirement: Sign in with Google
-The system SHALL require the user to sign in with a Google account before any Drive data is read or written.
+The system SHALL require the user to sign in with a Google account before any Drive data is read or written. Once signed in, the system SHALL remember the account's email on the device (never a token) and SHALL NOT show the sign-in screen at a later launch because Google or the network could not be reached.
 
 #### Scenario: First launch
 - **WHEN** the user opens the app with no previous sign-in
@@ -20,6 +20,11 @@ The system SHALL require the user to sign in with a Google account before any Dr
 - **WHEN** the user cancels the Google consent screen or denies Drive access
 - **THEN** the system stays on the sign-in screen and explains that Drive access is required to store the collection
 
+#### Scenario: Launch with Google unreachable
+- **GIVEN** the user signed in on this device before and has not signed out
+- **WHEN** the user opens the app and Google cannot be reached (offline, or the silent sign-in fails)
+- **THEN** the system shows the dashboard from the local collection as that user, not the sign-in screen
+
 ### Requirement: Least-privilege Drive access
 The system SHALL request access only to Drive files the app itself creates or the user opens with it, and SHALL NOT request access to the user's whole Drive.
 
@@ -28,19 +33,28 @@ The system SHALL request access only to Drive files the app itself creates or th
 - **THEN** it lists access to only the files the app uses, not "See, edit, create and delete all of your Google Drive files"
 
 ### Requirement: Session renewal
-The system SHALL renew Drive access silently when it expires while the user's Google session is still active, and SHALL prompt the user only when silent renewal fails.
+The system SHALL renew Drive access silently when it expires while the user's Google session is still active, and SHALL prompt the user only when silent renewal fails. When Drive rejects an access token, the system SHALL get a fresh token and retry the request once before treating the session as expired.
 
 #### Scenario: Access expires during use
 - **GIVEN** the user has been using the app longer than the access lifetime
 - **WHEN** the app next needs Drive
 - **THEN** access is renewed without a prompt and the pending Drive operation completes
 
+#### Scenario: Drive rejects an aged token
+- **WHEN** Drive answers a request with 401 and Google gives a fresh token without a prompt
+- **THEN** the request is repeated once with the fresh token and completes, and sync is not paused
+
 #### Scenario: Silent renewal fails
-- **WHEN** silent renewal is refused by Google
+- **WHEN** silent renewal is refused by Google, or Drive answers 401 again to the fresh token
+- **THEN** the system keeps local changes, marks sync as paused, and shows a "Sign in again" action
+
+#### Scenario: Silent renewal fails after a launch with Google unreachable
+- **GIVEN** the app opened on local data because Google could not be reached
+- **WHEN** sync first needs Drive and Google refuses the token
 - **THEN** the system keeps local changes, marks sync as paused, and shows a "Sign in again" action
 
 ### Requirement: Sign out
-The system SHALL let the user sign out, which revokes the app's access token and removes the local copy of the collection from the device.
+The system SHALL let the user sign out, which revokes the app's access token, forgets the remembered account and removes the local copy of the collection from the device.
 
 #### Scenario: Sign out with unsynced changes
 - **GIVEN** there are local changes not yet saved to Drive
@@ -49,4 +63,12 @@ The system SHALL let the user sign out, which revokes the app's access token and
 
 #### Scenario: Sign out clears device
 - **WHEN** the user confirms Sign out
-- **THEN** no card data or photos remain in the app's local storage on the device and the sign-in screen is shown
+- **THEN** no card data or photos remain in the app's local storage on the device, the remembered account is gone and the sign-in screen is shown
+
+### Requirement: Drive access for the signed-in account
+The system SHALL request Drive access for the Google account that signed in, so that on a phone with several Google accounts the Drive token belongs to that account.
+
+#### Scenario: Second Google account on the phone
+- **GIVEN** the phone has two Google accounts and the user signed in with one of them
+- **WHEN** the app needs Drive access
+- **THEN** the token is issued for the account that signed in, and the app reads and writes that account's Drive folder
