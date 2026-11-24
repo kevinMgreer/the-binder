@@ -28,6 +28,7 @@ export function ZoomableImage({
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchStart = useRef<{ distance: number; scale: number } | null>(null);
   const moved = useRef(false);
+  const pinched = useRef(false);
   const lastTap = useRef(-Infinity);
   const [t, setT] = useState<Transform>({ scale: 1, x: 0, y: 0 });
 
@@ -51,12 +52,14 @@ export function ZoomableImage({
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 1) {
+      pinched.current = false;
       moved.current = false;
       start.current = { x: e.clientX, y: e.clientY };
     }
     if (pointers.current.size === 2) {
       pinchStart.current = { distance: distance(), scale: t.scale };
       moved.current = true;
+      pinched.current = true;
     }
   };
 
@@ -81,7 +84,7 @@ export function ZoomableImage({
     if (pointers.current.size < 2) pinchStart.current = null;
     if (!wasSingle) return;
     const dx = e.clientX - start.current.x;
-    if (moved.current && e.type === "pointerup" && onSwipe && t.scale === 1 && Math.abs(dx) >= SWIPE_PX && Math.abs(dx) > Math.abs(e.clientY - start.current.y)) {
+    if (moved.current && e.type === "pointerup" && !pinched.current && onSwipe && t.scale === 1 && Math.abs(dx) >= SWIPE_PX && Math.abs(dx) > Math.abs(e.clientY - start.current.y)) {
       return onSwipe(dx < 0 ? "left" : "right");
     }
     if (moved.current) return;

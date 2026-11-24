@@ -126,10 +126,24 @@ async function zoomedFront() {
 }
 
 test("Zoomed photo pans instead of swiping", async () => {
-  drag(await zoomedFront(), -80);
+  const el = await zoomedFront();
+  drag(el, -80);
+  expect(Number(el.getAttribute("data-scale"))).toBeGreaterThan(1);
   expect(screen.getByTestId("zoom-front")).toBeTruthy();
   expect(screen.queryByTestId("zoom-back")).toBeNull();
   expect(screen.getByRole("dialog", { name: "Front photo view" })).toBeTruthy();
+});
+
+test("A pinch that ends at scale 1 does not swipe", async () => {
+  const el = await openView(both, ["front", "back"]);
+  fireEvent.pointerDown(el, { pointerId: 1, clientX: 200, clientY: 100 });
+  fireEvent.pointerDown(el, { pointerId: 2, clientX: 300, clientY: 100 });
+  fireEvent.pointerMove(el, { pointerId: 1, clientX: 100, clientY: 100 });
+  fireEvent.pointerMove(el, { pointerId: 2, clientX: 100, clientY: 100 });
+  fireEvent.pointerUp(el, { pointerId: 1, clientX: 100, clientY: 100 });
+  fireEvent.pointerUp(el, { pointerId: 2, clientX: 100, clientY: 100 });
+  expect(screen.getByTestId("zoom-front")).toBeTruthy();
+  expect(screen.queryByTestId("zoom-back")).toBeNull();
 });
 
 test("Control switches side and resets zoom", async () => {
