@@ -4,7 +4,7 @@ import { useBlobUrl, useOnline } from "./hooks";
 import { usePorts } from "./ports-context";
 import { ZoomableImage } from "./ZoomableImage";
 
-export function PhotoView({ card, side }: { card: Card; side: CardSide }) {
+export function PhotoView({ card, side, onSwipe }: { card: Card; side: CardSide; onSwipe?: (direction: "left" | "right") => void }) {
   const { photos, remote } = usePorts();
   const online = useOnline();
   const ref = card.photos[side];
@@ -38,7 +38,7 @@ export function PhotoView({ card, side }: { card: Card; side: CardSide }) {
   const label = side[0].toUpperCase() + side.slice(1);
   return (
     <div>
-      <ZoomableImage src={url} alt={`${label} photo`} testId={`zoom-${side}`} />
+      <ZoomableImage src={url} alt={`${label} photo`} testId={`zoom-${side}`} onSwipe={onSwipe} />
       {!blobs.full && !online && <p>Full photo will load when online</p>}
     </div>
   );

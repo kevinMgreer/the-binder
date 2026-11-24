@@ -238,3 +238,6 @@ p[role="status"] { color: var(--color-ink-muted); }
 form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
 .zoom { touch-action: none; overflow: hidden; height: 60vh; background: var(--color-panel); border-color: var(--color-rule); margin-bottom: var(--space-2); }
 .zoom img { width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.side-switch { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); }
+.side-switch button { flex: 1; min-height: 48px; }
+.side-switch button[aria-pressed="true"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); }
