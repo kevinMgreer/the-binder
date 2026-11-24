@@ -146,6 +146,49 @@ test("the Edit sheet starts at Keep as is with Save disabled; Set alone is writt
   expect(stored.map((c) => c.team).sort()).toEqual(["Braves", "Dodgers", "Tigers"]);
 });
 
+test("a Year that is not a whole number from 1800 disables Change and says why", async () => {
+  await renderList();
+  click("Select");
+  click("Select all");
+  click("Edit");
+  const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
+  const year = within(sheet).getByLabelText("Year");
+  const change = within(sheet).getByRole("button", { name: "Change 3 cards" });
+  fireEvent.change(year, { target: { value: "202" } });
+  expect(change.hasAttribute("disabled")).toBe(true);
+  const hint = within(sheet).getByText("Enter a year");
+  expect(year.getAttribute("aria-describedby")).toBe(hint.id);
+  fireEvent.change(year, { target: { value: "2023" } });
+  expect(change.hasAttribute("disabled")).toBe(false);
+  expect(within(sheet).queryByText("Enter a year")).toBeNull();
+});
+
+test("Set plus an unfinished Graded keeps Change disabled", async () => {
+  await renderList();
+  click("Select");
+  click("Select all");
+  click("Edit");
+  const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
+  fireEvent.change(within(sheet).getByLabelText("Set"), { target: { value: "Gold" } });
+  fireEvent.change(within(sheet).getByLabelText("Grading"), { target: { value: "graded" } });
+  expect(within(sheet).getByRole("button", { name: "Change 3 cards" }).hasAttribute("disabled")).toBe(true);
+});
+
+test("a failed save shows the error and lets Change be tried again", async () => {
+  const ports = await renderList();
+  vi.spyOn(ports.collection, "putMany").mockRejectedValue(new Error("offline"));
+  click("Select");
+  click("Select all");
+  click("Edit");
+  const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
+  fireEvent.change(within(sheet).getByLabelText("Set"), { target: { value: "Gold" } });
+  fireEvent.click(within(sheet).getByRole("button", { name: "Change 3 cards" }));
+  const confirm = screen.getByRole("alertdialog", { name: "Change 3 cards?" });
+  fireEvent.click(within(confirm).getByRole("button", { name: "Change" }));
+  await within(confirm).findByText("Could not save the change. Try again.");
+  expect(within(confirm).getByRole("button", { name: "Change" }).hasAttribute("disabled")).toBe(false);
+});
+
 test("Edit is disabled while nothing is selected", async () => {
   await renderList();
   click("Select");

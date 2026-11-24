@@ -60,6 +60,7 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
   const [error, setError] = useState("");
   const patch = toPatch(draft);
   const gradedIncomplete = draft.grading === "graded" && !toGrading(draft);
+  const yearInvalid = draft.year.trim() !== "" && !("year" in patch);
   const noun = `${count} ${count === 1 ? "card" : "cards"}`;
 
   // Android back is Cancel while the dialog is open.
@@ -87,7 +88,7 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
         label={`Edit ${noun}`}
         onClose={onClose}
         foot={
-          <button className="primary" disabled={Object.keys(patch).length === 0 || gradedIncomplete} onClick={() => setConfirming(true)}>
+          <button className="primary" disabled={Object.keys(patch).length === 0 || gradedIncomplete || yearInvalid} onClick={() => setConfirming(true)}>
             Change {noun}
           </button>
         }
@@ -103,7 +104,8 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
           </Field>
         ))}
         <Field label="Year">
-          <input id={fieldId("Year")} type="number" placeholder="Keep as is" value={draft.year} onChange={(e) => set("year", e.target.value)} />
+          <input id={fieldId("Year")} type="number" placeholder="Keep as is" value={draft.year} aria-describedby={yearInvalid ? "bulk-year-hint" : undefined} onChange={(e) => set("year", e.target.value)} />
+          {yearInvalid && <p id="bulk-year-hint" role="status">Enter a year</p>}
         </Field>
         {FLAGS.map(([key, label]) => choice(key, label, [["yes", "Yes"], ["no", "No"]]))}
         {choice("grading", "Grading", [["raw", "Raw"], ["graded", "Graded"]])}
