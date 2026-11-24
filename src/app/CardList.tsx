@@ -2,6 +2,7 @@ import { useVirtualizer, type Virtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, type RefObject } from "react";
 import type { Card } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
+import { useCardPress, SelectedMark, type PressProps } from "./card-press";
 import { Thumb } from "./Thumb";
 
 // Fits the 96 dp thumbnail slot centred in the button (row minus the li's 8 dp bottom padding, the gap to the next row).
@@ -31,8 +32,9 @@ export function useReturnTo(
   }, []);
 }
 
-export function CardList({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (card: Card) => void; returnTo?: string }) {
+export function CardList({ cards, returnTo, ...press }: { cards: Card[]; returnTo?: string } & PressProps) {
   const scroller = useRef<HTMLDivElement>(null);
+  const pressProps = useCardPress(press);
   const virtualizer = useVirtualizer({
     count: cards.length,
     getScrollElement: () => scroller.current,
@@ -58,9 +60,10 @@ export function CardList({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (
               key={c.id}
               data-testid="card-row"
               data-index={item.index}
+              className={press.selected?.has(c.id) ? "selected" : undefined}
               style={{ height: ROW_HEIGHT, transform: `translateY(${item.start}px)` }}
             >
-              <button onClick={() => onOpen(c)}>
+              <button {...pressProps(c)}>
                 <Thumb card={c} />
                 <span className="text">
                   <span className="head">
@@ -86,6 +89,7 @@ export function CardList({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (
                   </span>
                 </span>
               </button>
+              {press.selected?.has(c.id) && <SelectedMark />}
             </li>
           );
         })}

@@ -22,7 +22,7 @@ type View =
 type Screen = "dashboard" | "list";
 
 export function App() {
-  const { cards, save, remove } = useCards();
+  const { cards, save, saveMany, remove } = useCards();
   const updates = useUpdates();
   const [view, setView] = useState<View>({ name: "dashboard" });
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -132,6 +132,7 @@ export function App() {
       onViewChange={changeCardsView}
       returnTo={view.name === "list" ? view.returnTo : undefined}
       onOpen={(card) => setView({ name: "detail", id: card.id, from: "list" })}
+      onSaveMany={saveMany}
     />
   );
 }

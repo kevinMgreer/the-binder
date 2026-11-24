@@ -1,7 +1,10 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, type Sort, type SortBy } from "../domain/query";
+import type { BulkPatch } from "../usecases/cards";
 import { BottomNav, type Destination } from "./BottomNav";
+import { BulkEditSheet } from "./BulkEditSheet";
+import { useSelection } from "./useSelection";
 import { SettingsButton } from "./SettingsButton";
 import { CardGrid } from "./CardGrid";
 import type { CardsView } from "./cards-view";
@@ -28,6 +31,7 @@ interface Props {
   onNavigate: (to: Destination) => void;
   onSettings: () => void;
   onOpen: (card: Card) => void;
+  onSaveMany: (ids: string[], patch: BulkPatch) => Promise<void>;
 }
 
 const FLAG_LABELS = {
@@ -42,12 +46,14 @@ const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen, onSaveMany }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters), sort), [cards, filters, sort]);
+  const selection = useSelection(shown);
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
@@ -106,6 +112,8 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
   ];
   const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
   const closeSheet = useCallback(() => setFilterOpen(false), []);
+  const closeBulk = useCallback(() => setBulkOpen(false), []);
+  const List = view === "grid" ? CardGrid : CardList;
   const sortLabel = SORT_LABELS[sort.by];
   const radio = (name: string, label: string, checked: boolean, onChange: () => void) => (
     <label className="check" key={label}>
@@ -151,20 +159,32 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
           ))}
         </div>
       )}
-      <div className="shown-row">
-        <p className="shown">
-          <span data-testid="shown">Showing {shown.length}</span>
-          <span data-testid="order">
-            <span aria-hidden="true"> · {sortLabel} {sort.descending ? "↓" : "↑"}</span>
-            <span className="visually-hidden">, sorted by {sortLabel}, {sort.descending ? "descending" : "ascending"}</span>
-          </span>
-        </p>
+      <div className={selection.selecting ? "shown-row selection-bar" : "shown-row"} data-testid={selection.selecting ? "selection-bar" : undefined}>
+        {selection.selecting ? (
+          <>
+            <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
+            <button onClick={selection.selectAll}>Select all</button>
+            <button className="primary" disabled={selection.chosen.length === 0} onClick={() => setBulkOpen(true)}>Edit</button>
+            <button onClick={selection.cancel}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <p className="shown">
+              <span data-testid="shown">Showing {shown.length}</span>
+              <span data-testid="order">
+                <span aria-hidden="true"> · {sortLabel} {sort.descending ? "↓" : "↑"}</span>
+                <span className="visually-hidden">, sorted by {sortLabel}, {sort.descending ? "descending" : "ascending"}</span>
+              </span>
+            </p>
+            {shown.length > 0 && <button onClick={selection.begin}>Select</button>}
+          </>
+        )}
         <button className="icon-button" aria-label={`${view === "grid" ? "List" : "Grid"} view`} onClick={() => onViewChange(view === "grid" ? "list" : "grid")}>
           <Icon name={view === "grid" ? "list" : "grid"} />
         </button>
       </div>
       {shown.length > 0 ? (
-        view === "grid" ? <CardGrid cards={shown} onOpen={onOpen} returnTo={returnTo} /> : <CardList cards={shown} onOpen={onOpen} returnTo={returnTo} />
+        <List cards={shown} onOpen={onOpen} returnTo={returnTo} selected={selection.selecting ? selection.selected : undefined} onToggle={selection.toggle} onLongPress={selection.add} />
       ) : cards.length === 0 ? (
         <p className="empty" data-testid="empty-state">
           Your binder is empty. Scan a card or add one by hand.
@@ -175,6 +195,18 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         </p>
       )}
       <BottomNav active="list" onNavigate={onNavigate} onAdd={onAdd} />
+      {bulkOpen && (
+        <BulkEditSheet
+          count={selection.chosen.length}
+          options={{ team: teams, manufacturer: manufacturers, set: sets, subset: subsets, insert: inserts, parallel: parallels }}
+          onClose={closeBulk}
+          onSave={async (patch) => {
+            await onSaveMany(selection.chosen.map((c) => c.id), patch);
+            setBulkOpen(false);
+            selection.cancel();
+          }}
+        />
+      )}
       {filterOpen && (
         <Sheet
           label="Filter and sort"
