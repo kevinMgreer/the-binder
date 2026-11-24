@@ -24,4 +24,4 @@
 
 ## 5. Close out
 
-- [ ] 5.1 Archive the change with the `openspec-archive-change` skill so the requirement lands in `openspec/specs/collection-list/spec.md`. Verify: `npx openspec validate --specs --strict` passes after the archive.
+- [x] 5.1 Archive the change with the `openspec-archive-change` skill so the requirement lands in `openspec/specs/collection-list/spec.md`. Verify: `npx openspec validate --specs --strict` passes after the archive.
