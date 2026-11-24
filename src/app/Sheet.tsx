@@ -9,10 +9,12 @@ interface Props {
   foot?: ReactNode;
   /** Sized to its content instead of full height. */
   compact?: boolean;
+  /** Replaces the visible title in the head; the label stays as the dialog's hidden name. */
+  headStart?: ReactNode;
   children: ReactNode;
 }
 
-export function Sheet({ label, onClose, foot, compact, children }: Props) {
+export function Sheet({ label, onClose, foot, compact, headStart, children }: Props) {
   useEffect(() => {
     openSheets.push(onClose);
     return () => void openSheets.splice(openSheets.lastIndexOf(onClose), 1);
@@ -25,7 +27,8 @@ export function Sheet({ label, onClose, foot, compact, children }: Props) {
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         <div className="sheet-head">
-          <h2>{label}</h2>
+          <h2 className={headStart ? "visually-hidden" : undefined}>{label}</h2>
+          {headStart}
           <button autoFocus onClick={onClose}>Close</button>
         </div>
         <div className="sheet-body">{children}</div>
