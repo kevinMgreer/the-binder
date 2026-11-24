@@ -1,0 +1,148 @@
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
+import { FakeAuthProvider, createFakePorts } from "../adapters/fakes";
+import { makeCard } from "../domain/fixtures";
+import { SyncEngine } from "../sync/engine";
+import { App } from "./App";
+import { PortsProvider } from "./ports-context";
+import { AuthGate } from "./session";
+import { SyncProvider } from "./sync-context";
+
+vi.mock("@capacitor/app", () => ({ App: { addListener: async () => ({ remove: async () => {} }), exitApp: () => {} } }));
+vi.mock("./Thumb", () => ({ Thumb: () => null }));
+// jsdom has no layout, so the real virtualizer renders no rows.
+vi.mock("@tanstack/react-virtual", () => ({
+  useVirtualizer: ({ count, lanes = 1 }: { count: number; lanes?: number }) => ({
+    getTotalSize: () => count * 100,
+    getVirtualItems: () => Array.from({ length: count }, (_, index) => ({ index, start: index * 100, lane: index % lanes })),
+    measureElement: () => {},
+    measure: () => {},
+    scrollToIndex: () => {},
+  }),
+}));
+window.matchMedia = ((query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+afterEach(cleanup);
+
+const cards = [
+  makeCard({ id: "a", player: "Hank Aaron", set: "Chrome", team: "Braves" }),
+  makeCard({ id: "b", player: "Mookie Betts", set: "Chrome", team: "Dodgers", cardNumber: "2" }),
+  makeCard({ id: "c", player: "Ty Cobb", set: "Heritage", team: "Tigers", cardNumber: "3" }),
+];
+
+async function renderList() {
+  const ports = { ...createFakePorts(), auth: new FakeAuthProvider({ email: "owner@example.test" }) };
+  await ports.collection.putMany(cards);
+  render(
+    <PortsProvider ports={ports}>
+      <SyncProvider engine={new SyncEngine(ports)}>
+        <AuthGate autoSync={false}>
+          <App />
+        </AuthGate>
+      </SyncProvider>
+    </PortsProvider>,
+  );
+  await screen.findByRole("heading", { name: "Dashboard" });
+  fireEvent.click(within(screen.getByRole("navigation", { name: "Main" })).getByRole("button", { name: "Cards" }));
+  await screen.findByTestId("shown");
+  return ports;
+}
+
+const row = (player: string) => screen.getByText(player).closest("button")!;
+const bar = () => screen.getByTestId("selection-bar");
+const back = () => act(async () => void window.dispatchEvent(new Event("hardware-back")));
+const click = (name: string | RegExp) => fireEvent.click(screen.getByRole("button", { name }));
+const onList = () => screen.getByTestId("shown");
+
+async function longPress(el: Element) {
+  fireEvent.pointerDown(el);
+  await new Promise((r) => setTimeout(r, 520));
+  fireEvent.pointerUp(el);
+  fireEvent.click(el);
+}
+
+test("a long press starts selection with that card selected", async () => {
+  await renderList();
+  await longPress(row("Ty Cobb"));
+  expect(bar().textContent).toContain("1 selected");
+  expect(row("Ty Cobb").getAttribute("aria-pressed")).toBe("true");
+  expect(row("Hank Aaron").getAttribute("aria-pressed")).toBe("false");
+});
+
+test("a pointer that moves past 10 px before the delay does not select", async () => {
+  await renderList();
+  fireEvent.pointerDown(row("Ty Cobb"), { clientX: 0, clientY: 0 });
+  fireEvent.pointerMove(row("Ty Cobb"), { clientX: 0, clientY: 30 });
+  await new Promise((r) => setTimeout(r, 520));
+  expect(screen.queryByTestId("selection-bar")).toBeNull();
+});
+
+test("a tap toggles in selection mode and opens no card", async () => {
+  await renderList();
+  click("Select");
+  fireEvent.click(row("Hank Aaron"));
+  fireEvent.click(row("Ty Cobb"));
+  expect(bar().textContent).toContain("2 selected");
+  fireEvent.click(row("Ty Cobb"));
+  expect(bar().textContent).toContain("1 selected");
+  expect(screen.queryByRole("button", { name: "Edit" })).toBeTruthy(); // the bar's Edit, not a card's detail
+  expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+});
+
+test("Select all takes the cards the search shows", async () => {
+  await renderList();
+  fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Chrome" } });
+  click("Select");
+  click("Select all");
+  expect(bar().textContent).toContain("2 selected");
+});
+
+test("Cancel leaves selection mode and clears it", async () => {
+  await renderList();
+  await longPress(row("Ty Cobb"));
+  click("Cancel");
+  expect(screen.queryByTestId("selection-bar")).toBeNull();
+  click("Select");
+  expect(bar().textContent).toContain("0 selected");
+});
+
+test("back leaves selection mode first, a second back reaches the dashboard", async () => {
+  await renderList();
+  await longPress(row("Ty Cobb"));
+  await back();
+  expect(screen.queryByTestId("selection-bar")).toBeNull();
+  expect(onList()).toBeTruthy();
+  await back();
+  await screen.findByRole("heading", { name: "Dashboard" });
+});
+
+test("switching list and grid keeps the selection", async () => {
+  await renderList();
+  await longPress(row("Ty Cobb"));
+  click("Grid view");
+  expect(screen.getAllByTestId("card-tile")).toHaveLength(3);
+  expect(bar().textContent).toContain("1 selected");
+  expect(screen.getAllByRole("button", { pressed: true })).toHaveLength(1);
+});
+
+test("the Edit sheet starts at Keep as is with Save disabled; Set alone is written after confirming", async () => {
+  const ports = await renderList();
+  click("Select");
+  click("Select all");
+  expect(screen.getByRole("button", { name: "Edit" }).hasAttribute("disabled")).toBe(false);
+  click("Edit");
+  const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
+  expect(within(sheet).getByRole("button", { name: "Change 3 cards" }).hasAttribute("disabled")).toBe(true);
+  fireEvent.change(within(sheet).getByLabelText("Set"), { target: { value: "Gold" } });
+  fireEvent.click(within(sheet).getByRole("button", { name: "Change 3 cards" }));
+  fireEvent.click(within(screen.getByRole("alertdialog", { name: "Change 3 cards?" })).getByRole("button", { name: "Change" }));
+  await waitFor(() => expect(screen.queryByTestId("selection-bar")).toBeNull());
+  const stored = await ports.collection.list();
+  expect(stored.map((c) => c.set)).toEqual(["Gold", "Gold", "Gold"]);
+  expect(stored.map((c) => c.team).sort()).toEqual(["Braves", "Dodgers", "Tigers"]);
+});
+
+test("Edit is disabled while nothing is selected", async () => {
+  await renderList();
+  click("Select");
+  expect(screen.getByRole("button", { name: "Edit" }).hasAttribute("disabled")).toBe(true);
+});
