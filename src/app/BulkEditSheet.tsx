@@ -44,7 +44,8 @@ export function toPatch(d: Draft): BulkPatch {
   const patch: BulkPatch = {};
   for (const key of ["team", "manufacturer", "set", "subset", "insert"] as const) if (d[key].trim()) patch[key] = d[key].trim();
   if (d.parallel.trim()) patch.parallelName = d.parallel.trim();
-  if (d.year.trim() && Number.isFinite(Number(d.year))) patch.year = Number(d.year);
+  const year = Number(d.year);
+  if (d.year.trim() && Number.isInteger(year) && year >= 1800) patch.year = year;
   for (const [key] of FLAGS) if (d[key]) patch[key] = d[key] === "yes";
   const grading = toGrading(d);
   if (grading) patch.grading = grading;
@@ -56,7 +57,9 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const set = (key: keyof Draft, value: string) => setDraft((d) => ({ ...d, [key]: value }));
+  const [error, setError] = useState("");
   const patch = toPatch(draft);
+  const gradedIncomplete = draft.grading === "graded" && !toGrading(draft);
   const noun = `${count} ${count === 1 ? "card" : "cards"}`;
 
   // Android back is Cancel while the dialog is open.
@@ -84,7 +87,7 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
         label={`Edit ${noun}`}
         onClose={onClose}
         foot={
-          <button className="primary" disabled={Object.keys(patch).length === 0} onClick={() => setConfirming(true)}>
+          <button className="primary" disabled={Object.keys(patch).length === 0 || gradedIncomplete} onClick={() => setConfirming(true)}>
             Change {noun}
           </button>
         }
@@ -129,13 +132,20 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
         <div className="backdrop center" onClick={() => setConfirming(false)} onKeyDown={(e) => e.key === "Escape" && setConfirming(false)}>
           <div role="alertdialog" aria-modal="true" aria-label={`Change ${noun}?`} onClick={(e) => e.stopPropagation()}>
             <p>Change {noun}?</p>
+            {error && <p role="status">{error}</p>}
             <div className="actions detail-actions">
               <button
                 className="primary"
                 disabled={saving}
-                onClick={() => {
+                onClick={async () => {
                   setSaving(true);
-                  void onSave(patch);
+                  setError("");
+                  try {
+                    await onSave(patch);
+                  } catch {
+                    setSaving(false);
+                    setError("Could not save the change. Try again.");
+                  }
                 }}
               >
                 Change
