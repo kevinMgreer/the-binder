@@ -12,4 +12,4 @@
 
 ## 4. On the phone
 
-- [ ] 4.1 Run the new line of `docs/device-checklist.md` on the phone. Verify: ticked after the phone check.
+- [x] 4.1 Run the new line of `docs/device-checklist.md` on the phone. Verify: ticked after the phone check. (owner confirmed 2026-11-23)

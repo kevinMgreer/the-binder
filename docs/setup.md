@@ -122,6 +122,7 @@ Check: build and install the app (step 5), open **Add card**, attach a front pho
 
 1. Create an API key at https://console.anthropic.com. This is the key you give the Worker in step 3; it never goes in the app.
 2. In the Console, **set a monthly spend limit** as a second guard behind the Worker's daily cap. A card identification costs a cent or two.
+3. The owner set the monthly limit to $5 on 2026-11-23. At a cent or two per call that is roughly 250-500 identifications a month, behind the Worker's daily cap of 50 (`DEFAULT_DAILY_LIMIT` in `worker/src/index.ts`).
 
 ## 5. Build and install on your phone
 
