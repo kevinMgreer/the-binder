@@ -118,6 +118,7 @@ test("One photo only: no swipe, no control", async () => {
   drag(await openView(card, ["front"]), -80);
   expect(screen.getByTestId("zoom-front")).toBeTruthy();
   expect(screen.getByRole("dialog", { name: "Front photo view" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Front photo view" }).className).toBe("visually-hidden");
   expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Front" })).toBeNull();
 });

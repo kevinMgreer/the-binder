@@ -14,6 +14,10 @@ The full-size photo view spends its top third on a "Front photo view" heading, a
 
 - `card-photos`: the "View photos" requirement says the view has no visible title.
 
+## Out of scope
+
+- Other sheets (their visible titles stay), the swipe and zoom behaviour, and the photo storage or sync.
+
 ## Impact
 
 - `src/app/Sheet.tsx`, `src/app/CardDetail.tsx`, `src/app/PhotoView.tsx`, `src/app/app.css`, `src/app/card-detail.test.tsx`.

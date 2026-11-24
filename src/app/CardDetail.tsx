@@ -81,6 +81,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         <Sheet
           label={`${viewing === "front" ? "Front" : "Back"} photo view`}
           onClose={() => setViewing(null)}
+          hideTitle
           headStart={
             card.photos.front && card.photos.back ? (
               <div className="side-switch">
@@ -90,9 +91,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
                   </button>
                 ))}
               </div>
-            ) : (
-              <span /> // keeps Close right-aligned; the heading stays hidden
-            )
+            ) : undefined
           }
         >
           <PhotoView
