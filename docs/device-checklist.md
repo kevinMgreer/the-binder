@@ -44,6 +44,12 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 - [ ] Card detail header reads cleanly: title, one quiet line "year set · #number" with room around it, Team and Parallel as rows in the list. [photo-detail-polish, T-41]
 - [ ] Add form: Save is visible without scrolling; with the keyboard open on Notes the field stays visible above the bar and the bar does not cover it; record whether the bar should hide while typing. [photo-detail-polish, T-41]
 
+## Collection list (bulk-edit)
+
+- [ ] A long press on a card starts selection with that card selected; a scroll with a finger on a card does not select. [bulk-edit, T-62]
+- [ ] Android back leaves selection mode first, a second back reaches the dashboard. [bulk-edit, T-62]
+- [ ] Select 20 cards, Edit, set the Set, confirm: the list shows the new set, and after a Drive sync they show as synced. [bulk-edit, T-62]
+
 ## Identification (card-identification)
 
 - [ ] On-device recognition runs in airplane mode on a freshly installed app (no model download) and pre-fills year, card number and set from a real card back. [6.3, T-26]

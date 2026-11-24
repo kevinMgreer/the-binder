@@ -21,6 +21,8 @@ vi.mock("@tanstack/react-virtual", () => ({
   }),
 }));
 window.matchMedia = ((query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+// jsdom has no PointerEvent, so fireEvent would drop clientX and clientY.
+window.PointerEvent ??= class extends MouseEvent {} as typeof PointerEvent;
 afterEach(cleanup);
 
 const cards = [
