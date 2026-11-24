@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, type Sort, type SortBy } from "../domain/query";
 import type { BulkPatch } from "../usecases/cards";
@@ -54,6 +54,14 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters), sort), [cards, filters, sort]);
   const selection = useSelection(shown);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const beginRef = useRef<HTMLButtonElement>(null);
+  const wasSelecting = useRef(false);
+  useEffect(() => {
+    if (selection.selecting) cancelRef.current?.focus();
+    else if (wasSelecting.current) beginRef.current?.focus();
+    wasSelecting.current = selection.selecting;
+  }, [selection.selecting]);
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
@@ -127,7 +135,8 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
     <section className="collection">
       {selection.selecting ? (
         <header className="selection-bar" data-testid="selection-bar">
-          <button className="icon-button" aria-label="Cancel" onClick={selection.cancel}>
+          <h1 className="visually-hidden">Cards</h1>
+          <button ref={cancelRef} className="icon-button" aria-label="Cancel" onClick={selection.cancel}>
             <Icon name="close" />
           </button>
           <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
@@ -179,7 +188,7 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
           </span>
         </p>
         {shown.length > 0 && !selection.selecting && (
-          <button className="icon-button select-cards" aria-label="Select cards" onClick={selection.begin}>
+          <button ref={beginRef} className="icon-button select-cards" aria-label="Select cards" onClick={selection.begin}>
             <Icon name="check" outline />
           </button>
         )}
