@@ -54,6 +54,11 @@ const bar = () => screen.getByTestId("selection-bar");
 const back = () => act(async () => void window.dispatchEvent(new Event("hardware-back")));
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole("button", { name }));
 const onList = () => screen.getByTestId("shown");
+/** Fields start collapsed as "Keep as is" rows; a tap opens one. */
+const field = (sheet: HTMLElement, name: string) => {
+  fireEvent.click(within(sheet).getByRole("button", { name: new RegExp(`^${name}`) }));
+  return within(sheet).getByLabelText(name);
+};
 
 async function longPress(el: Element) {
   fireEvent.pointerDown(el);
@@ -83,7 +88,7 @@ test("a pointer that moves past 10 px before the delay does not select", async (
 
 test("a tap toggles in selection mode and opens no card", async () => {
   await renderList();
-  click("Select");
+  click("Select cards");
   fireEvent.click(row("Hank Aaron"));
   fireEvent.click(row("Ty Cobb"));
   expect(bar().textContent).toContain("2 selected");
@@ -96,7 +101,7 @@ test("a tap toggles in selection mode and opens no card", async () => {
 test("Select all takes the cards the search shows", async () => {
   await renderList();
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Chrome" } });
-  click("Select");
+  click("Select cards");
   click("Select all");
   expect(bar().textContent).toContain("2 selected");
 });
@@ -106,7 +111,7 @@ test("Cancel leaves selection mode and clears it", async () => {
   await longPress(row("Ty Cobb"));
   click("Cancel");
   expect(screen.queryByTestId("selection-bar")).toBeNull();
-  click("Select");
+  click("Select cards");
   expect(bar().textContent).toContain("0 selected");
 });
 
@@ -131,13 +136,14 @@ test("switching list and grid keeps the selection", async () => {
 
 test("the Edit sheet starts at Keep as is with Save disabled; Set alone is written after confirming", async () => {
   const ports = await renderList();
-  click("Select");
+  click("Select cards");
   click("Select all");
   expect(screen.getByRole("button", { name: "Edit" }).hasAttribute("disabled")).toBe(false);
   click("Edit");
   const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
   expect(within(sheet).getByRole("button", { name: "Change 3 cards" }).hasAttribute("disabled")).toBe(true);
-  fireEvent.change(within(sheet).getByLabelText("Set"), { target: { value: "Gold" } });
+  expect(within(sheet).queryByLabelText("Team")).toBeNull();
+  fireEvent.change(field(sheet, "Set"), { target: { value: "Gold" } });
   fireEvent.click(within(sheet).getByRole("button", { name: "Change 3 cards" }));
   fireEvent.click(within(screen.getByRole("alertdialog", { name: "Change 3 cards?" })).getByRole("button", { name: "Change" }));
   await waitFor(() => expect(screen.queryByTestId("selection-bar")).toBeNull());
@@ -148,11 +154,11 @@ test("the Edit sheet starts at Keep as is with Save disabled; Set alone is writt
 
 test("a Year that is not a whole number from 1800 disables Change and says why", async () => {
   await renderList();
-  click("Select");
+  click("Select cards");
   click("Select all");
   click("Edit");
   const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
-  const year = within(sheet).getByLabelText("Year");
+  const year = field(sheet, "Year");
   const change = within(sheet).getByRole("button", { name: "Change 3 cards" });
   fireEvent.change(year, { target: { value: "202" } });
   expect(change.hasAttribute("disabled")).toBe(true);
@@ -165,23 +171,23 @@ test("a Year that is not a whole number from 1800 disables Change and says why",
 
 test("Set plus an unfinished Graded keeps Change disabled", async () => {
   await renderList();
-  click("Select");
+  click("Select cards");
   click("Select all");
   click("Edit");
   const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
-  fireEvent.change(within(sheet).getByLabelText("Set"), { target: { value: "Gold" } });
-  fireEvent.change(within(sheet).getByLabelText("Grading"), { target: { value: "graded" } });
+  fireEvent.change(field(sheet, "Set"), { target: { value: "Gold" } });
+  fireEvent.change(field(sheet, "Grading"), { target: { value: "graded" } });
   expect(within(sheet).getByRole("button", { name: "Change 3 cards" }).hasAttribute("disabled")).toBe(true);
 });
 
 test("a failed save shows the error and lets Change be tried again", async () => {
   const ports = await renderList();
   vi.spyOn(ports.collection, "putMany").mockRejectedValue(new Error("offline"));
-  click("Select");
+  click("Select cards");
   click("Select all");
   click("Edit");
   const sheet = screen.getByRole("dialog", { name: "Edit 3 cards" });
-  fireEvent.change(within(sheet).getByLabelText("Set"), { target: { value: "Gold" } });
+  fireEvent.change(field(sheet, "Set"), { target: { value: "Gold" } });
   fireEvent.click(within(sheet).getByRole("button", { name: "Change 3 cards" }));
   const confirm = screen.getByRole("alertdialog", { name: "Change 3 cards?" });
   fireEvent.click(within(confirm).getByRole("button", { name: "Change" }));
@@ -191,6 +197,6 @@ test("a failed save shows the error and lets Change be tried again", async () =>
 
 test("Edit is disabled while nothing is selected", async () => {
   await renderList();
-  click("Select");
+  click("Select cards");
   expect(screen.getByRole("button", { name: "Edit" }).hasAttribute("disabled")).toBe(true);
 });
