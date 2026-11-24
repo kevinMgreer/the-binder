@@ -59,3 +59,84 @@ test("the Delete dialog puts Delete (danger outline) before Keep (primary, focus
   expect(row[0].parentElement?.className).toBe("actions detail-actions");
   expect(document.activeElement).toBe(row[1]);
 });
+
+// jsdom has no PointerEvent (clientX would be dropped) and no pointer capture.
+class TestPointerEvent extends MouseEvent {
+  pointerId: number;
+  constructor(type: string, init: PointerEventInit = {}) {
+    super(type, init);
+    this.pointerId = init.pointerId ?? 1;
+  }
+}
+Object.assign(globalThis, { PointerEvent: TestPointerEvent });
+Element.prototype.setPointerCapture = () => {};
+
+const both = makeCard({
+  photos: {
+    front: { fileId: "f", thumbId: "t", name: "front.jpg" },
+    back: { fileId: "b", thumbId: "bt", name: "back.jpg" },
+  },
+});
+
+async function openView(c: typeof card, sides: ("front" | "back")[]) {
+  const ports = createFakePorts();
+  urls.set(thumb, "blob:thumb");
+  for (const s of sides) await ports.photos.cacheThumb(c.id, s, thumb);
+  render(
+    <PortsProvider ports={ports}>
+      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} />
+    </PortsProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "View front photo" }));
+  return screen.findByTestId("zoom-front");
+}
+
+const drag = (el: HTMLElement, dx: number) => {
+  fireEvent.pointerDown(el, { pointerId: 1, clientX: 200, clientY: 100 });
+  fireEvent.pointerMove(el, { pointerId: 1, clientX: 200 + dx, clientY: 105 });
+  fireEvent.pointerUp(el, { pointerId: 1, clientX: 200 + dx, clientY: 105 });
+};
+
+test("Swipe to the other side: left on the front shows the back, right returns", async () => {
+  drag(await openView(both, ["front", "back"]), -80);
+  const back = await screen.findByTestId("zoom-back");
+  expect(screen.getByRole("dialog", { name: "Back photo view" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Back" }).getAttribute("aria-pressed")).toBe("true");
+  drag(back, 80);
+  await screen.findByTestId("zoom-front");
+  expect(screen.getByRole("dialog", { name: "Front photo view" })).toBeTruthy();
+});
+
+test("One photo only: no swipe, no control", async () => {
+  drag(await openView(card, ["front"]), -80);
+  expect(screen.getByTestId("zoom-front")).toBeTruthy();
+  expect(screen.getByRole("dialog", { name: "Front photo view" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Front" })).toBeNull();
+});
+
+async function zoomedFront() {
+  const el = await openView(both, ["front", "back"]);
+  for (let i = 0; i < 2; i++) {
+    fireEvent.pointerDown(el, { pointerId: 1, clientX: 200, clientY: 100 });
+    fireEvent.pointerUp(el, { pointerId: 1, clientX: 200, clientY: 100 });
+  }
+  expect(Number(el.getAttribute("data-scale"))).toBeGreaterThan(1);
+  return el;
+}
+
+test("Zoomed photo pans instead of swiping", async () => {
+  drag(await zoomedFront(), -80);
+  expect(screen.getByTestId("zoom-front")).toBeTruthy();
+  expect(screen.queryByTestId("zoom-back")).toBeNull();
+  expect(screen.getByRole("dialog", { name: "Front photo view" })).toBeTruthy();
+});
+
+test("Control switches side and resets zoom", async () => {
+  await zoomedFront();
+  fireEvent.click(screen.getByRole("button", { name: "Back" }));
+  const back = await screen.findByTestId("zoom-back");
+  expect(back.getAttribute("data-scale")).toBe("1");
+  expect(screen.getByRole("dialog", { name: "Back photo view" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Back" }).getAttribute("aria-pressed")).toBe("true");
+});
