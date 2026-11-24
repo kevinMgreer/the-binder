@@ -60,6 +60,9 @@ async function longPress(el: Element) {
   await new Promise((r) => setTimeout(r, 520));
   fireEvent.pointerUp(el);
   fireEvent.click(el);
+  // The timer's setState runs outside act; under load its commit and effects (the back-stack push) can lag.
+  await act(async () => {});
+  await screen.findByTestId("selection-bar");
 }
 
 test("a long press starts selection with that card selected", async () => {
