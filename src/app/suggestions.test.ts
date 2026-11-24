@@ -34,3 +34,17 @@ test("a doubtful parallel flags all of its fields", () => {
   expect(flaggedKeys({ lowConfidence: ["player", "parallel"] })).toEqual(["player", "parallel", "serial", "printRun"]);
   expect(flaggedKeys({})).toEqual([]);
 });
+
+test("subset, insert and true flags fill the form; false flags are never emitted", () => {
+  expect(suggestionPatch({ subset: "Future Stars", insert: "Home Run Derby", flags: { rookie: true, autograph: false, relic: true } })).toEqual({
+    subset: "Future Stars",
+    insert: "Home Run Derby",
+    rookie: true,
+    relic: true,
+  });
+  expect(suggestionPatch({ flags: { rookie: false } })).toEqual({});
+});
+
+test("doubtful flags flag the three checkboxes", () => {
+  expect(flaggedKeys({ lowConfidence: ["flags"] })).toEqual(["rookie", "autograph", "relic"]);
+});

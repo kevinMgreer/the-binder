@@ -55,6 +55,7 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 
 - [ ] On-device recognition runs in airplane mode on a freshly installed app (no model download) and pre-fills year, card number and set from a real card back. [6.3, T-26]
 - [ ] **Identify with Claude** returns suggestions for a real serial-numbered card. After the Worker is deployed: unzip the release APK and search it for `sk-ant-`; nothing is found. [6.7, T-6]
+- [ ] After the Worker deploy, **Identify with Claude** on 5 real cards: an RC logo (Rookie ticked), an on-card autograph (Autograph ticked), a relic or patch (Relic ticked), an insert (Insert filled, Set is the product, Parallel empty) and a numbered parallel (Parallel, serial and print run filled, Insert empty). [T-60]
 
 ## Performance
 

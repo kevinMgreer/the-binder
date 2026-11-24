@@ -49,7 +49,8 @@ export interface CollectionFile {
 export type CardSide = "front" | "back";
 
 export type Suggestion = Partial<
-  Pick<Card, "player" | "team" | "year" | "manufacturer" | "set" | "cardNumber" | "parallel">
+  Pick<Card, "player" | "team" | "year" | "manufacturer" | "set" | "subset" | "insert" | "cardNumber" | "parallel">
 > & {
+  flags?: Partial<Card["flags"]>;
   lowConfidence?: string[];
 };

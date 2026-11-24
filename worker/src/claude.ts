@@ -10,7 +10,10 @@ export interface CardSuggestion {
     year?: number;
     manufacturer?: string;
     set?: string;
+    subset?: string;
+    insert?: string;
     cardNumber?: string;
+    flags?: { rookie?: boolean; autograph?: boolean; relic?: boolean };
     parallel?: { name: string; serial: number | null; serialLegible: boolean; printRun: number | null };
   };
   lowConfidence: string[];
@@ -27,7 +30,14 @@ const TOOL = {
       year: { type: "integer" },
       manufacturer: { type: "string" },
       set: { type: "string" },
+      subset: { type: "string" },
+      insert: { type: "string" },
       cardNumber: { type: "string" },
+      flags: {
+        type: "object",
+        description: "Report a flag only when the card shows it.",
+        properties: { rookie: { type: "boolean" }, autograph: { type: "boolean" }, relic: { type: "boolean" } },
+      },
       parallel: {
         type: "object",
         description: "Only for parallels or serial-numbered cards such as Gold 23/2026.",
@@ -53,8 +63,14 @@ const PROMPT =
   "Fill in every field you can, and give your best guess rather than leaving a field out: report guesses with confidence \"low\" (the app flags those for the owner to check) and reserve omission for fields with no evidence at all. " +
   "player: the name as printed on the front. team: the team shown on the card. " +
   "year: the season or the copyright year on the back (the line with a (c) or copyright symbol, often next to the manufacturer); if only a copyright year is visible, use it. " +
-  "manufacturer and set: from the logos and set name on the front or back (for example Topps, Series 1). " +
-  "cardNumber: the number on the back. Use the parallel field only for parallels or serial-numbered cards (for example 23/2026).";
+  "manufacturer and set: from the logos and set name on the front or back; set is the product (for example Topps Series 1, Bowman Chrome). " +
+  "subset: a themed group numbered inside the base set (for example Future Stars, League Leaders). " +
+  "insert: a separately numbered chase set, often with its own number prefix (for example HRD-5); put its name in insert, never in set or parallel. " +
+  "parallel: a colour or finish version of a base or insert card (for example Gold, Refractor), often serial-numbered (for example 23/2026); use the parallel field only for those. " +
+  "cardNumber: the number on the back, keeping any printed prefix (HRD-5). " +
+  "flags.rookie: true when the card shows an RC logo or the text \"Rookie Card\". " +
+  "flags.autograph: true when the card is signed on the card or on a sticker, not a printed facsimile. " +
+  "flags.relic: true when the card holds an embedded jersey, bat or patch piece or says \"Game-Used\". Leave a flag out when it does not apply.";
 
 const text = (v: unknown) => (typeof v === "string" && v.trim() !== "" ? v.trim() : undefined);
 // Models sometimes send "1989" for an integer field; dropping it silently lost the year.
@@ -76,6 +92,8 @@ function clean(input: Record<string, any>): CardSuggestion {
     year: integer(input.year),
     manufacturer: text(input.manufacturer),
     set: text(input.set),
+    subset: text(input.subset),
+    insert: text(input.insert),
     cardNumber: text(input.cardNumber) ?? (integer(input.cardNumber) !== undefined ? String(input.cardNumber) : undefined),
   };
   const p = input.parallel;
@@ -88,6 +106,9 @@ function clean(input: Record<string, any>): CardSuggestion {
       printRun: integer(p.printRun) ?? null,
     };
   }
+  const f = input.flags && typeof input.flags === "object" ? input.flags : {};
+  const flags = Object.fromEntries(["rookie", "autograph", "relic"].filter((k) => typeof f[k] === "boolean").map((k) => [k, f[k]]));
+  if (Object.keys(flags).length > 0) suggestion.flags = flags;
   for (const key of Object.keys(suggestion) as (keyof typeof suggestion)[]) {
     if (suggestion[key] === undefined) delete suggestion[key];
   }
