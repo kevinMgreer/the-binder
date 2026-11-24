@@ -82,7 +82,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
           label={`${viewing === "front" ? "Front" : "Back"} photo view`}
           onClose={() => setViewing(null)}
           headStart={
-            card.photos.front && card.photos.back && (
+            card.photos.front && card.photos.back ? (
               <div className="side-switch">
                 {(["front", "back"] as const).map((side) => (
                   <button key={side} className="outline" aria-pressed={viewing === side} onClick={() => setViewing(side)}>
@@ -90,6 +90,8 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
                   </button>
                 ))}
               </div>
+            ) : (
+              <span /> // keeps Close right-aligned; the heading stays hidden
             )
           }
         >
