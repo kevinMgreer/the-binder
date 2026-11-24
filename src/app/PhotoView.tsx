@@ -37,7 +37,7 @@ export function PhotoView({ card, side, onSwipe }: { card: Card; side: CardSide;
 
   const label = side[0].toUpperCase() + side.slice(1);
   return (
-    <div>
+    <div className="photo-view">
       <ZoomableImage src={url} alt={`${label} photo`} testId={`zoom-${side}`} onSwipe={onSwipe} />
       {!blobs.full && !online && <p>Full photo will load when online</p>}
     </div>
