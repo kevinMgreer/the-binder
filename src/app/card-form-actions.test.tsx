@@ -443,3 +443,58 @@ test("back with the duplicate prompt open closes it, then back asks to discard",
   act(() => openSheets.at(-1)?.());
   asking("Discard this card?");
 });
+
+async function identifyWith(suggestion: object, card?: Card) {
+  const ports = createFakePorts();
+  vi.spyOn(ports.claude, "recognize").mockResolvedValue(suggestion as never);
+  acquire.mockResolvedValue([{ full: new Blob(["b"]), thumb: new Blob(["bt"]) }]);
+  render(
+    <PortsProvider ports={ports}>
+      <CardForm card={card} cards={[]} onSave={async () => {}} onCancel={() => {}} />
+    </PortsProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Add back photo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Scan back" }));
+  await screen.findByRole("button", { name: "Change back photo" });
+  fireEvent.click(screen.getByRole("button", { name: "Identify with Claude" }));
+}
+const box = (name: string) => screen.getByRole("checkbox", { name: new RegExp(`^${name}`) }) as HTMLInputElement;
+const field = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).value;
+
+test("Identify ticks Rookie and Autograph as suggestions and leaves Relic", async () => {
+  await identifyWith({ flags: { rookie: true, autograph: true, relic: false } });
+  await vi.waitFor(() => expect(box("Rookie").checked).toBe(true));
+  expect(box("Autograph").checked).toBe(true);
+  expect(box("Relic").checked).toBe(false);
+  expect(box("Rookie").closest("label")?.textContent).toContain("Suggested");
+});
+
+test("Identify an insert fills Set and Insert and leaves Parallel empty", async () => {
+  await identifyWith({ set: "Series 1", insert: "Home Run Derby", cardNumber: "HRD-5" });
+  await vi.waitFor(() => expect(field("Insert")).toBe("Home Run Derby"));
+  expect([field("Set"), field("Card number"), field("Parallel")]).toEqual(["Series 1", "HRD-5", ""]);
+});
+
+test("Identify a parallel of the base set leaves Insert empty", async () => {
+  await identifyWith({ set: "Series 1", parallel: { name: "Gold", serial: null, serialLegible: true, printRun: null } });
+  await vi.waitFor(() => expect(field("Parallel")).toBe("Gold"));
+  expect([field("Set"), field("Insert")]).toEqual(["Series 1", ""]);
+});
+
+test("Identify a subset card fills Subset", async () => {
+  await identifyWith({ set: "Series 1", subset: "Future Stars" });
+  await vi.waitFor(() => expect(field("Subset")).toBe("Future Stars"));
+  expect(field("Insert")).toBe("");
+});
+
+test("a suggestion never unticks a flag", async () => {
+  await identifyWith({ subset: "Future Stars", flags: { rookie: false } }, makeCard({ subset: undefined, flags: { rookie: true, autograph: false, relic: false } }));
+  await vi.waitFor(() => expect(field("Subset")).toBe("Future Stars"));
+  expect(box("Rookie").checked).toBe(true);
+});
+
+test("a doubtful flag shows Suggested · Check this", async () => {
+  await identifyWith({ flags: { relic: true }, lowConfidence: ["flags"] });
+  await vi.waitFor(() => expect(box("Relic").checked).toBe(true));
+  expect(box("Relic").closest("label")?.textContent).toContain("Suggested · Check this");
+});
