@@ -246,11 +246,12 @@ form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
 .side-switch button:last-child { margin-left: calc(-1 * var(--rule)); border-radius: 0 var(--radius-frame) var(--radius-frame) 0; }
 .side-switch button[aria-pressed="true"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); }
 
-/* Selection mode: the bar takes the place of the "Showing N" row; a selected row or tile gets a tint and a check, not colour alone. */
-.selection-bar { flex-wrap: nowrap; }
-.selection-bar .shown { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); }
+/* Selection mode: the bar takes the place of the title header; a selected row or tile carries only a small check. */
+.collection .selection-bar { flex-direction: row; align-items: center; gap: var(--space-2); min-height: 56px; }
+.selection-bar .shown { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); font-weight: 500; }
 .selection-bar button:not(.icon-button) { padding: 0 var(--space-3); }
-.list li.selected { background: color-mix(in srgb, var(--color-ink) 8%, transparent); }
+.selection-bar button:not(.primary), .select-cards { border-color: transparent; }
+.field-add { display: flex; padding: 0; justify-content: space-between; width: 100%; border-color: transparent; border-bottom: var(--rule) solid var(--color-rule); border-radius: 0; font-weight: 400; }
+.field-add span { color: var(--color-ink-muted); }
 .selected-mark { position: absolute; top: var(--space-1); right: var(--space-1); display: flex; align-items: center; justify-content: center; width: var(--space-5); height: var(--space-5); border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-ground); pointer-events: none; }
 .selected-mark svg { width: var(--space-4); height: var(--space-4); }
-.grid li.selected .frame { outline: 2px solid var(--color-ink); outline-offset: 1px; }

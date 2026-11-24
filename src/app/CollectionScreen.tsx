@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, type Sort, type SortBy } from "../domain/query";
 import type { BulkPatch } from "../usecases/cards";
@@ -54,6 +54,14 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters), sort), [cards, filters, sort]);
   const selection = useSelection(shown);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const beginRef = useRef<HTMLButtonElement>(null);
+  const wasSelecting = useRef(false);
+  useEffect(() => {
+    if (selection.selecting) cancelRef.current?.focus();
+    else if (wasSelecting.current) beginRef.current?.focus();
+    wasSelecting.current = selection.selecting;
+  }, [selection.selecting]);
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
@@ -125,15 +133,27 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
 
   return (
     <section className="collection">
-      <header>
-        <div className="title-row">
-          <h1>Cards</h1>
-          <SyncIndicator />
-          <SettingsButton onClick={onSettings} />
-        </div>
-        <div className="title-rule" aria-hidden="true" />
-        <SyncActions />
-      </header>
+      {selection.selecting ? (
+        <header className="selection-bar" data-testid="selection-bar">
+          <h1 className="visually-hidden">Cards</h1>
+          <button ref={cancelRef} className="icon-button" aria-label="Cancel" onClick={selection.cancel}>
+            <Icon name="close" />
+          </button>
+          <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
+          <button onClick={selection.selectAll}>Select all</button>
+          <button className="primary" disabled={selection.chosen.length === 0} onClick={() => setBulkOpen(true)}>Edit</button>
+        </header>
+      ) : (
+        <header>
+          <div className="title-row">
+            <h1>Cards</h1>
+            <SyncIndicator />
+            <SettingsButton onClick={onSettings} />
+          </div>
+          <div className="title-rule" aria-hidden="true" />
+          <SyncActions />
+        </header>
+      )}
       {update && <UpdateLink update={update} />}
       <div className="search-row">
         <Field label="Search">
@@ -159,32 +179,25 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
           ))}
         </div>
       )}
-      <div className={selection.selecting ? "shown-row selection-bar" : "shown-row"} data-testid={selection.selecting ? "selection-bar" : undefined}>
-        {selection.selecting ? (
-          <>
-            <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
-            <button onClick={selection.selectAll}>Select all</button>
-            <button className="primary" disabled={selection.chosen.length === 0} onClick={() => setBulkOpen(true)}>Edit</button>
-            <button onClick={selection.cancel}>Cancel</button>
-          </>
-        ) : (
-          <>
-            <p className="shown">
-              <span data-testid="shown">Showing {shown.length}</span>
-              <span data-testid="order">
-                <span aria-hidden="true"> · {sortLabel} {sort.descending ? "↓" : "↑"}</span>
-                <span className="visually-hidden">, sorted by {sortLabel}, {sort.descending ? "descending" : "ascending"}</span>
-              </span>
-            </p>
-            {shown.length > 0 && <button onClick={selection.begin}>Select</button>}
-          </>
+      <div className="shown-row">
+        <p className="shown">
+          <span data-testid="shown">Showing {shown.length}</span>
+          <span data-testid="order">
+            <span aria-hidden="true"> · {sortLabel} {sort.descending ? "↓" : "↑"}</span>
+            <span className="visually-hidden">, sorted by {sortLabel}, {sort.descending ? "descending" : "ascending"}</span>
+          </span>
+        </p>
+        {shown.length > 0 && !selection.selecting && (
+          <button ref={beginRef} className="icon-button select-cards" aria-label="Select cards" onClick={selection.begin}>
+            <Icon name="check" outline />
+          </button>
         )}
         <button className="icon-button" aria-label={`${view === "grid" ? "List" : "Grid"} view`} onClick={() => onViewChange(view === "grid" ? "list" : "grid")}>
           <Icon name={view === "grid" ? "list" : "grid"} />
         </button>
       </div>
       {shown.length > 0 ? (
-        <List cards={shown} onOpen={onOpen} returnTo={returnTo} selected={selection.selecting ? selection.selected : undefined} onToggle={selection.toggle} onLongPress={selection.add} />
+        <List cards={shown} onOpen={onOpen} returnTo={returnTo} selected={selection.selected} onToggle={selection.toggle} onLongPress={selection.add} />
       ) : cards.length === 0 ? (
         <p className="empty" data-testid="empty-state">
           Your binder is empty. Scan a card or add one by hand.

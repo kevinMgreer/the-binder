@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { CONDITIONS, type Grading } from "../domain/card";
 import type { BulkPatch } from "../usecases/cards";
 import { Field, fieldId } from "./Field";
-import { Sheet, openSheets } from "./Sheet";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { Sheet } from "./Sheet";
 
 export interface BulkOptions {
   team: string[];
@@ -24,15 +25,20 @@ type Tri = "" | "yes" | "no";
 const empty = { team: "", year: "", manufacturer: "", set: "", subset: "", insert: "", parallel: "", rookie: "" as Tri, autograph: "" as Tri, relic: "" as Tri, grading: "", condition: "", company: "", grade: "" };
 type Draft = typeof empty;
 
-const TEXT = [
-  ["team", "Team", "team"],
-  ["manufacturer", "Manufacturer", "manufacturer"],
-  ["set", "Set", "set"],
-  ["subset", "Subset", "subset"],
-  ["insert", "Insert", "insert"],
-  ["parallel", "Parallel name", "parallel"],
+const ORDER = [
+  ["team", "Team"],
+  ["year", "Year"],
+  ["manufacturer", "Manufacturer"],
+  ["set", "Set"],
+  ["subset", "Subset"],
+  ["insert", "Insert"],
+  ["parallel", "Parallel name"],
+  ["rookie", "Rookie"],
+  ["autograph", "Autograph"],
+  ["relic", "Relic"],
+  ["grading", "Grading"],
 ] as const;
-const FLAGS = [["rookie", "Rookie"], ["autograph", "Autograph"], ["relic", "Relic"]] as const;
+const FLAGS = ["rookie", "autograph", "relic"] as const;
 
 function toGrading(d: Draft): Grading | undefined {
   if (d.grading === "raw") return { kind: "raw", condition: d.condition };
@@ -46,7 +52,7 @@ export function toPatch(d: Draft): BulkPatch {
   if (d.parallel.trim()) patch.parallelName = d.parallel.trim();
   const year = Number(d.year);
   if (d.year.trim() && Number.isInteger(year) && year >= 1800) patch.year = year;
-  for (const [key] of FLAGS) if (d[key]) patch[key] = d[key] === "yes";
+  for (const key of FLAGS) if (d[key]) patch[key] = d[key] === "yes";
   const grading = toGrading(d);
   if (grading) patch.grading = grading;
   return patch;
@@ -54,6 +60,7 @@ export function toPatch(d: Draft): BulkPatch {
 
 export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
   const [draft, setDraft] = useState(empty);
+  const [open, setOpen] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
   const set = (key: keyof Draft, value: string) => setDraft((d) => ({ ...d, [key]: value }));
@@ -63,17 +70,11 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
   const yearInvalid = draft.year.trim() !== "" && !("year" in patch);
   const noun = `${count} ${count === 1 ? "card" : "cards"}`;
 
-  // Android back is Cancel while the dialog is open.
-  useEffect(() => {
-    if (!confirming) return;
-    const cancel = () => setConfirming(false);
-    openSheets.push(cancel);
-    return () => void openSheets.splice(openSheets.lastIndexOf(cancel), 1);
-  }, [confirming]);
+  const cancelConfirm = useCallback(() => setConfirming(false), []);
 
   const choice = (key: "rookie" | "autograph" | "relic" | "grading", label: string, choices: Array<[string, string]>) => (
     <Field key={key} label={label}>
-      <select id={fieldId(label)} value={draft[key]} onChange={(e) => set(key, e.target.value)}>
+      <select id={fieldId(label)} autoFocus value={draft[key]} onChange={(e) => set(key, e.target.value)}>
         <option value="">Keep as is</option>
         {choices.map(([value, text]) => (
           <option key={value} value={value}>{text}</option>
@@ -93,22 +94,37 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
           </button>
         }
       >
-        {TEXT.map(([key, label, list]) => (
-          <Field key={key} label={label}>
-            <input id={fieldId(label)} list={`bulk-${list}`} placeholder="Keep as is" value={draft[key]} onChange={(e) => set(key, e.target.value)} />
-            <datalist id={`bulk-${list}`}>
-              {options[list].map((o) => (
-                <option key={o} value={o} />
-              ))}
-            </datalist>
-          </Field>
-        ))}
-        <Field label="Year">
-          <input id={fieldId("Year")} type="number" placeholder="Keep as is" value={draft.year} aria-describedby={yearInvalid ? "bulk-year-hint" : undefined} onChange={(e) => set("year", e.target.value)} />
-          {yearInvalid && <p id="bulk-year-hint" role="status">Enter a year</p>}
-        </Field>
-        {FLAGS.map(([key, label]) => choice(key, label, [["yes", "Yes"], ["no", "No"]]))}
-        {choice("grading", "Grading", [["raw", "Raw"], ["graded", "Graded"]])}
+        <p className="hint">Choose what to change. Everything else stays as it is.</p>
+        {ORDER.map(([key, label]) => {
+          if (!open.has(key)) {
+            return (
+              <button key={key} className="field-add" onClick={() => setOpen((o) => new Set(o).add(key))}>
+                {label}
+                <span>Keep as is</span>
+              </button>
+            );
+          }
+          if (key === "year") {
+            return (
+              <Field key={key} label="Year">
+                <input id={fieldId("Year")} type="number" autoFocus value={draft.year} aria-describedby={yearInvalid ? "bulk-year-hint" : undefined} onChange={(e) => set("year", e.target.value)} />
+                {yearInvalid && <p id="bulk-year-hint" role="status">Enter a year</p>}
+              </Field>
+            );
+          }
+          if (key === "grading") return choice("grading", label, [["raw", "Raw"], ["graded", "Graded"]]);
+          if (key === "rookie" || key === "autograph" || key === "relic") return choice(key, label, [["yes", "Yes"], ["no", "No"]]);
+          return (
+            <Field key={key} label={label}>
+              <input id={fieldId(label)} list={`bulk-${key}`} autoFocus value={draft[key]} onChange={(e) => set(key, e.target.value)} />
+              <datalist id={`bulk-${key}`}>
+                {options[key].map((o) => (
+                  <option key={o} value={o} />
+                ))}
+              </datalist>
+            </Field>
+          );
+        })}
         {draft.grading === "raw" && (
           <Field label="Condition">
             <select id={fieldId("Condition")} value={draft.condition} onChange={(e) => set("condition", e.target.value)}>
@@ -131,31 +147,29 @@ export function BulkEditSheet({ count, options, onSave, onClose }: Props) {
         )}
       </Sheet>
       {confirming && (
-        <div className="backdrop center" onClick={() => setConfirming(false)} onKeyDown={(e) => e.key === "Escape" && setConfirming(false)}>
-          <div role="alertdialog" aria-modal="true" aria-label={`Change ${noun}?`} onClick={(e) => e.stopPropagation()}>
-            <p>Change {noun}?</p>
-            {error && <p role="status">{error}</p>}
-            <div className="actions detail-actions">
-              <button
-                className="primary"
-                disabled={saving}
-                onClick={async () => {
-                  setSaving(true);
-                  setError("");
-                  try {
-                    await onSave(patch);
-                  } catch {
-                    setSaving(false);
-                    setError("Could not save the change. Try again.");
-                  }
-                }}
-              >
-                Change
-              </button>
-              <button autoFocus onClick={() => setConfirming(false)}>Cancel</button>
-            </div>
+        <ConfirmDialog label={`Change ${noun}?`} onCancel={cancelConfirm}>
+          <p>Change {noun}?</p>
+          {error && <p role="status">{error}</p>}
+          <div className="actions detail-actions">
+            <button
+              className="primary"
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                setError("");
+                try {
+                  await onSave(patch);
+                } catch {
+                  setSaving(false);
+                  setError("Could not save the change. Try again.");
+                }
+              }}
+            >
+              Change
+            </button>
+            <button autoFocus onClick={cancelConfirm}>Cancel</button>
           </div>
-        </div>
+        </ConfirmDialog>
       )}
     </>
   );

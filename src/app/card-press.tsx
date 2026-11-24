@@ -5,7 +5,7 @@ import { Icon } from "./Icon";
 const LONG_PRESS_MS = 500;
 const MOVE_PX = 10;
 
-/** The check on a selected row or tile; the tint alone would be colour only. */
+/** The check on a selected row or tile; selected state is shown by this mark, not by colour. */
 export const SelectedMark = () => (
   <span className="selected-mark">
     <Icon name="check" />

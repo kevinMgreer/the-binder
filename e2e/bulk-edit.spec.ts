@@ -6,7 +6,7 @@ test.use({ viewport: { width: 360, height: 800 } });
 test("Select all on 5,000 cards counts them all and renders only the rows near the screen", async ({ page }) => {
   await page.goto("/?seed=5000");
   await openCollection(page);
-  await page.getByRole("button", { name: "Select", exact: true }).click();
+  await page.getByRole("button", { name: "Select cards" }).click();
   await page.getByRole("button", { name: "Select all" }).click();
   const bar = page.getByTestId("selection-bar");
   await expect(bar).toContainText("5000 selected");
@@ -18,11 +18,12 @@ test("Select all on 5,000 cards counts them all and renders only the rows near t
 test("Changing the set of three cards shows it on their rows", async ({ page }) => {
   await page.goto("/?seed=5000");
   await openCollection(page);
-  await page.getByRole("button", { name: "Select", exact: true }).click();
+  await page.getByRole("button", { name: "Select cards" }).click();
   const rows = page.getByTestId("card-row");
   for (const i of [0, 1, 2]) await rows.nth(i).getByRole("button").click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   const sheet = page.getByRole("dialog", { name: "Edit 3 cards" });
+  await sheet.getByRole("button", { name: /^Set/ }).click();
   await sheet.getByLabel("Set", { exact: true }).fill("Bulk Gold");
   await sheet.getByRole("button", { name: "Change 3 cards" }).click();
   await page.getByRole("alertdialog", { name: "Change 3 cards?" }).getByRole("button", { name: "Change" }).click();
