@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Card } from "../domain/card";
 import type { Photos } from "../ports";
-import { deleteCard, saveCard } from "../usecases/cards";
+import { deleteCard, saveCard, saveCards, type BulkPatch } from "../usecases/cards";
 import { usePorts } from "./ports-context";
 import { useSync } from "./sync-context";
 
@@ -46,5 +46,14 @@ export function useCards() {
     [collection, photos, refresh, sync],
   );
 
-  return { cards, save, remove };
+  const saveMany = useCallback(
+    async (ids: string[], patch: BulkPatch) => {
+      await saveCards({ collection }, ids, patch);
+      await refresh();
+      sync.notifyChange();
+    },
+    [collection, refresh, sync],
+  );
+
+  return { cards, save, saveMany, remove };
 }

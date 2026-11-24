@@ -1,4 +1,4 @@
-import type { Card, CardSide } from "../domain/card";
+import type { Card, CardSide, Grading } from "../domain/card";
 import type { CollectionStore, PhotoStore, Photos } from "../ports";
 
 const SIDES: CardSide[] = ["front", "back"];
@@ -22,6 +22,55 @@ export async function saveCard({ collection, photos: store }: Deps, card: Card, 
     next = { ...next, photos: { ...next.photos, [side]: photo && { fileId: null, thumbId: null, name: null } } };
   }
   await collection.put(next);
+}
+
+/** Absent key means "Keep as is". No key exists for per-card fields, so a bulk change cannot touch them. */
+export interface BulkPatch {
+  team?: string;
+  year?: number;
+  manufacturer?: string;
+  set?: string;
+  subset?: string;
+  insert?: string;
+  parallelName?: string;
+  rookie?: boolean;
+  autograph?: boolean;
+  relic?: boolean;
+  grading?: Grading;
+}
+
+export function applyPatch(card: Card, patch: BulkPatch): Card {
+  const { parallelName, rookie, autograph, relic, grading, ...fields } = patch;
+  const next: Card = { ...card };
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined) Object.assign(next, { [key]: typeof value === "string" ? value.trim() : value });
+  }
+  const name = parallelName?.trim();
+  if (name) {
+    next.parallel = card.parallel
+      ? { ...card.parallel, name }
+      : { name, serialNumbered: false, serial: null, serialLegible: true, printRun: null };
+  }
+  next.flags = {
+    rookie: rookie ?? card.flags.rookie,
+    autograph: autograph ?? card.flags.autograph,
+    relic: relic ?? card.flags.relic,
+  };
+  if (grading) next.grading = grading;
+  return next;
+}
+
+export async function saveCards({ collection }: Pick<Deps, "collection">, ids: string[], patch: BulkPatch) {
+  const wanted = new Set(ids);
+  const now = new Date().toISOString();
+  const changed: Card[] = [];
+  for (const card of await collection.list()) {
+    if (!wanted.has(card.id) || card.deletedAt !== null) continue;
+    const next = applyPatch(card, patch);
+    if (JSON.stringify(next) !== JSON.stringify(card)) changed.push({ ...next, updatedAt: now });
+  }
+  if (changed.length) await collection.putMany(changed);
+  return changed.length;
 }
 
 export async function deleteCard({ collection, photos: store }: Deps, card: Card) {
