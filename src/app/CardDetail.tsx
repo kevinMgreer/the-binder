@@ -79,7 +79,28 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
       </div>
       {viewing && (
         <Sheet label={`${viewing === "front" ? "Front" : "Back"} photo view`} onClose={() => setViewing(null)}>
-          <PhotoView card={card} side={viewing} />
+          {card.photos.front && card.photos.back && (
+            <div className="side-switch">
+              {(["front", "back"] as const).map((side) => (
+                <button key={side} className="outline" aria-pressed={viewing === side} onClick={() => setViewing(side)}>
+                  {side === "front" ? "Front" : "Back"}
+                </button>
+              ))}
+            </div>
+          )}
+          <PhotoView
+            key={viewing}
+            card={card}
+            side={viewing}
+            onSwipe={
+              card.photos.front && card.photos.back
+                ? (direction) => {
+                    if (direction === "left" && viewing === "front") setViewing("back");
+                    if (direction === "right" && viewing === "back") setViewing("front");
+                  }
+                : undefined
+            }
+          />
         </Sheet>
       )}
       <p>
