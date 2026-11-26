@@ -114,7 +114,7 @@ test("Sort comes first in the sheet, with Ascending and Descending in one pair r
   await renderList();
   const dialog = openSheet();
   const headings = within(dialog).getAllByRole("heading").map((h) => h.textContent);
-  expect(headings.slice(headings.indexOf("Sort by"), headings.indexOf("Sort by") + 3)).toEqual(["Sort by", "Direction", "Year"]);
+  expect(headings.slice(headings.indexOf("Sort by"), headings.indexOf("Sort by") + 3)).toEqual(["Sort by", "Direction", "Show"]);
   expect(headings.indexOf("Sort by")).toBeGreaterThan(-1);
   expect(within(dialog).getByRole("radiogroup", { name: "Sort by" })).toBeTruthy();
   expect(within(dialog).getByRole("radiogroup", { name: "Direction" })).toBeTruthy();

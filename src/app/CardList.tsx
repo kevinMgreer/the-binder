@@ -69,6 +69,7 @@ export function CardList({ cards, returnTo, ...press }: { cards: Card[]; returnT
                   <span className="head">
                     <strong className="player">{c.player}</strong>
                     {serial && <span className="tag">{serial}</span>}
+                    {c.wanted && <span className="tag">Wanted</span>}
                   </span>
                   <span className="quiet">
                     <span className="set">

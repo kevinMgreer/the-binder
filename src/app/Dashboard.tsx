@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile, onOpenCard }: Props) {
-  const { tiles, recent, teams, players } = useMemo(() => collectionStats(cards), [cards]);
+  const { tiles, recent, teams, players, wanted } = useMemo(() => collectionStats(cards), [cards]);
   /** Top teams and Top players: one ruled table, a row opens the list filtered to that name. */
   const ruled = (heading: string, testId: string, rows: TeamStat[], filters: (name: string) => Partial<Filters>) =>
     rows.length > 0 && (
@@ -65,6 +65,15 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
           );
         })}
       </div>
+      {wanted > 0 && (
+        <button
+          className="wanted-line"
+          aria-label={`Wanted, ${wanted}`}
+          onClick={() => onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })}
+        >
+          {wanted.toLocaleString()} wanted
+        </button>
+      )}
       {ruled("Top teams", "team", teams, (name) => ({ team: name }))}
       {ruled("Top players", "player", players, (name) => ({ player: name }))}
       {recent.length > 0 && (

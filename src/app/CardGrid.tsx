@@ -22,7 +22,7 @@ function useColumns() {
 }
 
 const accessibleName = (c: Card) =>
-  [c.player, `${c.year} ${c.set}`, c.cardNumber && `number ${c.cardNumber}`, c.quantity > 1 && `${c.quantity} copies`].filter(Boolean).join(", ");
+  [c.player, `${c.year} ${c.set}`, c.cardNumber && `number ${c.cardNumber}`, c.quantity > 1 && `${c.quantity} copies`, c.wanted && "wanted"].filter(Boolean).join(", ");
 
 export function CardGrid({ cards, returnTo, ...press }: { cards: Card[]; returnTo?: string } & PressProps) {
   const scroller = useRef<HTMLDivElement>(null);
@@ -63,6 +63,7 @@ export function CardGrid({ cards, returnTo, ...press }: { cards: Card[]; returnT
                   <span className="grid-meta">
                     <span className="grid-year">{c.year}</span>
                     {c.quantity > 1 && <span className="badge">×{c.quantity}</span>}
+                    {c.wanted && <span className="tag">Wanted</span>}
                   </span>
                 </span>
               </button>

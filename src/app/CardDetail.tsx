@@ -10,6 +10,7 @@ import { Sheet } from "./Sheet";
 interface Props {
   card: Card;
   onEdit: () => void;
+  onMarkOwned: () => void;
   onDelete: () => Promise<void>;
 }
 
@@ -26,7 +27,7 @@ function PhotoThumb({ card, side, onOpen }: { card: Card; side: CardSide; onOpen
   );
 }
 
-export function CardDetail({ card, onEdit, onDelete }: Props) {
+export function CardDetail({ card, onEdit, onDelete, onMarkOwned }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [viewing, setViewing] = useState<CardSide | null>(null);
   const deleteButton = useRef<HTMLButtonElement>(null);
@@ -53,6 +54,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         <div className="title-row">
           <h2>{card.player}</h2>
           {serial && <span className="tag">{serial}</span>}
+          {card.wanted && <span className="tag">Wanted</span>}
         </div>
         <p className="subtitle" data-testid="subtitle">
           {card.year} {card.set}
@@ -107,9 +109,14 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         <button ref={deleteButton} className="danger outline" onClick={() => setConfirming(true)}>
           Delete
         </button>
-        <button className="primary" onClick={onEdit}>
+        <button className={card.wanted ? "outline" : "primary"} onClick={onEdit}>
           Edit
         </button>
+        {card.wanted && (
+          <button className="primary mark-owned" onClick={onMarkOwned}>
+            Mark as owned
+          </button>
+        )}
       </div>
       {confirming && (
         <ConfirmDialog label="Delete card" onCancel={keep}>

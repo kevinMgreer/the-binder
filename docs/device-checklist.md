@@ -55,6 +55,10 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 - [ ] Select 3 cards, tap the trash, confirm Delete: the 3 cards leave the list and selection mode ends. [bulk-delete, T-77]
 - [ ] After a Drive sync and a fresh install, the 3 deleted cards do not come back. [bulk-delete, T-77]
 
+## Collection list (wish-list)
+
+- [ ] Add a wanted card with no photo: it shows under Show Wanted and in "N wanted" on the dashboard, and is not in the tiles. Sync, reinstall or restore from Drive: it is still wanted. Then Mark as owned: it is in the default list and the counts after the next sync. [wish-list, T-64]
+
 ## Identification (card-identification)
 
 - [ ] On-device recognition runs in airplane mode on a freshly installed app (no model download) and pre-fills year, card number and set from a real card back. [6.3, T-26]

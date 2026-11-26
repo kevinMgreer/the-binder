@@ -35,6 +35,7 @@ interface Draft {
   condition: string;
   quantity: string;
   notes: string;
+  wanted: boolean;
 }
 
 /** The list entry a stored condition equals ignoring case, else the stored value. */
@@ -76,6 +77,7 @@ function toDraft(c?: Card): Draft {
     condition: c?.grading.kind === "raw" ? listedCondition(c.grading.condition) : "",
     quantity: String(c?.quantity ?? 1),
     notes: c?.notes ?? "",
+    wanted: c?.wanted ?? false,
   };
 }
 
@@ -114,6 +116,7 @@ function toCard(d: Draft, existing: Card | undefined, source: Card["source"]): C
       : { kind: "raw", condition: d.condition.trim() },
     quantity: Number(d.quantity),
     notes: d.notes,
+    wanted: d.wanted ? true : undefined,
     photos: existing?.photos ?? { front: null, back: null },
     source,
     createdAt: existing?.createdAt ?? now,
@@ -331,6 +334,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
     >
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <div className="title-rule" aria-hidden="true" />
+      {check("wanted", "Wanted (I don't have it yet)")}
       <div className="photo-tiles">
         {(["front", "back"] as const).map((side) => (
           <PhotoSlot

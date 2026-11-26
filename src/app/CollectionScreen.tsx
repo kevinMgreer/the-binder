@@ -120,6 +120,9 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
     ...(f.subset ? [{ name: "Subset", text: f.subset, clear: { subset: "" } }] : []),
     ...(f.insert ? [{ name: "Insert", text: f.insert, clear: { insert: "" } }] : []),
     ...(f.parallel ? [{ name: "Parallel", text: f.parallel, clear: { parallel: "" } }] : []),
+    ...(f.show !== "owned"
+      ? [{ name: "Show", text: f.show === "wanted" ? "Wanted" : "Owned and wanted", clear: { show: "owned" as const } }]
+      : []),
     ...(f.printRun !== null ? [{ name: "Print run", text: `Print run ${f.printRun}`, clear: { printRun: null } }] : []),
     ...(["serialNumbered", "rookie", "autograph", "relic", "graded"] as const)
       .filter((key) => f[key])
@@ -297,6 +300,14 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
             <div className="pair">
               {radio("sort-direction", "Ascending", !sort.descending, () => onSortChange({ ...sort, descending: false }))}
               {radio("sort-direction", "Descending", sort.descending, () => onSortChange({ ...sort, descending: true }))}
+            </div>
+          </div>
+          <div className="group" role="radiogroup" aria-label="Show">
+            <h3>Show</h3>
+            <div className="triple">
+              {radio("show", "Owned", f.show === "owned", () => set("show", "owned"))}
+              {radio("show", "Wanted", f.show === "wanted", () => set("show", "wanted"))}
+              {radio("show", "All", f.show === "all", () => set("show", "all"))}
             </div>
           </div>
           <div className="group">
