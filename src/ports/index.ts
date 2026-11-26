@@ -97,6 +97,11 @@ export interface ReleaseFeed {
   latest(): Promise<{ version: string; apkUrl: string }>;
 }
 
+/** Saves a photo into the phone's gallery under `name` (no extension). */
+export interface Gallery {
+  save(photo: Blob, name: string): Promise<void>;
+}
+
 export interface Ports {
   collection: CollectionStore;
   remote: RemoteStore;
@@ -107,4 +112,5 @@ export interface Ports {
   auth: AuthProvider;
   appInfo: AppInfo;
   releaseFeed: ReleaseFeed;
+  gallery: Gallery;
 }

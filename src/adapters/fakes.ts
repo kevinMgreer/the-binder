@@ -4,6 +4,7 @@ import type {
   AuthProvider,
   CapturedPhoto,
   CollectionStore,
+  Gallery,
   PendingChange,
   PendingUpload,
   PhotoSource,
@@ -248,6 +249,15 @@ export class FakeReleaseFeed implements ReleaseFeed {
   }
 }
 
+export class FakeGallery implements Gallery {
+  saved: { photo: Blob; name: string }[] = [];
+  error: Error | null = null;
+  async save(photo: Blob, name: string) {
+    if (this.error) throw this.error;
+    this.saved.push({ photo, name });
+  }
+}
+
 export function createFakePorts(): Ports {
   return {
     collection: new InMemoryCollectionStore(),
@@ -259,5 +269,6 @@ export function createFakePorts(): Ports {
     auth: new FakeAuthProvider(),
     appInfo: new FakeAppInfo(),
     releaseFeed: new FakeReleaseFeed(),
+    gallery: new FakeGallery(),
   };
 }
