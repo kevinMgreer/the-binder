@@ -5,11 +5,9 @@ import { Icon } from "./Icon";
 const LONG_PRESS_MS = 500;
 const MOVE_PX = 10;
 
-/** The check on a selected row or tile; selected state is shown by this mark, not by colour. */
-export const SelectedMark = () => (
-  <span className="selected-mark">
-    <Icon name="check" />
-  </span>
+/** The selection circle on every row or tile in selection mode: an empty ring, or a filled one with a check (not colour alone). */
+export const SelectMark = ({ on }: { on: boolean }) => (
+  <span className={on ? "select-mark on" : "select-mark"}>{on && <Icon name="check" />}</span>
 );
 
 export interface PressProps {

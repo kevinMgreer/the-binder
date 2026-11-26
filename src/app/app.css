@@ -253,5 +253,8 @@ form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
 .selection-bar button:not(.primary), .select-cards { border-color: transparent; }
 .field-add { display: flex; padding: 0; justify-content: space-between; width: 100%; border-color: transparent; border-bottom: var(--rule) solid var(--color-rule); border-radius: 0; font-weight: 400; }
 .field-add span { color: var(--color-ink-muted); }
-.selected-mark { position: absolute; top: var(--space-1); right: var(--space-1); display: flex; align-items: center; justify-content: center; width: var(--space-5); height: var(--space-5); border-radius: var(--radius-pill); background: var(--color-ink); color: var(--color-ground); pointer-events: none; }
-.selected-mark svg { width: var(--space-4); height: var(--space-4); }
+.select-mark { position: absolute; top: calc(50% - var(--space-1) - var(--space-5) / 2); left: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: var(--space-5); height: var(--space-5); border: 2px solid var(--color-ink); border-radius: var(--radius-pill); background: var(--color-ground); color: var(--color-ground); pointer-events: none; }
+.select-mark.on { background: var(--color-ink); }
+.select-mark svg { width: var(--space-4); height: var(--space-4); }
+.list:not(.grid) li.selecting button { padding-left: calc(var(--space-5) + var(--space-2)); }
+.grid li .select-mark { top: var(--space-2); left: var(--space-2); }
