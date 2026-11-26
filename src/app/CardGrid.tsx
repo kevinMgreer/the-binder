@@ -1,7 +1,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Card } from "../domain/card";
-import { useCardPress, SelectedMark, type PressProps } from "./card-press";
+import { useCardPress, SelectMark, type PressProps } from "./card-press";
 import { useReturnTo } from "./CardList";
 import { Thumb } from "./Thumb";
 
@@ -52,7 +52,7 @@ export function CardGrid({ cards, returnTo, ...press }: { cards: Card[]; returnT
               key={c.id}
               data-testid="card-tile"
               data-index={item.index}
-              className={press.selected?.has(c.id) ? "selected" : undefined}
+              className={press.selected ? "selecting" : undefined}
               ref={virtualizer.measureElement}
               style={{ "--lane": item.lane, transform: `translateY(${item.start}px)` } as CSSProperties}
             >
@@ -66,7 +66,7 @@ export function CardGrid({ cards, returnTo, ...press }: { cards: Card[]; returnT
                   </span>
                 </span>
               </button>
-              {press.selected?.has(c.id) && <SelectedMark />}
+              {press.selected && <SelectMark on={press.selected.has(c.id)} />}
             </li>
           );
         })}

@@ -76,6 +76,9 @@ test("a long press starts selection with that card selected", async () => {
   expect(bar().textContent).toContain("1 selected");
   expect(row("Ty Cobb").getAttribute("aria-pressed")).toBe("true");
   expect(row("Hank Aaron").getAttribute("aria-pressed")).toBe("false");
+  // Every row shows a circle; only the selected one is filled with a check.
+  expect(row("Ty Cobb").parentElement!.querySelector(".select-mark.on svg")).not.toBeNull();
+  expect(row("Hank Aaron").parentElement!.querySelector(".select-mark:not(.on)")).not.toBeNull();
 });
 
 test("a pointer that moves past 10 px before the delay does not select", async () => {
