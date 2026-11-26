@@ -22,6 +22,7 @@ export interface Filters {
   autograph: boolean;
   relic: boolean;
   graded: boolean;
+  show: "owned" | "wanted" | "all";
 }
 
 export const emptyFilters: Filters = {
@@ -41,6 +42,7 @@ export const emptyFilters: Filters = {
   autograph: false,
   relic: false,
   graded: false,
+  show: "owned",
 };
 
 const key = (s: string | undefined) => normalize((s ?? "").trim());
@@ -51,6 +53,7 @@ export function matcher(f: Filters): (c: Card) => boolean {
   const player = key(f.player);
   const [team, manufacturer, set, subset, insert, parallel] = [f.team, f.manufacturer, f.set, f.subset, f.insert, f.parallel].map(key);
   return (c) => {
+    if (f.show !== "all" && !!c.wanted !== (f.show === "wanted")) return false;
     if (search && !normalize(`${c.player} ${c.team} ${c.set} ${c.subset ?? ""} ${c.insert ?? ""} ${c.notes}`).includes(search)) return false;
     if (player && !normalize(c.player).includes(player)) return false;
     if (f.yearFrom !== null && c.year < f.yearFrom) return false;
@@ -116,7 +119,9 @@ function identity(c: Card): string {
   return normalize([c.player, c.year, c.set, c.cardNumber, c.parallel?.name ?? "", grade].join("|").trim());
 }
 
+/** Owned cards only: a wanted card is neither a duplicate nor something to add quantity to. */
 export function findDuplicate(cards: Card[], card: Card): Card | undefined {
+  if (card.wanted) return undefined;
   const key = identity(card);
-  return cards.find((c) => c.id !== card.id && c.deletedAt === null && identity(c) === key);
+  return cards.find((c) => c.id !== card.id && c.deletedAt === null && !c.wanted && identity(c) === key);
 }

@@ -34,6 +34,7 @@ export const cardSchema = z
     ]),
     quantity: z.number({ error: "Enter a quantity" }).int().min(1, "At least 1"),
     notes: z.string(),
+    wanted: z.boolean().optional(),
     photos: z.object({ front: photoRef, back: photoRef }),
     source: z.enum(["manual", "ocr", "claude"]),
     createdAt: z.string(),

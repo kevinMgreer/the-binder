@@ -37,6 +37,8 @@ export interface CollectionStats {
   teams: TeamStat[];
   /** Same shape and rules as teams, keyed by the card's whole player string. */
   players: TeamStat[];
+  /** Distinct wanted cards; they are left out of everything above. */
+  wanted: number;
 }
 
 /** One distinct card per call; spellings that differ in case, accents or edge spaces are one entry, labelled by the first seen. */
@@ -73,7 +75,12 @@ export function collectionStats(cards: Card[]): CollectionStats {
   const teams = new Map<string, TeamStat>();
   const players = new Map<string, TeamStat>();
   const playerKeys = new Map<string, { key: string; explicit: boolean }>();
+  let wanted = 0;
   for (const card of cards) {
+    if (card.wanted) {
+      wanted++;
+      continue;
+    }
     TILES.forEach((tile, i) => {
       if (tile.count === "total") values[i] += card.quantity;
       else if (tile.count === "distinct") values[i] += 1;
@@ -95,5 +102,6 @@ export function collectionStats(cards: Card[]): CollectionStats {
     recent,
     teams: top(teams),
     players: top(players, playerKeys),
+    wanted,
   };
 }

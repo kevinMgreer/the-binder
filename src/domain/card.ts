@@ -33,6 +33,8 @@ export interface Card {
   grading: Grading;
   quantity: number;
   notes: string;
+  /** On the wish list, not owned. Absent means owned, as on cards saved before the mark. */
+  wanted?: boolean;
   photos: { front: PhotoRef | null; back: PhotoRef | null };
   source: "manual" | "ocr" | "claude";
   createdAt: string;
