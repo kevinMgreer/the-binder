@@ -11,6 +11,8 @@ colors:
   frame: "#f3ecdc"
   scrim: "#1c2b4a66"
   placeholder: "#d8d1bf"
+  viewer: "#0b1220"
+  viewer-ink: "#f3ecdc"
   night-ground: "#101a30"
   night-panel: "#17233f"
   night-ink: "#f3ecdc"
@@ -20,6 +22,7 @@ colors:
   night-frame: "#f3ecdc"
   night-scrim: "#000000a6"
   night-placeholder: "#2a3756"
+  night-viewer: "#000000"
 typography:
   title:
     fontFamily: "Roboto Slab, Georgia, serif"
@@ -188,6 +191,7 @@ A cream-and-navy neutral world. Status is a single danger red.
 - **Muted Ink** (ink-muted #4a5670 / night-ink-muted #c2bcae): labels, placeholders, hints, inactive nav, secondary row text.
 - **Keyline** (rule #1c2b4a8c / night-rule #f3ecdc4d): thin rules between table cells, list rows, facts, sheet edges and the divider above Sign out in settings.
 - **Frame Stock** (frame #f3ecdc, both themes): the matte of a photo frame.
+- **Viewer** (viewer #0b1220 / night-viewer #000000, viewer-ink #f3ecdc): the full-screen photo view, its backdrop, X close, page dots, note and focus ring.
 - **Print Placeholder** (placeholder #d8d1bf / night-placeholder #2a3756): the empty photo area and the keyline round a photo.
 - **Scrim** (scrim #1c2b4a66 / night-scrim #000000a6): the sheet backdrop only.
 
@@ -247,7 +251,7 @@ Flat. No shadows, blur or backdrop-filter anywhere. Structure comes from 1px ink
 
 ## Shapes
 
-Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons, frames, tables, dialogs, banners, sheet top corners), pill 999px (chips, count badge). Ruled fields have no radius, only a bottom line. Borders are always 1px (`--rule`); focus ring is 2px ink with 2px offset. Photos always sit in a 2.5:3.5 frame (`--frame-ratio`), turned to 3.5:2.5 when the photo is landscape, with a 3px cream matte and an inner keyline; the photo keeps its own ratio and is never cropped.
+Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons, frames, tables, dialogs, banners, sheet top corners), pill 999px (chips, count badge). Ruled fields have no radius, only a bottom line. Borders are always 1px (`--rule`); focus ring is 2px ink with 2px offset (viewer-ink in the photo viewer). Photos always sit in a 2.5:3.5 frame (`--frame-ratio`), turned to 3.5:2.5 when the photo is landscape, with a 3px cream matte and an inner keyline; the photo keeps its own ratio and is never cropped.
 
 ## Components
 
@@ -255,7 +259,7 @@ Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons,
 - **Shape:** frame radius (6px), min 48x48, 16px horizontal padding, transparent with a 1px ink border and ink text, weight 500.
 - **Primary:** Ink fill and border, ground-coloured text, Inter 600 at 1rem, frame radius, 48px high. One per screen footer or sheet footer; in a row it takes the remaining width.
 - **Danger:** Danger text, weight 600, no border by default (Sign out stays apart under a keyline in settings). On the card detail screen Delete is the outlined variant (`.danger.outline`: Danger text and 1px Danger border, transparent background) at the left of the action row, and Edit, the filled primary, at the right; both share the row equally with the same 48px height and frame radius, like Cancel left, Save right.
-- **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset.
+- **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset (viewer-ink in the photo viewer).
 - **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a 24px plus in a 48x32 ink-filled frame with the frame radius (larger than the 24px icons beside it), ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
 
 ### Bottom navigation

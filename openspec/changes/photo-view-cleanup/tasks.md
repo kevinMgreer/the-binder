@@ -4,4 +4,4 @@
 
 ## 2. Build
 
-- [x] 2.1 Hide the heading, join the toggle into the Close row, let the photo fill the sheet. Verify: `src/app/card-detail.test.tsx` passes.
+- [x] 2.1 Hide the heading, replace the Close row with page dots and an X, let the photo fill the sheet. Verify: `src/app/card-detail.test.tsx` passes.

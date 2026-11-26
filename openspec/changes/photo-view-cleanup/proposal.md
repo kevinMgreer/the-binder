@@ -20,5 +20,5 @@ The full-size photo view spends its top third on a "Front photo view" heading, a
 
 ## Impact
 
-- `src/app/Sheet.tsx`, `src/app/CardDetail.tsx`, `src/app/PhotoView.tsx`, `src/app/app.css`, `src/app/card-detail.test.tsx`.
+- `src/app/Sheet.tsx`, `src/app/CardDetail.tsx`, `src/app/PhotoView.tsx`, `src/app/app.css`, `src/app/tokens.css`, `src/app/card-detail.test.tsx`.
 - No data, storage or sync change.

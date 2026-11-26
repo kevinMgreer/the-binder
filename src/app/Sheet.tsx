@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { Icon } from "./Icon";
 
 // Open sheets, newest last. Android's back button closes the top one before it leaves a screen.
 export const openSheets: Array<() => void> = [];
@@ -30,7 +31,7 @@ export function Sheet({ label, onClose, foot, compact, hideTitle, children }: Pr
           <h2 className={hideTitle ? "visually-hidden" : undefined}>{label}</h2>
           {hideTitle ? (
             <button autoFocus className="icon-button viewer-close" aria-label="Close" onClick={onClose}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              <Icon name="close" outline />
             </button>
           ) : (
             <button autoFocus onClick={onClose}>Close</button>
