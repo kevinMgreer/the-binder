@@ -28,8 +28,13 @@ export function PhotoView({ card, side, onSwipe }: { card: Card; side: CardSide;
 
   const save = async () => {
     setSaving(true);
+    setMessage("");
     try {
-      const full = blobs.full ?? (online && ref?.fileId ? await loadFull(ref.fileId) : undefined);
+      let full = blobs.full;
+      if (!full && online && ref?.fileId) {
+        full = await loadFull(ref.fileId);
+        setBlobs((b) => ({ ...b, full }));
+      }
       if (!full) return setMessage("Connect to the internet to save the full photo");
       await gallery.save(full, photoFileName(card, side).replace(/\.webp$/, ""));
       setMessage("Saved to Photos");

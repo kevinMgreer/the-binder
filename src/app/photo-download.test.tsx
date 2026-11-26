@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { createFakePorts, FakeGallery } from "../adapters/fakes";
+import { createFakePorts, FakeGallery, InMemoryRemoteStore } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
 import { CardDetail } from "./CardDetail";
 import { PortsProvider } from "./ports-context";
@@ -79,6 +79,8 @@ test("Full photo fetched first: the remote full photo is saved and cached, not t
   const id = await ports.remote.uploadPhoto("front.webp", remoteFull, "full");
   const c = makeCard({ ...card, photos: { front: { fileId: id, thumbId: "t", name: "front.webp" }, back: null } });
   await ports.photos.cacheThumb(c.id, "front", thumb);
+  // The open-time download fails, so Save has to fetch the full photo itself.
+  (ports.remote as InMemoryRemoteStore).failures.push(new Error("x"));
   render(
     <PortsProvider ports={ports}>
       <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} />
@@ -120,6 +122,31 @@ test("Status goes away after 3 seconds", async () => {
     await vi.advanceTimersByTimeAsync(3000);
   });
   expect(screen.queryByRole("status")).toBeNull();
+});
+
+test("Saving again restarts the 3 second status timer", async () => {
+  await open();
+  vi.useFakeTimers();
+  save();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2500);
+  });
+  save();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1000);
+  });
+  expect(screen.getByRole("status").textContent).toBe("Saved to Photos");
+});
+
+test("Save button is disabled while the gallery save is pending", async () => {
+  const { gallery } = await open();
+  let release!: () => void;
+  gallery.save = () => new Promise<void>((resolve) => (release = resolve));
+  save();
+  const button = () => screen.getByRole("button", { name: "Save to phone" }) as HTMLButtonElement;
+  await waitFor(() => expect(button().disabled).toBe(true));
+  release();
+  await waitFor(() => expect(button().disabled).toBe(false));
 });
 
 test("Button shape: icon only", async () => {
