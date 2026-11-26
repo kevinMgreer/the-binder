@@ -800,6 +800,10 @@ test.describe("States at phone size", () => {
           await ports.photos.cacheThumb(card.id, "front", await canvas.convertToBlob({ type: "image/webp" }));
         });
         await page.reload();
+        await page.evaluate(() => {
+          document.documentElement.style.setProperty("--safe-area-inset-top", "24px");
+          document.documentElement.style.setProperty("--safe-area-inset-bottom", "24px");
+        });
         await openCollection(page);
         await page.context().setOffline(true);
         await page.getByTestId("card-row").first().click();
