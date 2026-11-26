@@ -84,7 +84,7 @@ async function openView(c: typeof card, sides: ("front" | "back")[]) {
   for (const s of sides) await ports.photos.cacheThumb(c.id, s, thumb);
   render(
     <PortsProvider ports={ports}>
-      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} />
+      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={() => {}} />
     </PortsProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "View front photo" }));
