@@ -117,8 +117,11 @@ test("deleteCards keeps going when one card fails and returns its id", async () 
   const { collection, cards, deps } = await setupDelete();
   const put = collection.put.bind(collection);
   vi.spyOn(collection, "put").mockImplementation((c) => (c.id === "c1" ? Promise.reject(new Error("x")) : put(c)));
+  const queue = vi.spyOn(deps.photos, "queueDelete");
   const failed = await deleteCards(deps, cards.slice(0, 3));
   expect(failed).toEqual(["c1"]);
+  expect(queue).toHaveBeenCalledTimes(8);
+  expect(queue.mock.calls.map(([id]) => id).filter((id) => /^[ft]1[FB]$/.test(id))).toEqual([]);
   const after = await collection.list();
   expect(after.find((c) => c.id === "c1")?.deletedAt).toBeNull();
   expect(after.find((c) => c.id === "c2")?.deletedAt).not.toBeNull();

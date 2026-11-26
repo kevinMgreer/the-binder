@@ -128,13 +128,17 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
   const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
   const closeSheet = useCallback(() => setFilterOpen(false), []);
   const closeBulk = useCallback(() => setBulkOpen(false), []);
+  const deletingRef = useRef(false);
   const keepCards = useCallback(() => {
+    if (deletingRef.current) return;
     setDeleteOpen(false);
     setDeleteError(null);
     // The bar's Delete is still mounted; focus after the dialog's autofocus has gone.
     queueMicrotask(() => deleteRef.current?.focus());
   }, []);
   const confirmDelete = async () => {
+    if (deletingRef.current) return;
+    deletingRef.current = true;
     setDeleting(true);
     setDeleteError(null);
     try {
@@ -144,11 +148,12 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         selection.cancel();
       } else {
         selection.keep(failed);
-        setDeleteError(`${failed.length} ${failed.length === 1 ? "card" : "cards"} could not be deleted. Try again or keep them.`);
+        setDeleteError(failed.length === 1 ? "1 card could not be deleted. Try again or keep it." : `${failed.length} cards could not be deleted. Try again or keep them.`);
       }
     } catch {
       setDeleteError("Could not delete the cards. Try again.");
     } finally {
+      deletingRef.current = false;
       setDeleting(false);
     }
   };
@@ -170,9 +175,9 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
           <button ref={cancelRef} className="icon-button" aria-label="Cancel" onClick={selection.cancel}>
             <Icon name="close" />
           </button>
-          <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
+          <p className="shown" aria-live="polite"><span className="count">{selection.chosen.length}</span>{" "}<span>selected</span></p>
           <button onClick={selection.selectAll}>Select all</button>
-          <button ref={deleteRef} className="icon-button" aria-label="Delete" disabled={selection.chosen.length === 0} onClick={() => setDeleteOpen(true)}>
+          <button ref={deleteRef} className="icon-button" aria-label="Delete" disabled={selection.chosen.length === 0} onClick={() => { setDeleteError(null); setDeleteOpen(true); }}>
             <Icon name="trash" />
           </button>
           <button className="primary" disabled={selection.chosen.length === 0} onClick={() => setBulkOpen(true)}>Edit</button>
@@ -260,9 +265,9 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
           {deleteError && <p role="status">{deleteError}</p>}
           <div className="actions detail-actions">
             <button className="danger outline" disabled={deleting} onClick={confirmDelete}>
-              Delete
+              {deleting ? "Deleting..." : "Delete"}
             </button>
-            <button className="primary" autoFocus onClick={keepCards}>
+            <button className="primary" autoFocus disabled={deleting} onClick={keepCards}>
               Keep
             </button>
           </div>

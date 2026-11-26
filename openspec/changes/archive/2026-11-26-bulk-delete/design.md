@@ -20,13 +20,13 @@ Bulk edit (T-62, archived as `2026-11-23-bulk-edit`) added selection mode to the
 export async function deleteCards(deps: Deps, cards: Card[]): Promise<string[]>
 ```
 
-For each card, `await deleteCard(deps, card)` inside its own `try`/`catch`; a throw adds the card's id to the returned `failed` list and the loop goes on. Sequential, not `Promise.all`: Dexie writes queue anyway, and a sequential loop keeps the failed list in order and the test simple. Every card gets the same per-card behaviour as single delete (photos queued, then the soft-delete `put`), so the two paths cannot drift.
+For each card, `await deleteCard(deps, card)` inside its own `try`/`catch`; a throw adds the card's id to the returned `failed` list and the loop goes on. Sequential, not `Promise.all`: Dexie writes queue anyway, and a sequential loop keeps the failed list in order and the test simple. Every card gets the same per-card behaviour as single delete (the soft-delete `put` first, then the photos queued, so a failed `put` queues nothing), so the two paths cannot drift.
 
 Alternatives: a new batch delete with one `putMany` (faster for hundreds of cards, but a second copy of the photo-queue logic and all-or-nothing failure, which hides which cards failed); `Promise.allSettled` (same result, harder to read). $0: local IndexedDB writes only.
 
 ### D2. One sync push, from the hook
 
-`useCards` gets `removeMany(cards: Card[]): Promise<string[]>`: `const failed = await deleteCards(...)`, `await refresh()`, then one `sync.notifyChange()`, and returns `failed`. Same shape as `saveMany` in bulk edit. `notifyChange` is called even when every card failed: it is cheap and an earlier `queueDelete` may have succeeded for a card whose `put` then failed.
+`useCards` gets `removeMany(cards: Card[]): Promise<string[]>`: `const failed = await deleteCards(...)`, `await refresh()`, then one `sync.notifyChange()`, and returns `failed`. Same shape as `saveMany` in bulk edit. `notifyChange` is called even when every card failed: it is cheap and keeps the call the same shape as `saveMany`.
 
 Alternative: notify per card (N pending-count refreshes, and it reads as N pushes). $0: the existing Drive file write.
 
@@ -52,7 +52,7 @@ Alternatives: a text "Delete" button (the owner wants the bar compact); a shared
 
 ## Risks / Trade-offs
 
-- A card whose photos were queued but whose soft-delete `put` failed keeps its card but loses its Drive photos at the next sync. This is today's `deleteCard` order and single delete has the same risk; changing the order is out of scope. → Named here; the failure message tells the owner the card was not deleted.
+- `deleteCard` soft-deletes first and queues the photos after, so a failed `put` queues nothing and the card keeps its Drive photos. The order is fixed and tested. If a `queueDelete` fails after the `put`, the card is reported failed but is already deleted; its remaining photos stay on Drive.
 - Hundreds of sequential `deleteCard` calls on a phone may take a second or more. → Delete is disabled while it runs; no batch path until the owner reports it is slow.
 - The bar now holds Cancel, "N selected", Select all, trash and Edit at 360 px. "N selected" already ellipsizes; the screenshot task checks there is no wrap.
 

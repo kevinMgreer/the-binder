@@ -56,7 +56,7 @@ export function useCards() {
     [collection, photos, refresh, sync],
   );
 
-  const saveMany =useCallback(
+  const saveMany = useCallback(
     async (ids: string[], patch: BulkPatch) => {
       await saveCards({ collection }, ids, patch);
       await refresh();

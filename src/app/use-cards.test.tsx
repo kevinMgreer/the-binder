@@ -46,3 +46,26 @@ test("removeMany deletes 3 cards with one notifyChange", async () => {
   expect(notify).toHaveBeenCalledTimes(1);
   expect(result.current.cards.map((c) => c.id)).toEqual(["d"]);
 });
+
+test("removeMany returns the id whose put rejects, keeps that card and notifies once", async () => {
+  const ports = createFakePorts();
+  await ports.collection.putMany(["a", "b", "c"].map((id) => makeCard({ id })));
+  const put = ports.collection.put.bind(ports.collection);
+  vi.spyOn(ports.collection, "put").mockImplementation((c) => (c.id === "b" ? Promise.reject(new Error("x")) : put(c)));
+  const engine = new SyncEngine(ports);
+  const notify = vi.spyOn(engine, "notifyChange").mockImplementation(() => {});
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <PortsProvider ports={ports}>
+      <SyncProvider engine={engine}>{children}</SyncProvider>
+    </PortsProvider>
+  );
+  const { result } = renderHook(() => useCards(), { wrapper });
+  await waitFor(() => expect(result.current.cards).toHaveLength(3));
+  let failed: string[] = [];
+  await act(async () => {
+    failed = await result.current.removeMany(result.current.cards);
+  });
+  expect(failed).toEqual(["b"]);
+  expect(result.current.cards.map((c) => c.id)).toEqual(["b"]);
+  expect(notify).toHaveBeenCalledTimes(1);
+});

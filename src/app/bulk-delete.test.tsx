@@ -166,3 +166,33 @@ test("a rejected delete shows the generic error and leaves the selection as it w
   expect((await bar()).textContent).toContain("3 selected");
   expect(within(dialog()).getByRole("button", { name: "Delete" }).hasAttribute("disabled")).toBe(false);
 });
+
+test("while a delete is pending, Delete is disabled and Keep, scrim, Escape and back do nothing", async () => {
+  let finish: (failed: string[]) => void = () => {};
+  const onRemoveMany = renderList(vi.fn(() => new Promise<string[]>((resolve) => (finish = resolve))));
+  await selectAll();
+  click("Delete");
+  fireEvent.click(within(dialog()).getByRole("button", { name: "Delete" }));
+  const pending = await within(dialog()).findByRole("button", { name: "Deleting..." });
+  expect(pending.hasAttribute("disabled")).toBe(true);
+  fireEvent.click(pending);
+  expect(onRemoveMany).toHaveBeenCalledTimes(1);
+  expect(within(dialog()).getByRole("button", { name: "Keep" }).hasAttribute("disabled")).toBe(true);
+  fireEvent.click(dialog().parentElement!);
+  fireEvent.keyDown(dialog().parentElement!, { key: "Escape" });
+  await back();
+  expect(dialog()).toBeTruthy();
+  await act(async () => finish([]));
+  await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+});
+
+test("a failure message is cleared when the dialog opens again", async () => {
+  renderList(vi.fn(async () => ["c"]));
+  await selectAll();
+  click("Delete");
+  fireEvent.click(within(dialog()).getByRole("button", { name: "Delete" }));
+  await within(dialog()).findByText("1 card could not be deleted. Try again or keep it.");
+  click("Keep");
+  click("Delete");
+  expect(within(dialog()).queryByRole("status")).toBeNull();
+});
