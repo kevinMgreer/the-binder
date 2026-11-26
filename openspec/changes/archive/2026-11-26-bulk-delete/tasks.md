@@ -1,6 +1,6 @@
 ## 1. Spec
 
-- [ ] 1.1 `npx openspec validate bulk-delete --strict` passes. Verify: exit 0.
+- [x] 1.1 `npx openspec validate bulk-delete --strict` passes. Verify: exit 0.
 
 ## 2. Use case, test first
 
@@ -19,8 +19,8 @@
 
 ## 4. Close out
 
-- [ ] 4.1 `docs/device-checklist.md` under the bulk-edit collection list section: select 3 cards, tap the trash, Keep deletes nothing; confirm deletes them; after a Drive sync and a fresh install they do not come back. Verify: the lines are in the file.
-- [ ] 4.2 Archive the change with the `openspec-archive-change` skill so the requirement lands in `openspec/specs/collection-list/spec.md`. Verify: `npx openspec validate --specs --strict` passes after the archive.
+- [x] 4.1 `docs/device-checklist.md` under the bulk-edit collection list section: select 3 cards, tap the trash, Keep deletes nothing; confirm deletes them; after a Drive sync and a fresh install they do not come back. Verify: the lines are in the file.
+- [x] 4.2 Archive the change with the `openspec-archive-change` skill so the requirement lands in `openspec/specs/collection-list/spec.md`. Verify: `npx openspec validate --specs --strict` passes after the archive.
 
 ## 5. On the phone (owner)
 
