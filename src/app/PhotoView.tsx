@@ -68,9 +68,8 @@ export function PhotoView({ card, side, onSwipe }: { card: Card; side: CardSide;
   return (
     <div className="photo-view">
       <ZoomableImage src={url} alt={`${label} photo`} testId={`zoom-${side}`} onSwipe={onSwipe} />
-      {/* Placeholder icon until the download icon lands in Icon.tsx. */}
       <button className="icon-button viewer-close viewer-save" aria-label="Save to phone" disabled={saving} onClick={() => void save()}>
-        <Icon name="check" />
+        <Icon name="download" />
       </button>
       {message && (
         <p role="status" className="viewer-toast">
