@@ -27,4 +27,4 @@
 
 ## 5. Close out
 
-- [ ] 5.1 Archive the change with the `openspec-archive-change` skill so the requirements land in `openspec/specs/card-catalog`, `collection-list` and `dashboard`. Verify: `npx openspec validate --specs --strict` passes after the archive.
+- [x] 5.1 Archive the change with the `openspec-archive-change` skill so the requirements land in `openspec/specs/card-catalog`, `collection-list` and `dashboard`. Verify: `npx openspec validate --specs --strict` passes after the archive.
