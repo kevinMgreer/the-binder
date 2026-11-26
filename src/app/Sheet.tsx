@@ -31,7 +31,7 @@ export function Sheet({ label, onClose, foot, compact, hideTitle, children }: Pr
           <h2 className={hideTitle ? "visually-hidden" : undefined}>{label}</h2>
           {hideTitle ? (
             <button autoFocus className="icon-button viewer-close" aria-label="Close" onClick={onClose}>
-              <Icon name="close" outline />
+              <Icon name="close" />
             </button>
           ) : (
             <button autoFocus onClick={onClose}>Close</button>
