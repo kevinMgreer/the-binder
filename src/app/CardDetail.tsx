@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 import type { Card, CardSide } from "../domain/card";
 import { gradeLabel, serialLabel } from "../domain/format";
 import { Frame } from "./Frame";
 import { useThumbUrl } from "./hooks";
 import { PhotoView } from "./PhotoView";
-import { Sheet, openSheets } from "./Sheet";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { Sheet } from "./Sheet";
 
 interface Props {
   card: Card;
@@ -29,16 +30,10 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [viewing, setViewing] = useState<CardSide | null>(null);
   const deleteButton = useRef<HTMLButtonElement>(null);
-  const keep = () => {
+  const keep = useCallback(() => {
     setConfirming(false);
     deleteButton.current?.focus();
-  };
-  // Android back is Keep while the dialog is open, like the form's discard prompt.
-  useEffect(() => {
-    if (!confirming) return;
-    openSheets.push(keep);
-    return () => void openSheets.splice(openSheets.lastIndexOf(keep), 1);
-  }, [confirming]);
+  }, []);
   const serial = serialLabel(card.parallel);
   const flags = [card.flags.rookie && "Rookie", card.flags.autograph && "Autograph", card.flags.relic && "Relic"].filter(Boolean);
   const facts: Array<[string, ReactNode]> = [
@@ -94,23 +89,17 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         </button>
       </div>
       {confirming && (
-        <div
-          className="backdrop center"
-          onClick={keep}
-          onKeyDown={(e) => e.key === "Escape" && keep()}
-        >
-          <div role="alertdialog" aria-modal="true" aria-label="Delete card" onClick={(e) => e.stopPropagation()}>
-            <p>Delete this card?</p>
-            <div className="actions detail-actions">
-              <button className="danger outline" onClick={onDelete}>
-                Delete
-              </button>
-              <button className="primary" autoFocus onClick={keep}>
-                Keep
-              </button>
-            </div>
+        <ConfirmDialog label="Delete card" onCancel={keep}>
+          <p>Delete this card?</p>
+          <div className="actions detail-actions">
+            <button className="danger outline" onClick={onDelete}>
+              Delete
+            </button>
+            <button className="primary" autoFocus onClick={keep}>
+              Keep
+            </button>
           </div>
-        </div>
+        </ConfirmDialog>
       )}
     </section>
   );

@@ -1,7 +1,10 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Card } from "../domain/card";
 import { applyFilters, distinctValues, emptyFilters, sortCards, type Filters, type Sort, type SortBy } from "../domain/query";
+import type { BulkPatch } from "../usecases/cards";
 import { BottomNav, type Destination } from "./BottomNav";
+import { BulkEditSheet } from "./BulkEditSheet";
+import { useSelection } from "./useSelection";
 import { SettingsButton } from "./SettingsButton";
 import { CardGrid } from "./CardGrid";
 import type { CardsView } from "./cards-view";
@@ -28,6 +31,7 @@ interface Props {
   onNavigate: (to: Destination) => void;
   onSettings: () => void;
   onOpen: (card: Card) => void;
+  onSaveMany: (ids: string[], patch: BulkPatch) => Promise<void>;
 }
 
 const FLAG_LABELS = {
@@ -42,12 +46,22 @@ const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen, onSaveMany }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
   const shown = useMemo(() => sortCards(applyFilters(cards, filters), sort), [cards, filters, sort]);
+  const selection = useSelection(shown);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const beginRef = useRef<HTMLButtonElement>(null);
+  const wasSelecting = useRef(false);
+  useEffect(() => {
+    if (selection.selecting) cancelRef.current?.focus();
+    else if (wasSelecting.current) beginRef.current?.focus();
+    wasSelecting.current = selection.selecting;
+  }, [selection.selecting]);
   const teams = useMemo(() => distinctValues(cards, (c) => c.team), [cards]);
   const sets = useMemo(() => distinctValues(cards, (c) => c.set), [cards]);
   const parallels = useMemo(() => distinctValues(cards, (c) => c.parallel?.name), [cards]);
@@ -106,6 +120,8 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
   ];
   const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
   const closeSheet = useCallback(() => setFilterOpen(false), []);
+  const closeBulk = useCallback(() => setBulkOpen(false), []);
+  const List = view === "grid" ? CardGrid : CardList;
   const sortLabel = SORT_LABELS[sort.by];
   const radio = (name: string, label: string, checked: boolean, onChange: () => void) => (
     <label className="check" key={label}>
@@ -117,15 +133,27 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
 
   return (
     <section className="collection">
-      <header>
-        <div className="title-row">
-          <h1>Cards</h1>
-          <SyncIndicator />
-          <SettingsButton onClick={onSettings} />
-        </div>
-        <div className="title-rule" aria-hidden="true" />
-        <SyncActions />
-      </header>
+      {selection.selecting ? (
+        <header className="selection-bar" data-testid="selection-bar">
+          <h1 className="visually-hidden">Cards</h1>
+          <button ref={cancelRef} className="icon-button" aria-label="Cancel" onClick={selection.cancel}>
+            <Icon name="close" />
+          </button>
+          <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
+          <button onClick={selection.selectAll}>Select all</button>
+          <button className="primary" disabled={selection.chosen.length === 0} onClick={() => setBulkOpen(true)}>Edit</button>
+        </header>
+      ) : (
+        <header>
+          <div className="title-row">
+            <h1>Cards</h1>
+            <SyncIndicator />
+            <SettingsButton onClick={onSettings} />
+          </div>
+          <div className="title-rule" aria-hidden="true" />
+          <SyncActions />
+        </header>
+      )}
       {update && <UpdateLink update={update} />}
       <div className="search-row">
         <Field label="Search">
@@ -159,12 +187,17 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
             <span className="visually-hidden">, sorted by {sortLabel}, {sort.descending ? "descending" : "ascending"}</span>
           </span>
         </p>
+        {shown.length > 0 && !selection.selecting && (
+          <button ref={beginRef} className="icon-button select-cards" aria-label="Select cards" onClick={selection.begin}>
+            <Icon name="check" outline />
+          </button>
+        )}
         <button className="icon-button" aria-label={`${view === "grid" ? "List" : "Grid"} view`} onClick={() => onViewChange(view === "grid" ? "list" : "grid")}>
           <Icon name={view === "grid" ? "list" : "grid"} />
         </button>
       </div>
       {shown.length > 0 ? (
-        view === "grid" ? <CardGrid cards={shown} onOpen={onOpen} returnTo={returnTo} /> : <CardList cards={shown} onOpen={onOpen} returnTo={returnTo} />
+        <List cards={shown} onOpen={onOpen} returnTo={returnTo} selected={selection.selected} onToggle={selection.toggle} onLongPress={selection.add} />
       ) : cards.length === 0 ? (
         <p className="empty" data-testid="empty-state">
           Your binder is empty. Scan a card or add one by hand.
@@ -175,6 +208,18 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
         </p>
       )}
       <BottomNav active="list" onNavigate={onNavigate} onAdd={onAdd} />
+      {bulkOpen && (
+        <BulkEditSheet
+          count={selection.chosen.length}
+          options={{ team: teams, manufacturer: manufacturers, set: sets, subset: subsets, insert: inserts, parallel: parallels }}
+          onClose={closeBulk}
+          onSave={async (patch) => {
+            await onSaveMany(selection.chosen.map((c) => c.id), patch);
+            setBulkOpen(false);
+            selection.cancel();
+          }}
+        />
+      )}
       {filterOpen && (
         <Sheet
           label="Filter and sort"

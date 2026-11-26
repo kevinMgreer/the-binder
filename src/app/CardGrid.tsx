@@ -1,6 +1,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Card } from "../domain/card";
+import { useCardPress, SelectMark, type PressProps } from "./card-press";
 import { useReturnTo } from "./CardList";
 import { Thumb } from "./Thumb";
 
@@ -23,8 +24,9 @@ function useColumns() {
 const accessibleName = (c: Card) =>
   [c.player, `${c.year} ${c.set}`, c.cardNumber && `number ${c.cardNumber}`, c.quantity > 1 && `${c.quantity} copies`].filter(Boolean).join(", ");
 
-export function CardGrid({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (card: Card) => void; returnTo?: string }) {
+export function CardGrid({ cards, returnTo, ...press }: { cards: Card[]; returnTo?: string } & PressProps) {
   const scroller = useRef<HTMLDivElement>(null);
+  const pressProps = useCardPress(press);
   const lanes = useColumns();
   const virtualizer = useVirtualizer({
     count: cards.length,
@@ -50,10 +52,11 @@ export function CardGrid({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (
               key={c.id}
               data-testid="card-tile"
               data-index={item.index}
+              className={press.selected ? "selecting" : undefined}
               ref={virtualizer.measureElement}
               style={{ "--lane": item.lane, transform: `translateY(${item.start}px)` } as CSSProperties}
             >
-              <button className="grid-card" aria-label={accessibleName(c)} onClick={() => onOpen(c)}>
+              <button className="grid-card" aria-label={accessibleName(c)} {...pressProps(c)}>
                 <Thumb card={c} />
                 <span className="grid-caption">
                   <span className="grid-name">{c.player}</span>
@@ -63,6 +66,7 @@ export function CardGrid({ cards, onOpen, returnTo }: { cards: Card[]; onOpen: (
                   </span>
                 </span>
               </button>
+              {press.selected && <SelectMark on={press.selected.has(c.id)} />}
             </li>
           );
         })}
