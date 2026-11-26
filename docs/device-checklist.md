@@ -31,6 +31,7 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 - [ ] **Pick front from photos** uses the chosen image.
 - [ ] A 12 MP photo is stored at 500 KB or less and the serial number stamp is still readable when zoomed in.
 - [ ] Pinch-zoom and pan on the full photo are smooth.
+- [ ] [photo-swipe, T-61] On a card with both photos, in the full-size view swipe left on the front to see the back and right on the back to see the front; the page dots follow and no title text shows. Zoomed in, a drag pans and never switches. The page dots switch sides and reset the zoom; the X at the top right closes the view.
 - [ ] The photos folder in Google Drive shows files named with year, manufacturer, card number, player and front/back.
 - [ ] [scan-back-chain, T-47] **Scan front** on an empty form shows a short message over the scanner: "Scan the front of the card, then the back". Every other **Scan** and **Retake** shows "Scan the front of the card" or "Scan the back of the card" for its side. **Pick from photos** shows none.
 - [ ] Front and Back tiles sit side by side on the add form; tapping an empty tile opens the chooser; **Scan front** opens the scanner and the photo lands in the Front tile; back closes the chooser without leaving the form. [photo-detail-polish, T-41]

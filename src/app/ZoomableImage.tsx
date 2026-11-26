@@ -10,11 +10,25 @@ interface Transform {
   y: number;
 }
 
-export function ZoomableImage({ src, alt, testId }: { src: string; alt: string; testId: string }) {
+const SWIPE_PX = 50;
+
+export function ZoomableImage({
+  src,
+  alt,
+  testId,
+  onSwipe,
+}: {
+  src: string;
+  alt: string;
+  testId: string;
+  onSwipe?: (direction: "left" | "right") => void;
+}) {
   const box = useRef<HTMLDivElement>(null);
+  const start = useRef({ x: 0, y: 0 });
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchStart = useRef<{ distance: number; scale: number } | null>(null);
   const moved = useRef(false);
+  const pinched = useRef(false);
   const lastTap = useRef(-Infinity);
   const [t, setT] = useState<Transform>({ scale: 1, x: 0, y: 0 });
 
@@ -37,10 +51,15 @@ export function ZoomableImage({ src, alt, testId }: { src: string; alt: string; 
   const onPointerDown = (e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointers.current.size === 1) moved.current = false;
+    if (pointers.current.size === 1) {
+      pinched.current = false;
+      moved.current = false;
+      start.current = { x: e.clientX, y: e.clientY };
+    }
     if (pointers.current.size === 2) {
       pinchStart.current = { distance: distance(), scale: t.scale };
       moved.current = true;
+      pinched.current = true;
     }
   };
 
@@ -63,7 +82,12 @@ export function ZoomableImage({ src, alt, testId }: { src: string; alt: string; 
     const wasSingle = pointers.current.size === 1;
     pointers.current.delete(e.pointerId);
     if (pointers.current.size < 2) pinchStart.current = null;
-    if (!wasSingle || moved.current) return;
+    if (!wasSingle) return;
+    const dx = e.clientX - start.current.x;
+    if (moved.current && e.type === "pointerup" && !pinched.current && onSwipe && t.scale === 1 && Math.abs(dx) >= SWIPE_PX && Math.abs(dx) > Math.abs(e.clientY - start.current.y)) {
+      return onSwipe(dx < 0 ? "left" : "right");
+    }
+    if (moved.current) return;
     const now = e.timeStamp;
     if (now - lastTap.current < DOUBLE_TAP_MS) {
       lastTap.current = -Infinity;
