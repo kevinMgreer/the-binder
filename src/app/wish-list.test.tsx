@@ -121,6 +121,7 @@ test("Mark as owned saves the card without wanted, same notes and quantity, a ne
   show("Wanted");
   fireEvent.click(screen.getByText("Ty Cobb"));
   click("Mark as owned");
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Mark as owned" })).toBeNull());
   await waitFor(async () => expect((await ports.collection.list()).find((c) => c.id === "w")?.wanted).toBeUndefined());
   const stored = (await ports.collection.list()).find((c) => c.id === "w")!;
   expect(stored).toMatchObject({ notes: "n", quantity: 2 });
@@ -181,7 +182,7 @@ test("Select all under the default takes owned cards only, and bulk edit has no 
 
 test("the dashboard shows N wanted only when N > 0 and opens the list with a Wanted chip", async () => {
   await renderApp("Dashboard");
-  click("Wanted, 1");
+  click("1 wanted");
   await screen.findByTestId("shown");
   expect(shown()).toBe("Showing 1");
   expect(screen.getByRole("button", { name: "Filter and sort, 1 applied" })).toBeTruthy();

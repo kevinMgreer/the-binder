@@ -103,7 +103,7 @@ The system SHALL open the collection list when a tile is tapped, with that tile'
 
 #### Scenario: Remove a tile's filter
 - **WHEN** the user taps Relics and then removes the Relic chip
-- **THEN** the list shows every card
+- **THEN** the list shows every owned card
 
 ### Requirement: Recently added cards
 The system SHALL show on the dashboard, under the heading "Recently added", the four most recently added cards (by when each card was first saved, newest first; editing a card SHALL NOT move it), or all cards when there are fewer than four. Each SHALL be a tappable control showing the card's front thumbnail in a trading-card frame in the photo's own orientation (or the placeholder when it has none) and the player's name beneath it on at most two lines, then an ellipsis, with the accessible name "player, year set #number". Tapping one SHALL open that card's detail screen, and back from there SHALL return to the dashboard. The group SHALL NOT be shown when the collection has no cards.

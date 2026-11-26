@@ -68,7 +68,6 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
       {wanted > 0 && (
         <button
           className="wanted-line"
-          aria-label={`Wanted, ${wanted}`}
           onClick={() => onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })}
         >
           {wanted.toLocaleString()} wanted

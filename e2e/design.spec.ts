@@ -118,6 +118,26 @@ test.describe("theme", () => {
   });
 });
 
+test.describe("wanted grid tile at 360 by 800", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test("the Wanted tag stays inside the tile when the card has two copies", async ({ page }) => {
+    await page.goto("/");
+    await seed(page, [{ player: "Ty Cobb", year: 1909, quantity: 2, wanted: true }]);
+    await page.getByRole("button", { name: "Grid view", exact: true }).click();
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    await page.getByRole("radio", { name: "Wanted" }).check();
+    await page.keyboard.press("Escape");
+    const tile = page.getByTestId("card-tile");
+    const tag = tile.locator(".tag");
+    await expect(tag).toHaveText("Wanted");
+    const t = (await tile.boundingBox())!;
+    const g = (await tag.boundingBox())!;
+    expect(g.x + g.width).toBeLessThanOrEqual(t.x + t.width + 0.5);
+    await page.screenshot({ path: "C:/repos/the-binder/scratch/wish-grid.png" });
+  });
+});
+
 for (const size of PHONES) {
   test.describe(`collection list at ${size.width} by ${size.height}`, () => {
     test.use({ viewport: size });

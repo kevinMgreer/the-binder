@@ -63,8 +63,8 @@ export function CardGrid({ cards, returnTo, ...press }: { cards: Card[]; returnT
                   <span className="grid-meta">
                     <span className="grid-year">{c.year}</span>
                     {c.quantity > 1 && <span className="badge">×{c.quantity}</span>}
-                    {c.wanted && <span className="tag">Wanted</span>}
                   </span>
+                  {c.wanted && <span className="tag grid-wanted">Wanted</span>}
                 </span>
               </button>
               {press.selected && <SelectMark on={press.selected.has(c.id)} />}

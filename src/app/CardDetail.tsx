@@ -52,7 +52,7 @@ export function CardDetail({ card, onEdit, onDelete, onMarkOwned }: Props) {
     <section>
       <header className="detail-head">
         <div className="title-row">
-          <h2>{card.player}</h2>
+          <h2 className="name">{card.player}</h2>
           {serial && <span className="tag">{serial}</span>}
           {card.wanted && <span className="tag">Wanted</span>}
         </div>
@@ -106,17 +106,17 @@ export function CardDetail({ card, onEdit, onDelete, onMarkOwned }: Props) {
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>
       </p>
       <div className="actions detail-actions">
+        {card.wanted && (
+          <button className="primary mark-owned" onClick={onMarkOwned}>
+            Mark as owned
+          </button>
+        )}
         <button ref={deleteButton} className="danger outline" onClick={() => setConfirming(true)}>
           Delete
         </button>
         <button className={card.wanted ? "outline" : "primary"} onClick={onEdit}>
           Edit
         </button>
-        {card.wanted && (
-          <button className="primary mark-owned" onClick={onMarkOwned}>
-            Mark as owned
-          </button>
-        )}
       </div>
       {confirming && (
         <ConfirmDialog label="Delete card" onCancel={keep}>
