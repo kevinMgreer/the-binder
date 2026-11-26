@@ -24,7 +24,7 @@
     "zod": "^4.6.7"
   },
   "optionalDependencies": {
-    "agent-desk": "github:klintravis/agent-desk#v0.13.0"
+    "agent-desk": "github:klintravis/agent-desk#v0.15.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",
