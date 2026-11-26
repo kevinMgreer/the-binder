@@ -239,6 +239,7 @@ p[role="status"] { color: var(--color-ink-muted); }
 form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
 .photo-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .zoom { touch-action: none; overflow: hidden; flex: 1; min-height: 0; background: var(--color-viewer); border: 0; border-radius: 0; }
+.photo-view p { margin: 0; padding: var(--space-2) var(--gutter); color: var(--color-viewer-ink); }
 .zoom img { width: 100%; height: 100%; object-fit: contain; user-select: none; }
 .sheet.viewer { position: relative; padding: 0; border: 0; border-radius: 0; background: var(--color-viewer); }
 .sheet.viewer .sheet-head { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1; }
