@@ -73,8 +73,31 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         {SIDES.map((side) => card.photos[side] && <PhotoThumb key={side} card={card} side={side} onOpen={() => setViewing(side)} />)}
       </div>
       {viewing && (
-        <Sheet label={`${viewing === "front" ? "Front" : "Back"} photo view`} onClose={() => setViewing(null)}>
-          <PhotoView card={card} side={viewing} />
+        <Sheet
+          label={`${viewing === "front" ? "Front" : "Back"} photo view`}
+          onClose={() => setViewing(null)}
+          hideTitle
+        >
+          <PhotoView
+            key={viewing}
+            card={card}
+            side={viewing}
+            onSwipe={
+              card.photos.front && card.photos.back
+                ? (direction) => {
+                    if (direction === "left" && viewing === "front") setViewing("back");
+                    if (direction === "right" && viewing === "back") setViewing("front");
+                  }
+                : undefined
+            }
+          />
+          {card.photos.front && card.photos.back && (
+            <div className="photo-dots">
+              {SIDES.map((side) => (
+                <button key={side} aria-label={side === "front" ? "Front" : "Back"} aria-pressed={viewing === side} onClick={() => setViewing(side)} />
+              ))}
+            </div>
+          )}
         </Sheet>
       )}
       <p>

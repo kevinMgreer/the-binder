@@ -11,6 +11,8 @@ colors:
   frame: "#f3ecdc"
   scrim: "#1c2b4a66"
   placeholder: "#d8d1bf"
+  viewer: "#0b1220"
+  viewer-ink: "#f3ecdc"
   night-ground: "#101a30"
   night-panel: "#17233f"
   night-ink: "#f3ecdc"
@@ -20,6 +22,7 @@ colors:
   night-frame: "#f3ecdc"
   night-scrim: "#000000a6"
   night-placeholder: "#2a3756"
+  night-viewer: "#000000"
 typography:
   title:
     fontFamily: "Roboto Slab, Georgia, serif"
@@ -188,6 +191,7 @@ A cream-and-navy neutral world. Status is a single danger red.
 - **Muted Ink** (ink-muted #4a5670 / night-ink-muted #c2bcae): labels, placeholders, hints, inactive nav, secondary row text.
 - **Keyline** (rule #1c2b4a8c / night-rule #f3ecdc4d): thin rules between table cells, list rows, facts, sheet edges and the divider above Sign out in settings.
 - **Frame Stock** (frame #f3ecdc, both themes): the matte of a photo frame.
+- **Viewer** (viewer #0b1220 / night-viewer #000000, viewer-ink #f3ecdc): the full-screen photo view, its backdrop, X close, page dots, note and focus ring.
 - **Print Placeholder** (placeholder #d8d1bf / night-placeholder #2a3756): the empty photo area and the keyline round a photo.
 - **Scrim** (scrim #1c2b4a66 / night-scrim #000000a6): the sheet backdrop only.
 
@@ -247,7 +251,7 @@ Flat. No shadows, blur or backdrop-filter anywhere. Structure comes from 1px ink
 
 ## Shapes
 
-Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons, frames, tables, dialogs, banners, sheet top corners), pill 999px (chips, count badge). Ruled fields have no radius, only a bottom line. Borders are always 1px (`--rule`); focus ring is 2px ink with 2px offset. Photos always sit in a 2.5:3.5 frame (`--frame-ratio`), turned to 3.5:2.5 when the photo is landscape, with a 3px cream matte and an inner keyline; the photo keeps its own ratio and is never cropped.
+Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons, frames, tables, dialogs, banners, sheet top corners), pill 999px (chips, count badge). Ruled fields have no radius, only a bottom line. Borders are always 1px (`--rule`); focus ring is 2px ink with 2px offset (viewer-ink in the photo viewer). Photos always sit in a 2.5:3.5 frame (`--frame-ratio`), turned to 3.5:2.5 when the photo is landscape, with a 3px cream matte and an inner keyline; the photo keeps its own ratio and is never cropped.
 
 ## Components
 
@@ -255,7 +259,7 @@ Three radii: print 3px (photo inside its frame, serial tag), frame 6px (buttons,
 - **Shape:** frame radius (6px), min 48x48, 16px horizontal padding, transparent with a 1px ink border and ink text, weight 500.
 - **Primary:** Ink fill and border, ground-coloured text, Inter 600 at 1rem, frame radius, 48px high. One per screen footer or sheet footer; in a row it takes the remaining width.
 - **Danger:** Danger text, weight 600, no border by default (Sign out stays apart under a keyline in settings). On the card detail screen Delete is the outlined variant (`.danger.outline`: Danger text and 1px Danger border, transparent background) at the left of the action row, and Edit, the filled primary, at the right; both share the row equally with the same 48px height and frame radius, like Cancel left, Save right.
-- **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset.
+- **States:** pressed opacity 0.8; disabled 0.5; focus-visible 2px ink outline, 2px offset (viewer-ink in the photo viewer).
 - **Add card:** the middle item of the bottom navigation (Dashboard, Add, Cards): a 24px plus in a 48x32 ink-filled frame with the frame radius (larger than the 24px icons beside it), ground-coloured plus, label "Add" at weight 600, accessible name "Add card". It is an action, never marked current, and the one entry point for adding on the dashboard and the list.
 
 ### Bottom navigation
@@ -284,7 +288,7 @@ The order is plain text after the count in the "Showing N" line, "Showing N · L
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured.
 
 ### Frames and photos
-Trading-card frame as described in Shapes. List rows use a 96px slot, dashboard recents and card grid tiles fill their column, the form holds one `.photo-tiles` row with a Front tile and a Back tile side by side, each a frame 96px high (an empty tile shows a camera icon and "Front" or "Back" over the placeholder; its name is "Add front photo" or "Change front photo" once filled), detail photos 200px high, showing the full photo once it is stored on the device (the thumbnail until then). Without a photo the frame shows the Print Placeholder. A tapped photo opens a 60vh zoom panel with the image contained.
+Trading-card frame as described in Shapes. List rows use a 96px slot, dashboard recents and card grid tiles fill their column, the form holds one `.photo-tiles` row with a Front tile and a Back tile side by side, each a frame 96px high (an empty tile shows a camera icon and "Front" or "Back" over the placeholder; its name is "Add front photo" or "Change front photo" once filled), detail photos 200px high, showing the full photo once it is stored on the device (the thumbnail until then). Without a photo the frame shows the Print Placeholder. A tapped photo opens a sheet whose body the zoom fills, with the image contained.
 
 ### Inputs / Fields
 Ruled like a card back: an ink-tinted (6% over panel) line to write on, with a 1px ink bottom border, no radius, no box, min 48px, 8px by 12px padding; textarea min 96px. Label above in the uppercase label style; placeholder in Muted Ink. Invalid fields get a Danger bottom border and a Danger label-size message. Checkbox is 24px with ink accent in a 48px row. The search label is visually hidden but present. On the add and edit forms Cancel and Save live in a sticky form bar (`.form-bar`): panel background, 1px rule along its top, pinned above the system navigation bar (`--inset-bottom`) while the form scrolls, and back in the flow at the form's end so the last field clears it. The save-blocked message sits inside the bar directly above the buttons; `scroll-padding-bottom` keeps a focused field clear of the bar.
@@ -302,7 +306,7 @@ The Cards screen's second view: tiles in 3 equal columns, 4 from 480dp (`--gap-f
 Detail screen, top to bottom: a header block (`header.detail-head`, one left edge, room to breathe: 16px from the top of the content to the title, `--space-2` (8px) between the title and the line, `--space-4` (16px) before the rule): the player as a Title with the Tag at the right end of its first line (a long name wraps left of the Tag) and one muted "year set, number" line; then a 1px rule under the block, `dl.facts` (uppercase muted label at the left, body value right-aligned, keylines between rows and below, none above after the rule, 16px row padding (`--pad-cell`), rows only for what the card has, Team and Parallel among them, never a second subtitle line), the photo thumbnails, a muted last-edited line, then one action row: Delete at the left as a danger-outlined button and Edit at the right as the primary button, equal in width and height.
 
 ### Sheets and dialogs
-Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. A photo tile opens a compact sheet titled "Front photo" or "Back photo" with full-width actions ("Scan front", "Pick front from photos"; once filled "Retake front", "Pick front from photos" and a danger "Remove front photo"); its Close button is the cancel. The Delete card confirmation is a centred panel (keyline border, frame radius, 320px wide at most) over the scrim, with Keep focused; its buttons are the card detail pair, Delete outlined in danger on the left and Keep filled on the right; the scrim, Escape and Android back all mean Keep. The form's discard question is not a dialog: it replaces the Cancel/Save bar in place with the same pair (Discard outlined in danger on the left, Keep editing filled on the right, equal width), Keep editing focused, and no question text: the question is the pair's accessible name, read by TalkBack; Escape and Android back mean Keep editing, and Discard ignores taps for 500 ms so a double tap on Cancel cannot discard. The duplicate-card prompt is a centred panel over the scrim (Increase quantity filled and focused, the other two outlined, none in danger; the scrim, Escape and Android back mean Back to form), the scrim covers the Cancel/Save bar, and the form behind is inert. The sign-out and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
+Bottom sheets over the scrim (z-index 10), panel background, 1px keyline top border, frame radius on the top corners only, full height with the top inset respected. Structure: head (Table-size title plus close; the photo sheet has no head row: a visually hidden title, an icon-only 48px X Close at the top right and, with both photos, two tiny Front/Back page dots with 24px hit areas, over a full-bleed dark viewer backdrop), scrolling body, foot (keyline above, primary takes the width). Group headings inside are Slab Table-size with a keyline above. A photo tile opens a compact sheet titled "Front photo" or "Back photo" with full-width actions ("Scan front", "Pick front from photos"; once filled "Retake front", "Pick front from photos" and a danger "Remove front photo"); its Close button is the cancel. The Delete card confirmation is a centred panel (keyline border, frame radius, 320px wide at most) over the scrim, with Keep focused; its buttons are the card detail pair, Delete outlined in danger on the left and Keep filled on the right; the scrim, Escape and Android back all mean Keep. The form's discard question is not a dialog: it replaces the Cancel/Save bar in place with the same pair (Discard outlined in danger on the left, Keep editing filled on the right, equal width), Keep editing focused, and no question text: the question is the pair's accessible name, read by TalkBack; Escape and Android back mean Keep editing, and Discard ignores taps for 500 ms so a double tap on Cancel cannot discard. The duplicate-card prompt is a centred panel over the scrim (Increase quantity filled and focused, the other two outlined, none in danger; the scrim, Escape and Android back mean Back to form), the scrim covers the Cancel/Save bar, and the form behind is inert. The sign-out and needs-decision dialogs are inline panels with a keyline border and frame radius. Banners are panel boxes with underlined ink link text. Empty state is a keyline box with muted text. Sync status is a currentColor dot plus uppercase label text, `role="status"`, ink when idle and Danger on error, paused or needs-decision; it wraps rather than being cut.
 
 ### Navigation
 The dashboard is the start destination: Android's back closes the app from there, and back from Cards shows the dashboard (switching with the bar adds no history). The bottom navigation switches between the two top-level screens; Cards keeps its last search, filters and sort. No screen has an on-screen Back button: Android's back button and gesture return one screen up (list to dashboard, detail to the dashboard or list it was opened from, Settings to where it was opened from). Forms keep Cancel and sheets keep Close.
@@ -329,4 +333,4 @@ The dashboard is the start destination: Android's back closes the app from there
 ### Not canonized (defects the build carries)
 - The chip close mark is a text glyph (`content: "\00d7"` in `.chip::after`); future surfaces should use an inline SVG from `src/app/Icon.tsx`.
 - Fixed sizes are tokens: `--size-tile-min` 72px (stat cell button), `--size-team-min` 56px (Top teams row), `--size-nav-add-w` 48px and `--size-nav-add-h` 32px (the Add frame), `--size-nav-icon` 24px (its plus).
-- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 200px detail photo, 96px photo slot, list slot and textarea, 60vh zoom, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.
+- Sizes outside the token scales are one-off literals in `app.css`, not system tokens: 56px title row, 200px detail photo, 96px photo slot, list slot and textarea, 6px paddings and gaps, and the 1.3 / 1.1 line-heights.
