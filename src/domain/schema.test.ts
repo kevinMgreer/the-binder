@@ -52,3 +52,11 @@ test("graded needs a company and a grade", () => {
   expect(Object.keys(validateCard(makeCard({ grading: { kind: "graded", company: "PSA", grade: "" } })))).toEqual(["grading"]);
   expect(validateCard(makeCard({ grading: { kind: "graded", company: "PSA", grade: "9" } }))).toEqual({});
 });
+
+test("wanted is optional: absent, true and an old Drive card all pass", () => {
+  expect(validateCard(makeCard())).toEqual({});
+  expect(validateCard(makeCard({ wanted: true }))).toEqual({});
+  const { wanted: _w, ...old } = makeCard({ wanted: true });
+  expect(validateCard(old)).toEqual({});
+  expect(cardSchema.safeParse({ ...old, wanted: "yes" }).success).toBe(false);
+});

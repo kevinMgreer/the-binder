@@ -50,3 +50,12 @@ test("tombstones are purged after 90 days and not before", () => {
   const live = makeCard();
   expect(purgeTombstones([old, recent, live], now)).toEqual([recent, live]);
 });
+
+test("the wanted mark rides with the winning copy", () => {
+  const wanted = makeCard({ wanted: true, updatedAt: at(1) });
+  const { wanted: _w, ...owned } = { ...wanted, updatedAt: at(2) };
+  for (const r of [merge([wanted], [owned]), merge([owned], [wanted])]) expect("wanted" in r[0]).toBe(false);
+  const wantedNewer = { ...wanted, updatedAt: at(3) };
+  expect(merge([owned], [wantedNewer])[0].wanted).toBe(true);
+  expect(merge([wantedNewer], [owned])[0].wanted).toBe(true);
+});

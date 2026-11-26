@@ -112,3 +112,17 @@ test("Top players merge spellings, count distinct cards not quantity, order ties
   for (const p of players) expect(applyFilters(cards, { ...emptyFilters, player: p.name }).length).toBe(p.count);
   expect(collectionStats([]).players).toEqual([]);
 });
+
+test("wanted cards are not counted in the tiles or lists, and are counted as wanted", () => {
+  const owned = makeCard({ team: "Owned", player: "Own Er", createdAt: at(1) });
+  const wants = [1, 2].map((n) =>
+    makeCard({ wanted: true, team: "Wish", player: "Wish Er", flags: { rookie: true, autograph: true, relic: true }, quantity: 5, createdAt: at(9 + n) }),
+  );
+  const stats = collectionStats([owned, ...wants]);
+  expect(stats.wanted).toBe(2);
+  expect(values(stats)).toEqual({ ...zero, Cards: 1, Distinct: 1 });
+  expect(stats.teams.map((t) => t.name)).toEqual(["Owned"]);
+  expect(stats.players.map((t) => t.name)).toEqual(["Own Er"]);
+  expect(stats.recent).toEqual([owned]);
+  expect(collectionStats([owned]).wanted).toBe(0);
+});

@@ -154,3 +154,20 @@ test("duplicate match uses player, year, set, number, parallel and grade, and ig
   expect(findDuplicate([existing], makeCard({ grading: { kind: "graded", company: "PSA", grade: "9" } }))).toBeUndefined();
   expect(findDuplicate([{ ...existing, deletedAt: "2026-01-02T00:00:00.000Z" }], makeCard())).toBeUndefined();
 });
+
+test("show picks owned (default), wanted or all, and combines with other filters", () => {
+  const owned = makeCard({ team: "A" });
+  const explicit = makeCard({ wanted: false, team: "B" });
+  const want = makeCard({ wanted: true, team: "A" });
+  const cards = [owned, explicit, want];
+  expect(applyFilters(cards, emptyFilters)).toEqual([owned, explicit]);
+  expect(applyFilters(cards, { ...emptyFilters, show: "wanted" })).toEqual([want]);
+  expect(applyFilters(cards, { ...emptyFilters, show: "all" })).toEqual(cards);
+  expect(applyFilters(cards, { ...emptyFilters, show: "all", team: "A" })).toEqual([owned, want]);
+  expect(applyFilters(cards, { ...emptyFilters, show: "wanted", team: "B" })).toEqual([]);
+});
+
+test("findDuplicate ignores wanted cards and never matches a wanted new card", () => {
+  expect(findDuplicate([makeCard()], makeCard({ wanted: true }))).toBeUndefined();
+  expect(findDuplicate([makeCard({ wanted: true })], makeCard())).toBeUndefined();
+});
