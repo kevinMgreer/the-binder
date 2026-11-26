@@ -1151,7 +1151,7 @@ test.describe("Form actions", () => {
     const sheet = page.getByRole("dialog", { name: "Filter and sort" });
     await page.getByRole("button", { name: /^Filter and sort/ }).click();
     const rows = await sheet.locator("label.check:has(input[type=radio])").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
-    expect(rows.length).toBe(6);
+    expect(rows.length).toBe(9); // 4 sort fields, 2 directions, then Show: Owned, Wanted, All
     for (const h of rows) expect(h).toBeGreaterThanOrEqual(47.5);
     expect(Math.max(...rows.slice(0, 4)) - Math.min(...rows.slice(0, 4))).toBeLessThan(1);
     expect(rows[4]).toBeCloseTo(rows[5], 0);
