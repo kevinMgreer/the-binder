@@ -76,6 +76,8 @@ test("Full photo fetched first: the remote full photo is saved and cached, not t
   const ports = createFakePorts();
   const gallery = ports.gallery as FakeGallery;
   const remoteFull = new Blob(["remote-full"]);
+  const urls = new Map<Blob, string>([[thumb, "blob:thumb"], [remoteFull, "blob:remote-full"]]);
+  URL.createObjectURL = (b) => urls.get(b as Blob) ?? "blob:other";
   const id = await ports.remote.uploadPhoto("front.webp", remoteFull, "full");
   const c = makeCard({ ...card, photos: { front: { fileId: id, thumbId: "t", name: "front.webp" }, back: null } });
   await ports.photos.cacheThumb(c.id, "front", thumb);
@@ -88,8 +90,11 @@ test("Full photo fetched first: the remote full photo is saved and cached, not t
   );
   fireEvent.click(screen.getByRole("button", { name: "View front photo" }));
   await screen.findByTestId("zoom-front");
+  const shown = () => screen.getByAltText("Front photo").getAttribute("src");
+  expect(shown()).toBe("blob:thumb");
   save();
   expect((await screen.findByRole("status")).textContent).toBe("Saved to Photos");
+  await waitFor(() => expect(shown()).toBe("blob:remote-full"));
   expect(gallery.saved[0].photo).toBe(remoteFull);
   expect(await ports.photos.getFull(c.id, "front")).toBe(remoteFull);
 });
