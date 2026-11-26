@@ -9,14 +9,12 @@ interface Props {
   foot?: ReactNode;
   /** Sized to its content instead of full height. */
   compact?: boolean;
-  /** Replaces the visible title in the head; the label stays as the dialog's hidden name. */
-  headStart?: ReactNode;
-  /** Hides the visible title; the label stays as the dialog's name. */
+  /** Photo viewer: no visible title or head row, an icon-only X close over the content; the label stays as the dialog's name. */
   hideTitle?: boolean;
   children: ReactNode;
 }
 
-export function Sheet({ label, onClose, foot, compact, headStart, hideTitle, children }: Props) {
+export function Sheet({ label, onClose, foot, compact, hideTitle, children }: Props) {
   useEffect(() => {
     openSheets.push(onClose);
     return () => void openSheets.splice(openSheets.lastIndexOf(onClose), 1);
@@ -24,14 +22,19 @@ export function Sheet({ label, onClose, foot, compact, headStart, hideTitle, chi
 
   return (
     <div className="backdrop" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={label} className={compact ? "sheet compact" : "sheet"}
+      <div role="dialog" aria-modal="true" aria-label={label} className={compact ? "sheet compact" : hideTitle ? "sheet viewer" : "sheet"}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         <div className="sheet-head">
           <h2 className={hideTitle ? "visually-hidden" : undefined}>{label}</h2>
-          {headStart}
-          <button autoFocus onClick={onClose}>Close</button>
+          {hideTitle ? (
+            <button autoFocus className="icon-button viewer-close" aria-label="Close" onClick={onClose}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
+          ) : (
+            <button autoFocus onClick={onClose}>Close</button>
+          )}
         </div>
         <div className="sheet-body">{children}</div>
         {foot && <div className="sheet-foot">{foot}</div>}

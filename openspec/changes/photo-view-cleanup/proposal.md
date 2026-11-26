@@ -5,7 +5,7 @@ The full-size photo view spends its top third on a "Front photo view" heading, a
 ## What Changes
 
 - The visible "Front/Back photo view" heading is gone. The dialog keeps that text as its hidden accessible name.
-- With both photos, the Front/Back control becomes one joined toggle in the same row as Close. It stays real buttons with aria-pressed.
+- Close is an icon-only X at the top right. With both photos, two small page dots (real buttons "Front" and "Back" with aria-pressed) replace the Front/Back toggle. The photo fills the sheet on a dark backdrop.
 - The photo fills the remaining height of the sheet.
 
 ## Capabilities
