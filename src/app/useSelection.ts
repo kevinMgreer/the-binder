@@ -26,7 +26,8 @@ export function useSelection(shown: Card[]) {
     });
   }, []);
   const selectAll = useCallback(() => setSelected(new Set(shown.map((c) => c.id))), [shown]);
-  const chosen = useMemo(() => shown.filter((c) => selected?.has(c.id)), [shown, selected]);
+  const keep = useCallback((ids: string[]) => setSelected(new Set(ids)), []);
+  const chosen =useMemo(() => shown.filter((c) => selected?.has(c.id)), [shown, selected]);
 
-  return { selecting, selected: selected ?? undefined, chosen, begin, add, toggle, selectAll, cancel };
+  return { selecting, selected: selected ?? undefined, chosen, begin, add, toggle, selectAll, keep, cancel };
 }

@@ -82,3 +82,16 @@ export async function deleteCard({ collection, photos: store }: Deps, card: Card
   const now = new Date().toISOString();
   await collection.put({ ...stored, deletedAt: now, updatedAt: now });
 }
+
+/** Deletes each card on its own so one failure leaves the others deleted; returns the ids that failed. */
+export async function deleteCards(deps: Deps, cards: Card[]): Promise<string[]> {
+  const failed: string[] = [];
+  for (const card of cards) {
+    try {
+      await deleteCard(deps, card);
+    } catch {
+      failed.push(card.id);
+    }
+  }
+  return failed;
+}
