@@ -98,7 +98,6 @@ test("a tap toggles in selection mode and opens no card", async () => {
   fireEvent.click(row("Ty Cobb"));
   expect(bar().textContent).toContain("1 selected");
   expect(screen.queryByRole("button", { name: "Edit" })).toBeTruthy(); // the bar's Edit, not a card's detail
-  expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
 });
 
 test("Select all takes the cards the search shows", async () => {

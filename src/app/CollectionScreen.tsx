@@ -9,6 +9,7 @@ import { SettingsButton } from "./SettingsButton";
 import { CardGrid } from "./CardGrid";
 import type { CardsView } from "./cards-view";
 import { CardList } from "./CardList";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { Field, fieldId } from "./Field";
 import { Icon } from "./Icon";
 import { Sheet } from "./Sheet";
@@ -32,6 +33,8 @@ interface Props {
   onSettings: () => void;
   onOpen: (card: Card) => void;
   onSaveMany: (ids: string[], patch: BulkPatch) => Promise<void>;
+  /** Resolves the ids that could not be deleted. */
+  onRemoveMany: (cards: Card[]) => Promise<string[]>;
 }
 
 const FLAG_LABELS = {
@@ -46,9 +49,13 @@ const SORT_LABELS: Record<SortBy, string> = { lastName: "Last name", year: "Year
 
 const toNumber = (s: string) => (s.trim() === "" ? null : Number(s));
 
-export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen, onSaveMany }: Props) {
+export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSortChange, view, onViewChange, returnTo, update, onAdd, onNavigate, onSettings, onOpen, onSaveMany, onRemoveMany }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const deleteRef = useRef<HTMLButtonElement>(null);
   const patch = (changes: Partial<Filters>) => onFiltersChange({ ...filters, ...changes });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => patch({ [key]: value });
 
@@ -121,6 +128,30 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
   const clearAll = () => onFiltersChange({ ...emptyFilters, search: filters.search });
   const closeSheet = useCallback(() => setFilterOpen(false), []);
   const closeBulk = useCallback(() => setBulkOpen(false), []);
+  const keepCards = useCallback(() => {
+    setDeleteOpen(false);
+    setDeleteError(null);
+    // The bar's Delete is still mounted; focus after the dialog's autofocus has gone.
+    queueMicrotask(() => deleteRef.current?.focus());
+  }, []);
+  const confirmDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const failed = await onRemoveMany(selection.chosen);
+      if (failed.length === 0) {
+        setDeleteOpen(false);
+        selection.cancel();
+      } else {
+        selection.keep(failed);
+        setDeleteError(`${failed.length} ${failed.length === 1 ? "card" : "cards"} could not be deleted. Try again or keep them.`);
+      }
+    } catch {
+      setDeleteError("Could not delete the cards. Try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
   const List = view === "grid" ? CardGrid : CardList;
   const sortLabel = SORT_LABELS[sort.by];
   const radio = (name: string, label: string, checked: boolean, onChange: () => void) => (
@@ -141,6 +172,9 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
           </button>
           <p className="shown" aria-live="polite">{selection.chosen.length} selected</p>
           <button onClick={selection.selectAll}>Select all</button>
+          <button ref={deleteRef} className="icon-button" aria-label="Delete" disabled={selection.chosen.length === 0} onClick={() => setDeleteOpen(true)}>
+            <Icon name="trash" />
+          </button>
           <button className="primary" disabled={selection.chosen.length === 0} onClick={() => setBulkOpen(true)}>Edit</button>
         </header>
       ) : (
@@ -219,6 +253,20 @@ export function CollectionScreen({ cards, filters, onFiltersChange, sort, onSort
             selection.cancel();
           }}
         />
+      )}
+      {deleteOpen && (
+        <ConfirmDialog label="Delete cards" onCancel={keepCards}>
+          <p>Delete {selection.chosen.length} {selection.chosen.length === 1 ? "card" : "cards"}?</p>
+          {deleteError && <p role="status">{deleteError}</p>}
+          <div className="actions detail-actions">
+            <button className="danger outline" disabled={deleting} onClick={confirmDelete}>
+              Delete
+            </button>
+            <button className="primary" autoFocus onClick={keepCards}>
+              Keep
+            </button>
+          </div>
+        </ConfirmDialog>
       )}
       {filterOpen && (
         <Sheet

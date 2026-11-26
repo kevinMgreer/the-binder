@@ -255,9 +255,9 @@ form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
 .photo-dots button[aria-pressed="true"]::before { background: var(--color-viewer-ink); }
 
 /* Selection mode: the bar takes the place of the title header; a selected row or tile carries only a small check. */
-.collection .selection-bar { flex-direction: row; align-items: center; gap: var(--space-2); min-height: 56px; }
+.collection .selection-bar { flex-direction: row; align-items: center; gap: var(--space-1); min-height: 56px; }
 .selection-bar .shown { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); font-weight: 500; }
-.selection-bar button:not(.icon-button) { padding: 0 var(--space-3); }
+.selection-bar button:not(.icon-button) { padding: 0 var(--space-2); }
 .selection-bar button:not(.primary), .select-cards { border-color: transparent; }
 .field-add { display: flex; padding: 0; justify-content: space-between; width: 100%; border-color: transparent; border-bottom: var(--rule) solid var(--color-rule); border-radius: 0; font-weight: 400; }
 .field-add span { color: var(--color-ink-muted); }
