@@ -237,15 +237,10 @@ p[role="status"] { color: var(--color-ink-muted); }
 .photo-tile-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); font-size: var(--type-label); color: var(--color-ink-muted); }
 .photo-cell p { margin: var(--space-1) 0 0; }
 form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
-.photo-view { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: var(--space-2); }
-.zoom { touch-action: none; overflow: hidden; flex: 1; min-height: 0; background: var(--color-panel); border-color: var(--color-rule); }
+.photo-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.zoom { touch-action: none; overflow: hidden; flex: 1; min-height: 0; background: var(--color-viewer); border: 0; border-radius: 0; }
+.photo-view p { margin: 0; padding: var(--space-2) var(--gutter); color: var(--color-viewer-ink); }
 .zoom img { width: 100%; height: 100%; object-fit: contain; user-select: none; }
-.side-switch { display: flex; flex: 1; }
-.side-switch button { flex: 1; }
-.side-switch button:first-child { border-radius: var(--radius-frame) 0 0 var(--radius-frame); }
-.side-switch button:last-child { margin-left: calc(-1 * var(--rule)); border-radius: 0 var(--radius-frame) var(--radius-frame) 0; }
-.side-switch button[aria-pressed="true"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); }
-
 /* Selection mode: the bar takes the place of the title header; a selected row or tile carries only a small check. */
 .collection .selection-bar { flex-direction: row; align-items: center; gap: var(--space-2); min-height: 56px; }
 .selection-bar .shown { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); font-weight: 500; }
@@ -258,3 +253,11 @@ form > .identify { width: 100%; margin: var(--space-3) 0 var(--space-5); }
 .select-mark svg { width: var(--space-4); height: var(--space-4); }
 .list:not(.grid) li.selecting button { padding-left: calc(var(--space-5) + var(--space-2)); }
 .grid li .select-mark { top: var(--space-2); left: var(--space-2); }
+.sheet.viewer { position: relative; padding: 0; border: 0; border-radius: 0; background: var(--color-viewer); }
+.sheet.viewer .sheet-head { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1; }
+.sheet.viewer .sheet-body { overflow: hidden; gap: 0; }
+.viewer-close { width: var(--target-min); border: 0; border-radius: 50%; background: var(--color-viewer); color: var(--color-viewer-ink); }
+.photo-dots { position: absolute; left: 0; right: 0; bottom: calc(var(--space-2) + var(--inset-bottom)); display: flex; justify-content: center; }
+.photo-dots button { position: relative; min-width: 24px; width: 24px; min-height: 24px; height: 24px; padding: 0; border: 0; background: transparent; }
+.photo-dots button::before { content: ""; position: absolute; inset: 9px; border: var(--rule) solid var(--color-viewer-ink); border-radius: 50%; }
+.photo-dots button[aria-pressed="true"]::before { background: var(--color-viewer-ink); }

@@ -107,11 +107,16 @@ test("Swipe to the other side: left on the front shows the back, right returns",
   expect(screen.getByRole("dialog", { name: "Front photo view" })).toBeTruthy();
 });
 
-test("With both photos the heading is hidden and the control shares the Close row", async () => {
+test("With both photos the heading is hidden, Close is an icon-only X and the dots switch sides", async () => {
   await openView(both, ["front", "back"]);
-  const heading = screen.getByRole("heading", { name: "Front photo view" });
-  expect(heading.className).toBe("visually-hidden");
-  expect(screen.getByRole("button", { name: "Front" }).closest(".sheet-head")).toBe(screen.getByRole("button", { name: "Close" }).parentElement);
+  expect(screen.getByRole("heading", { name: "Front photo view" }).className).toBe("visually-hidden");
+  const close = screen.getByRole("button", { name: "Close" });
+  expect(close.textContent).toBe("");
+  expect(screen.getByRole("button", { name: "Front" }).getAttribute("aria-pressed")).toBe("true");
+  expect(screen.getByRole("button", { name: "Back" }).getAttribute("aria-pressed")).toBe("false");
+  expect(screen.queryByRole("group")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Back" }));
+  await screen.findByTestId("zoom-back");
 });
 
 test("One photo only: no swipe, no control", async () => {

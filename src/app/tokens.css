@@ -11,6 +11,8 @@
   --color-frame: #f3ecdc;
   --color-scrim: #1c2b4a66;
   --color-placeholder: #d8d1bf;
+  --color-viewer: #0b1220;
+  --color-viewer-ink: #f3ecdc;
 
   --font-slab: "Roboto Slab", Georgia, serif;
   --font-sans: Inter, system-ui, sans-serif;
@@ -66,5 +68,6 @@
     --color-frame: #f3ecdc;
     --color-scrim: #000000a6;
     --color-placeholder: #2a3756;
+    --color-viewer: #000000;
   }
 }
