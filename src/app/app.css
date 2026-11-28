@@ -60,7 +60,7 @@ button, .banner a, .sold-link {
   font-weight: 500;
 }
 button:disabled { opacity: 0.5; }
-button:active:not(:disabled), .chip:active { opacity: 0.8; }
+button:active:not(:disabled), .chip:active, .sold-link:active { opacity: 0.8; }
 button.primary { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-ground); font-size: var(--type-button); font-weight: 600; }
 button.danger { border-color: transparent; color: var(--color-danger); font-weight: 600; }
 /* Fields are ruled like a card back: a tinted line to write on, not a box. Boxes are for buttons. */
