@@ -6,12 +6,19 @@ export type DraftKey =
   | "year"
   | "manufacturer"
   | "set"
+  | "subset"
+  | "insert"
+  | "rookie"
+  | "autograph"
+  | "relic"
   | "cardNumber"
   | "parallel"
   | "serialNumbered"
   | "serial"
   | "serialUnreadable"
   | "printRun";
+
+const FLAGS = ["rookie", "autograph", "relic"] as const;
 
 export type SuggestionPatch = Partial<Record<DraftKey, string | boolean>>;
 
@@ -22,7 +29,11 @@ export function suggestionPatch(s: Suggestion): SuggestionPatch {
   if (s.year !== undefined) patch.year = String(s.year);
   if (s.manufacturer) patch.manufacturer = s.manufacturer;
   if (s.set) patch.set = s.set;
+  if (s.subset) patch.subset = s.subset;
+  if (s.insert) patch.insert = s.insert;
   if (s.cardNumber) patch.cardNumber = s.cardNumber;
+  // A suggestion only ticks a flag; false or missing leaves the checkbox alone.
+  for (const flag of FLAGS) if (s.flags?.[flag] === true) patch[flag] = true;
   if (s.parallel) {
     if (s.parallel.name) patch.parallel = s.parallel.name;
     if (s.parallel.serial !== null) patch.serial = String(s.parallel.serial);
@@ -37,6 +48,6 @@ export function suggestionPatch(s: Suggestion): SuggestionPatch {
 /** Form fields to flag for review; a doubtful parallel makes all its fields doubtful. */
 export function flaggedKeys(s: Suggestion): DraftKey[] {
   return (s.lowConfidence ?? []).flatMap((name) =>
-    name === "parallel" ? (["parallel", "serial", "printRun"] as DraftKey[]) : [name as DraftKey],
+    name === "parallel" ? (["parallel", "serial", "printRun"] as DraftKey[]) : name === "flags" ? [...FLAGS] : [name as DraftKey],
   );
 }

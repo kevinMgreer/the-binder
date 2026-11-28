@@ -336,3 +336,37 @@ describe("browser access", () => {
     expect((await mf.dispatchFetch("http://worker.test/identify", { method: "GET" })).status).toBe(405);
   });
 });
+
+describe("card details beyond the basics", () => {
+  const ask = async () => (await identify(identifyRequest({ token: await makeToken() }))).json() as Promise<any>;
+
+  test("the tool schema and prompt cover subset, insert and the three flags", async () => {
+    await ask();
+    const call = anthropicCalls[0].body;
+    const props = call.tools[0].input_schema.properties;
+    expect(props.subset).toBeTruthy();
+    expect(props.insert).toBeTruthy();
+    expect(Object.keys(props.flags.properties).sort()).toEqual(["autograph", "relic", "rookie"]);
+    const prompt: string = call.messages[0].content.find((b: any) => b.type === "text").text;
+    for (const word of ["rookie", "autograph", "relic", "subset", "insert", "parallel"]) expect(prompt.toLowerCase()).toContain(word);
+  });
+
+  test("subset, insert and flags come back", async () => {
+    anthropicReply = () =>
+      claudeSuggestion({ set: "Series 1", insert: "Home Run Derby", subset: "Future Stars", flags: { rookie: true, autograph: false, relic: true } });
+    const body = await ask();
+    expect(body.suggestion).toMatchObject({ set: "Series 1", insert: "Home Run Derby", subset: "Future Stars", flags: { rookie: true, autograph: false, relic: true } });
+  });
+
+  test("a flag that is not a real boolean is dropped, and so is an empty flags object", async () => {
+    anthropicReply = () => claudeSuggestion({ flags: { rookie: "yes", autograph: 1, relic: true } });
+    expect((await ask()).suggestion.flags).toEqual({ relic: true });
+    anthropicReply = () => claudeSuggestion({ player: "X", flags: { rookie: "yes" } });
+    expect((await ask()).suggestion).not.toHaveProperty("flags");
+  });
+
+  test("low confidence on flags is reported", async () => {
+    anthropicReply = () => claudeSuggestion({ flags: { relic: true }, confidence: { flags: "low" } });
+    expect((await ask()).lowConfidence).toEqual(["flags"]);
+  });
+});

@@ -54,4 +54,12 @@ describe("ClaudeRecognizer", () => {
     await expect(claude.recognize({ front: blob("f") })).rejects.toBeInstanceOf(AuthExpiredError);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  test("subset, insert and flags from the proxy reach the Suggestion", async () => {
+    const { claude } = recognizer(() =>
+      Response.json({ suggestion: { subset: "Future Stars", insert: "HRD", flags: { rookie: true } }, lowConfidence: [] }),
+    );
+    const result = await claude.recognize({ front: blob("f") });
+    expect(result).toMatchObject({ subset: "Future Stars", insert: "HRD", flags: { rookie: true } });
+  });
 });

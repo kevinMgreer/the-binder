@@ -301,6 +301,7 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
     <label className="check">
       <input type="checkbox" checked={draft[key] as boolean} onChange={(e) => edit(key, e.target.checked)} />
       {label}
+      {hintFor(key) && <span className="hint"> {hintFor(key)}</span>}
     </label>
   );
 
