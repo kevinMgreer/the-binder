@@ -41,7 +41,7 @@ async function open({ cached = true, onLine = true }: { cached?: boolean; onLine
   }
   render(
     <PortsProvider ports={ports}>
-      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} />
+      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={async () => {}} />
     </PortsProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "View front photo" }));
@@ -85,7 +85,7 @@ test("Full photo fetched first: the remote full photo is saved and cached, not t
   (ports.remote as InMemoryRemoteStore).failures.push(new Error("x"));
   render(
     <PortsProvider ports={ports}>
-      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} />
+      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={async () => {}} />
     </PortsProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "View front photo" }));
