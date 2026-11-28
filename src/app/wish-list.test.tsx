@@ -128,6 +128,41 @@ test("Mark as owned saves the card without wanted, same notes and quantity, a ne
   expect(stored.updatedAt).not.toBe(cards[2].updatedAt);
 });
 
+test("Mark as owned sets the added date to today", async () => {
+  const ports = await renderApp("Cards");
+  show("Wanted");
+  fireEvent.click(screen.getByText("Ty Cobb"));
+  click("Mark as owned");
+  await waitFor(async () => expect((await ports.collection.list()).find((c) => c.id === "w")?.wanted).toBeUndefined());
+  const stored = (await ports.collection.list()).find((c) => c.id === "w")!;
+  expect(stored.createdAt.slice(0, 10)).toBe(new Date().toISOString().slice(0, 10));
+  expect(stored.createdAt).toBe(stored.updatedAt);
+});
+
+test("a wanted card that matches an owned one gets a note in the form, and still saves", async () => {
+  const onSave = vi.fn(async (_c: Card) => {});
+  const owned = makeCard({ id: "o", player: "Hank Aaron", year: 2025, set: "Topps", cardNumber: "46" });
+  render(
+    <PortsProvider ports={createFakePorts()}>
+      <CardForm cards={[owned]} onSave={onSave} onCancel={() => {}} />
+    </PortsProvider>,
+  );
+  const type = (l: string, v: string) => fireEvent.change(screen.getByLabelText(l), { target: { value: v } });
+  type("Player", "Hank Aaron");
+  type("Year", "2025");
+  type("Set", "Topps");
+  type("Card number", "46");
+  expect(screen.queryByText(/already own/i)).toBeNull();
+  fireEvent.click(screen.getByLabelText("Wanted (I don't have it yet)"));
+  expect(screen.getByText(/already own/i)).toBeTruthy();
+  type("Card number", "47");
+  expect(screen.queryByText(/already own/i)).toBeNull();
+  type("Card number", "46");
+  click("Save");
+  await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  expect(onSave.mock.calls[0][0].wanted).toBe(true);
+});
+
 test("the list shows owned cards with no chip; Show Wanted and All add a chip; removing it returns to owned", async () => {
   await renderApp("Cards");
   expect(shown()).toBe("Showing 2");
