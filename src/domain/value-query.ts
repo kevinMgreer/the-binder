@@ -1,5 +1,5 @@
 import type { Card } from "./card";
-import { isSerialNumbered } from "./format";
+import { gradeLabel, isSerialNumbered } from "./format";
 
 export function valueQuery(card: Card): string {
   const { parallel, flags, grading } = card;
@@ -15,7 +15,7 @@ export function valueQuery(card: Card): string {
     flags.rookie ? "RC" : "",
     flags.autograph ? "Auto" : "",
     flags.relic ? "Relic" : "",
-    grading.kind === "graded" ? `${grading.company} ${grading.grade}` : "",
+    grading.kind === "graded" ? gradeLabel(grading) : "",
   ]
     .map((word) => word.trim())
     .filter(Boolean)

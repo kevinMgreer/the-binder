@@ -23,6 +23,10 @@ test("a numbered parallel ends with the print run", () => {
   expect(valueQuery(makeCard({ parallel: parallel({}) }))).toMatch(/ Gold Refractor \/50$/);
 });
 
+test("an unset serialNumbered with a print run still ends with the print run", () => {
+  expect(valueQuery(makeCard({ parallel: parallel({ serialNumbered: undefined }) }))).toMatch(/\/50$/);
+});
+
 test("a parallel without numbering or print run has no slash", () => {
   const plain = valueQuery(makeCard({ parallel: parallel({ name: "Refractor", serialNumbered: false }) }));
   const noRun = valueQuery(makeCard({ parallel: parallel({ name: "Refractor", printRun: null }) }));
