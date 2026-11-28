@@ -105,7 +105,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
         Last edited <time data-testid="updated" dateTime={card.updatedAt}>{new Date(card.updatedAt).toLocaleString()}</time>
       </p>
       <p>
-        <a href={soldPricesUrl(card)} target="_blank" rel="noopener noreferrer">
+        <a className="sold-link" href={soldPricesUrl(card)} target="_blank" rel="noopener noreferrer">
           Check sold prices
         </a>
       </p>
