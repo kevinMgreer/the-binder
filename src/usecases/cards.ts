@@ -73,6 +73,11 @@ export async function saveCards({ collection }: Pick<Deps, "collection">, ids: s
   return changed.length;
 }
 
+/** Wanted becomes owned: the card is added today, so the added date and the edit date both reset. */
+export function markOwned(card: Card, now: string): Card {
+  return { ...card, wanted: undefined, createdAt: now, updatedAt: now };
+}
+
 export async function deleteCard({ collection, photos: store }: Deps, card: Card) {
   const stored = (await collection.get(card.id)) ?? card;
   const now = new Date().toISOString();

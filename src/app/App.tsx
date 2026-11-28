@@ -10,6 +10,7 @@ import { Dashboard } from "./Dashboard";
 import { openSheets } from "./Sheet";
 import { SettingsScreen } from "./SettingsScreen";
 import { useCards } from "./useCards";
+import { markOwned } from "../usecases/cards";
 import { useUpdates } from "./useUpdates";
 
 type View =
@@ -90,10 +91,7 @@ export function App() {
         <CardDetail
           card={card}
           onEdit={() => setView({ name: "form", card, from: view.from })}
-          onMarkOwned={() => {
-            const today = new Date().toISOString();
-            return save({ ...card, wanted: undefined, createdAt: today, updatedAt: today });
-          }}
+          onMarkOwned={() => save(markOwned(card, new Date().toISOString()))}
           onDelete={async () => {
             await remove(card);
             setView({ name: view.from });

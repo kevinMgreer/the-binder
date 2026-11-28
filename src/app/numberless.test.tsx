@@ -26,7 +26,7 @@ test("a numberless row shows year and set with no # and no dangling separator", 
 });
 
 test("a numberless detail line has no # and no dangling separator", () => {
-  render(<CardDetail card={bare} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={() => {}} />);
+  render(<CardDetail card={bare} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={async () => {}} />);
   expect(screen.getByTestId("subtitle").textContent).toBe("2024 Series 1");
 });
 

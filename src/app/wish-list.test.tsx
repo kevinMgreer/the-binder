@@ -100,7 +100,7 @@ test("unticking Wanted saves the card with no wanted key", async () => {
 });
 
 test("a wanted card's detail shows the tag and Mark as owned; an owned card's shows neither", () => {
-  const onMarkOwned = vi.fn();
+  const onMarkOwned = vi.fn(async () => {});
   const detail = (card: Card) => (
     <PortsProvider ports={createFakePorts()}>
       <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={onMarkOwned} />
@@ -122,6 +122,8 @@ test("Mark as owned saves the card without wanted, same notes and quantity, a ne
   fireEvent.click(screen.getByText("Ty Cobb"));
   click("Mark as owned");
   await waitFor(() => expect(screen.queryByRole("button", { name: "Mark as owned" })).toBeNull());
+  expect(screen.queryByText("Wanted")).toBeNull();
+  expect(document.activeElement).toBe(screen.getByRole("button", { name: "Edit" }));
   await waitFor(async () => expect((await ports.collection.list()).find((c) => c.id === "w")?.wanted).toBeUndefined());
   const stored = (await ports.collection.list()).find((c) => c.id === "w")!;
   expect(stored).toMatchObject({ notes: "n", quantity: 2 });

@@ -217,7 +217,7 @@ Every figure on the dashboard SHALL leave wanted cards out: the six stat tiles, 
 - **THEN** the list shows 3 cards with an Autograph chip and no Show chip
 
 ### Requirement: A quiet wanted count opens the wish list
-When the collection holds at least one wanted card, the dashboard SHALL show one quiet text line under the stat tiles reading "N wanted" (distinct wanted cards), not styled as a stat tile, at least 48 dp high as a touch target, with the accessible name "Wanted, N". Tapping it SHALL open the collection list with Show Wanted picked and any earlier search and filters cleared. With no wanted card the line SHALL NOT be shown.
+When the collection holds at least one wanted card, the dashboard SHALL show one quiet text line under the stat tiles reading "N wanted" (distinct wanted cards), not styled as a stat tile, at least 48 dp high as a touch target, whose accessible name is its visible text "N wanted". Tapping it SHALL open the collection list with Show Wanted picked and any earlier search and filters cleared. With no wanted card the line SHALL NOT be shown.
 
 #### Scenario: Wanted line opens the wanted list
 - **GIVEN** 2 wanted cards and 5 owned cards

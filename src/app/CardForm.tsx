@@ -335,9 +335,6 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <div className="title-rule" aria-hidden="true" />
       {check("wanted", "Wanted (I don't have it yet)")}
-      {draft.wanted && findOwnedMatch(cards, toCard(draft, card, "manual")) && (
-        <p className="hint" role="status">You already own this card. You can still save it as wanted.</p>
-      )}
       <div className="photo-tiles">
         {(["front", "back"] as const).map((side) => (
           <PhotoSlot
@@ -366,6 +363,10 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       {text("subset", "Subset")}
       {text("insert", "Insert")}
       {text("cardNumber", "Card number", "cardNumber")}
+      {/* Always mounted so a screen reader announces the text when it appears. */}
+      <p className="hint owned-note" aria-live="polite">
+        {draft.wanted && findOwnedMatch(cards, toCard(draft, card, "manual")) ? "You already own this card. You can still save it as wanted." : ""}
+      </p>
       {text("parallel", "Parallel")}
       {check("serialNumbered", "Serial-numbered")}
       {draft.serialNumbered && (

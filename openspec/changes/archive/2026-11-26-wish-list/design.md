@@ -44,7 +44,7 @@ Add `show: "owned" | "wanted" | "all"` to `Filters`, `"owned"` in `emptyFilters`
 
 ### D5. Dashboard: skip wanted cards in the one pass
 In `collectionStats`, at the top of the loop: `if (card.wanted) { wanted++; continue; }`. This keeps tiles, Top teams, Top players and Recently added owned-only in one place. `CollectionStats` gains `wanted: number`. Tile tests already go through `matcher({ ...emptyFilters, ...})`, which now means owned, so they agree with the loop.
-`Dashboard.tsx` renders, when `wanted > 0`, one text button under the tiles ("N wanted", quiet text style, 48 dp target, `aria-label="Wanted, N"`) that calls `onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })`. No change to `App`.
+`Dashboard.tsx` renders, when `wanted > 0`, one text button under the tiles ("N wanted", quiet text style, 48 dp target, no `aria-label`: the spoken name is the visible "N wanted") that calls `onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })`. No change to `App`.
 - Alternative: a seventh tile. The owner asked for something quiet; the six-tile grid is specified as exactly six.
 
 ### D6. UI placement (quiet)
@@ -62,15 +62,16 @@ In `collectionStats`, at the top of the loop: `if (card.wanted) { wanted++; cont
 `findDuplicate` returns no match when the new card is wanted, and skips wanted cards as candidates. Otherwise "Increase quantity" could add to a wanted card's quantity, and the dialog's "(N owned)" text would be wrong.
 - Alternative: match within the same status. Then two wanted copies would prompt with wording about owned copies; needs new copy text.
 - Alternative: when an owned card matches a wanted one, offer "Mark as owned". Nice, but a new dialog branch; out of scope.
+- Later ruling (T-79): the form shows a short, non-blocking "You already own this card" note while Wanted is ticked and the card matches an owned one (`findOwnedMatch`); the duplicate dialog is unchanged.
 
 ### D9. Mark as owned
-`CardDetail` gets an `onMarkOwned` prop; `App` passes `() => save({ ...card, wanted: undefined, updatedAt: now })` through the existing `useCards().save`, which queues sync. `createdAt` is kept.
+`CardDetail` gets an `onMarkOwned` prop; `App` passes `() => save(markOwned(card, now))` through the existing `useCards().save`, which queues sync. Later ruling (T-78): `markOwned` clears `wanted` and resets both `createdAt` and `updatedAt` to now, so a card just bought shows in Recently added.
 
 ## Risks / Trade-offs
 
 - [Search hides wanted cards under the default Owned] The owner searching for a wanted card sees "No cards match" → the Wanted chip, and the dashboard line, are one tap away; the empty-state text stays as is.
 - [A collection with only wanted cards shows "No cards match" instead of the empty-binder text] Rare and self-explaining once the Show choice is known. Not handled.
-- [Mark as owned keeps `createdAt`, so a card just bought does not appear in Recently added] Kept simple; see Open Questions.
+- [Mark as owned resets `createdAt`, so the card's original added date is lost] Intended (T-78): the added date is the day the user got the card.
 - [An older build on a second device shows wanted cards as owned] One phone; the field survives its writes (D2).
 - [Users of `Filters` in tests build objects by hand] Adding a required `show` field breaks literal `Filters` objects in tests that do not spread `emptyFilters`; the domain task fixes them.
 
@@ -80,5 +81,5 @@ None. Ship the build; existing cards stay owned. Rollback: an older build ignore
 
 ## Open Questions
 
-- Should "Mark as owned" also reset `createdAt` so the card shows in Recently added? Default no; a one-line change if the owner wants it.
-- Should adding a wanted card that matches an owned one say "you already own this"? Left out (D8); can be added later without changing the data.
+- Should "Mark as owned" also reset `createdAt`? Ruled yes (T-78); see D9.
+- Should adding a wanted card that matches an owned one say "you already own this"? Ruled yes (T-79), as a form note; see D8.

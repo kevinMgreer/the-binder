@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { InMemoryCollectionStore, createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
-import { deleteCards, saveCards } from "./cards";
+import { deleteCards, markOwned, saveCards } from "./cards";
 
 async function setup(count = 5) {
   const ports = createFakePorts();
@@ -22,6 +22,13 @@ async function setup(count = 5) {
   await collection.clearPending(await collection.pending());
   return { collection, cards, deps: { collection, photos: ports.photos } };
 }
+
+test("markOwned clears wanted and resets createdAt and updatedAt, keeping the rest", () => {
+  const card = makeCard({ wanted: true, notes: "n", quantity: 2, createdAt: "2026-01-01T00:00:00.000Z" });
+  const next = markOwned(card, "2026-11-27T00:00:00.000Z");
+  expect(next.wanted).toBeUndefined();
+  expect(next).toMatchObject({ notes: "n", quantity: 2, createdAt: "2026-11-27T00:00:00.000Z", updatedAt: "2026-11-27T00:00:00.000Z" });
+});
 
 test("a patch changes only the chosen cards and only the patched field and updatedAt", async () => {
   const { collection, cards, deps } = await setup();

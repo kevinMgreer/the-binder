@@ -26,7 +26,7 @@ async function open(withFull: boolean) {
   if (withFull) await ports.photos.cacheFull(card.id, "front", full);
   render(
     <PortsProvider ports={ports}>
-      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={() => {}} />
+      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={async () => {}} />
     </PortsProvider>,
   );
   return { download, img: () => screen.getByRole("button", { name: "View front photo" }).querySelector("img") };
@@ -47,7 +47,7 @@ test("with the full photo stored the detail photo switches to it, with no downlo
 test("the Delete dialog puts Delete (danger outline) before Keep (primary, focused)", () => {
   render(
     <PortsProvider ports={createFakePorts()}>
-      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={() => {}} />
+      <CardDetail card={card} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={async () => {}} />
     </PortsProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Delete" }));
@@ -84,7 +84,7 @@ async function openView(c: typeof card, sides: ("front" | "back")[]) {
   for (const s of sides) await ports.photos.cacheThumb(c.id, s, thumb);
   render(
     <PortsProvider ports={ports}>
-      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={() => {}} />
+      <CardDetail card={c} onEdit={() => {}} onDelete={async () => {}} onMarkOwned={async () => {}} />
     </PortsProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "View front photo" }));

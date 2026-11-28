@@ -4,6 +4,7 @@ The owner keeps a mental list of cards he is hunting for. Ruling T-57: a wanted 
 
 ## What Changes
 
+- Rulings T-78 and T-79: "Mark as owned" resets the card's added date to now, and the form shows a short "you already own this" note when a wanted card matches an owned one.
 - A card gets an optional Wanted mark. Cards and Drive files saved before the mark have no field and count as owned. No schema version bump.
 - The card form gets one checkbox, "Wanted (I don't have it yet)". Photos stay optional, so a wanted card needs none.
 - The card detail of a wanted card shows a small Wanted tag and a "Mark as owned" action that clears the mark in one tap.
@@ -17,7 +18,6 @@ The owner keeps a mental list of cards he is hunting for. Ruling T-57: a wanted 
 Out of scope:
 - Priority, maximum price or any other wish-list fields.
 - Sharing or exporting the wish list.
-- A "you already own this" hint when adding a wanted card that matches an owned one.
 - Setting or clearing Wanted on several cards at once (bulk edit).
 - A separate wish-list screen or navigation entry.
 - Starting the Add form with Wanted ticked when the list shows wanted cards.

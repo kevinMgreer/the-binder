@@ -10,7 +10,7 @@ import { Sheet } from "./Sheet";
 interface Props {
   card: Card;
   onEdit: () => void;
-  onMarkOwned: () => void;
+  onMarkOwned: () => Promise<void>;
   onDelete: () => Promise<void>;
 }
 
@@ -31,6 +31,7 @@ export function CardDetail({ card, onEdit, onDelete, onMarkOwned }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [viewing, setViewing] = useState<CardSide | null>(null);
   const deleteButton = useRef<HTMLButtonElement>(null);
+  const editButton = useRef<HTMLButtonElement>(null);
   const keep = useCallback(() => {
     setConfirming(false);
     deleteButton.current?.focus();
@@ -107,14 +108,14 @@ export function CardDetail({ card, onEdit, onDelete, onMarkOwned }: Props) {
       </p>
       <div className="actions detail-actions">
         {card.wanted && (
-          <button className="primary mark-owned" onClick={onMarkOwned}>
+          <button className="primary mark-owned" onClick={() => onMarkOwned().then(() => editButton.current?.focus())}>
             Mark as owned
           </button>
         )}
         <button ref={deleteButton} className="danger outline" onClick={() => setConfirming(true)}>
           Delete
         </button>
-        <button className={card.wanted ? "outline" : "primary"} onClick={onEdit}>
+        <button ref={editButton} className={card.wanted ? "outline" : "primary"} onClick={onEdit}>
           Edit
         </button>
       </div>

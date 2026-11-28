@@ -178,7 +178,9 @@ header p.sync-detail { margin: 0; color: var(--color-danger); font-size: var(--t
 .grid-name, .grid-meta { height: 1.3em; min-width: 0; }
 .grid-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .grid-meta { display: flex; align-items: center; color: var(--color-ink-muted); }
-.grid-wanted { align-self: flex-start; box-sizing: border-box; max-width: 100%; min-width: 0; margin-top: var(--space-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+/* Out of the caption flow, over the thumb's bottom edge (the caption is two lines, 1.3em each), so the tile height never changes. */
+.grid .grid-card { position: relative; }
+.grid-wanted { position: absolute; left: var(--space-1); bottom: calc(2.6em + var(--gap-caption) + var(--space-1)); box-sizing: border-box; max-width: calc(100% - 2 * var(--space-1)); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
 
 /* Trading-card frame: 2.5 by 3.5, turned for a landscape photo; the photo keeps its own ratio inside, never cropped. */
 .thumb-slot { display: flex; align-items: center; justify-content: flex-start; width: 96px; height: 96px; flex: none; }
@@ -212,6 +214,8 @@ img.thumb { width: auto; height: auto; max-width: 100%; max-height: 100%; outlin
 [role="alert"][data-testid="save-blocked"], p[role="alert"] { color: var(--color-danger); }
 form > button { margin-bottom: var(--space-3); }
 form > [role="status"] { margin: 0 0 var(--space-3); }
+.owned-note { margin: 0 0 var(--space-3); }
+.owned-note:empty { margin: 0; }
 .title-row h2 { margin: 0; overflow-wrap: anywhere; }
 .subtitle, section > p:has(> time) { color: var(--color-ink-muted); }
 section > p:has(> time) { font-size: var(--type-label); margin-bottom: var(--space-4); }
