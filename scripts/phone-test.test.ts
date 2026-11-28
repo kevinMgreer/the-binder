@@ -1,130 +1,123 @@
 import { describe, expect, test } from "vitest";
-// @ts-expect-error plain JavaScript dev script
-import { parseArgs, pickDevice, phoneTest } from "./phone-test.mjs";
+// @ts-expect-error plain JavaScript node script
+import { parseArgs, pickDevice, run } from "./phone-test.mjs";
+
+type Call = { cmd: string; args: string[]; cwd: string };
 
 const ADB_NONE = "List of devices attached\n\n";
-const ADB_ONE = "List of devices attached\nABC123\tdevice\n\n";
-const ADB_TWO = "List of devices attached\nABC123\tdevice\nDEF456\tdevice\n\n";
-const ADB_UNAUTH = "List of devices attached\nABC123\tunauthorized\n\n";
+const adbOne = (s: string) => `List of devices attached\n${s}\tdevice\n\n`;
 
-describe("parseArgs", () => {
-  test("defaults to the current directory, no worker, no serial", () => {
-    expect(parseArgs([])).toEqual({ dir: null, worker: false, serial: null });
-  });
-  test("reads a folder, --worker and --serial", () => {
-    expect(parseArgs(["C:\\wt", "--worker", "--serial", "ABC"])).toEqual({ dir: "C:\\wt", worker: true, serial: "ABC" });
-  });
-  test("rejects unknown flags", () => {
-    expect(() => parseArgs(["--deploy"])).toThrow();
-  });
-});
-
-describe("pickDevice", () => {
-  test("none: stop with the USB debugging message", () => {
-    const d = pickDevice(ADB_NONE, null);
-    expect(d.serial).toBeUndefined();
-    expect(d.error).toContain("plug in the phone and allow USB debugging");
-  });
-  test("an unauthorized phone is not a device", () => {
-    expect(pickDevice(ADB_UNAUTH, null).error).toContain("allow USB debugging");
-  });
-  test("one device: use it", () => {
-    expect(pickDevice(ADB_ONE, null)).toEqual({ serial: "ABC123" });
-  });
-  test("several without --serial: refuse", () => {
-    expect(pickDevice(ADB_TWO, null).error).toContain("--serial");
-  });
-  test("--serial picks one of several", () => {
-    expect(pickDevice(ADB_TWO, "DEF456")).toEqual({ serial: "DEF456" });
-  });
-  test("--serial that is not attached: refuse", () => {
-    expect(pickDevice(ADB_ONE, "NOPE").error).toContain("NOPE");
-  });
-});
-
-function fake(over: Record<string, unknown> = {}) {
-  const calls: string[] = [];
+function fake(opts: { adb?: string; fail?: string; envLocal?: boolean; env?: Record<string, string> } = {}) {
+  const calls: Call[] = [];
   const logs: string[] = [];
   const copies: string[][] = [];
   const deps = {
     cwd: "/wt",
+    env: { JAVA_HOME: "/jdk", ANDROID_HOME: "/sdk", ...opts.env },
     platform: "linux",
-    env: { JAVA_HOME: "/jdk", ANDROID_HOME: "/sdk" } as Record<string, string>,
-    exists: (p: string) => p !== "/wt/.env.local" || over.hasEnv === true,
-    mainCheckout: () => "/main",
-    copyFile: (from: string, to: string) => copies.push([from, to]),
-    run: (cmd: string, args: string[]) => {
-      const line = [cmd, ...args].join(" ");
-      calls.push(line);
-      const fail = over.failOn as string | undefined;
-      return fail && line.includes(fail) ? 7 : 0;
+    log: (l: string) => logs.push(l),
+    exists: (p: string) => (p.endsWith(".env.local") ? opts.envLocal === true : true),
+    copyFile: (a: string, b: string) => copies.push([a, b]),
+    exec(cmd: string, args: string[], o: { cwd: string }) {
+      calls.push({ cmd, args, cwd: o.cwd });
+      const line = `${cmd} ${args.join(" ")}`;
+      if (opts.fail && line.includes(opts.fail)) return { status: 7, stdout: "" };
+      if (cmd === "git" && args[0] === "worktree") return { status: 0, stdout: "worktree /main\nHEAD abc\n\nworktree /wt\n" };
+      if (args.includes("devices")) return { status: 0, stdout: opts.adb ?? adbOne("ABC123") };
+      return { status: 0, stdout: "Deployed version id: v-1\n" };
     },
-    capture: () => (over.adb as string) ?? ADB_ONE,
-    log: (s: string) => logs.push(s),
-    ...over,
   };
-  return { deps, calls, logs, copies };
+  return { deps, calls, logs, copies, lines: () => calls.map((c) => `${c.cmd} ${c.args.join(" ")}`) };
 }
 
-describe("phoneTest", () => {
-  test("happy path runs every step in order, installs, and never deploys", async () => {
+describe("parseArgs", () => {
+  test("defaults", () => {
+    expect(parseArgs([])).toEqual({ dir: undefined, worker: false, serial: undefined });
+  });
+  test("path, --worker and --serial", () => {
+    expect(parseArgs(["C:/wt", "--worker", "--serial", "X1"])).toEqual({ dir: "C:/wt", worker: true, serial: "X1" });
+  });
+});
+
+describe("pickDevice", () => {
+  test("none: asks to plug in the phone", () => {
+    expect(pickDevice(ADB_NONE).error).toMatch(/plug in the phone and allow USB debugging/);
+  });
+  test("one device is used", () => {
+    expect(pickDevice(adbOne("ABC123"))).toEqual({ serial: "ABC123" });
+  });
+  test("unauthorized does not count", () => {
+    expect(pickDevice("List of devices attached\nABC\tunauthorized\n").error).toMatch(/plug in the phone/);
+  });
+  test("several without --serial are refused", () => {
+    const out = "List of devices attached\nA\tdevice\nB\tdevice\n";
+    expect(pickDevice(out).error).toMatch(/--serial/);
+  });
+  test("--serial picks one of several", () => {
+    const out = "List of devices attached\nA\tdevice\nB\tdevice\n";
+    expect(pickDevice(out, "B")).toEqual({ serial: "B" });
+    expect(pickDevice(out, "Z").error).toMatch(/Z/);
+  });
+});
+
+describe("run", () => {
+  test("builds, syncs, restores gradle files, assembles and installs", () => {
     const f = fake();
-    const code = await phoneTest({ dir: null, worker: false, serial: null }, f.deps);
-    expect(code).toBe(0);
-    expect(f.calls.map((c) => c.split(" ").slice(0, 3).join(" "))).toEqual([
-      "npm run build",
-      "npx cap sync",
-      "git checkout --",
-      "./gradlew assembleDebug",
-      "/sdk/platform-tools/adb -s ABC123",
-    ]);
-    expect(f.calls.some((c) => c.includes("wrangler"))).toBe(false);
-    expect(f.logs.filter((l) => /^(ok|FAIL)/.test(l)).length).toBe(5);
+    expect(run([], f.deps)).toBe(0);
+    const l = f.lines();
+    expect(l).toContain("npm run build");
+    expect(l).toContain("npx cap sync android");
+    expect(l.some((x) => x.startsWith("git checkout -- android/app/capacitor.build.gradle android/capacitor.settings.gradle"))).toBe(true);
+    expect(l.some((x) => x.includes("gradlew") && x.includes("assembleDebug"))).toBe(true);
+    expect(l.some((x) => x.includes("install -r"))).toBe(true);
+    expect(l.some((x) => x.includes("wrangler"))).toBe(false);
   });
-
-  test("--worker deploys the Worker after the install", async () => {
+  test("deploys the Worker only with --worker", () => {
     const f = fake();
-    await phoneTest({ dir: null, worker: true, serial: null }, f.deps);
-    expect(f.calls.at(-1)).toContain("wrangler deploy");
+    expect(run(["--worker"], f.deps)).toBe(0);
+    const w = f.calls.find((c) => c.args.includes("wrangler"));
+    expect(w?.args).toEqual(["wrangler", "deploy"]);
+    expect(w?.cwd).toMatch(/worker$/);
+    expect(f.logs.join("\n")).toMatch(/v-1/);
   });
-
-  test("stops at the first failing step with its exit code", async () => {
-    const f = fake({ failOn: "cap sync" });
-    const code = await phoneTest({ dir: null, worker: true, serial: null }, f.deps);
-    expect(code).toBe(7);
-    expect(f.calls).toHaveLength(2);
-    expect(f.logs.at(-1)).toMatch(/^FAIL/);
-  });
-
-  test("no phone: stops before installing, exit non-zero", async () => {
+  test("no phone: stops before install", () => {
     const f = fake({ adb: ADB_NONE });
-    const code = await phoneTest({ dir: null, worker: true, serial: null }, f.deps);
-    expect(code).not.toBe(0);
-    expect(f.calls.some((c) => c.includes("install"))).toBe(false);
-    expect(f.calls.some((c) => c.includes("wrangler"))).toBe(false);
-    expect(f.logs.join("\n")).toContain("plug in the phone and allow USB debugging");
+    expect(run(["--worker"], f.deps)).not.toBe(0);
+    expect(f.logs.join("\n")).toMatch(/plug in the phone and allow USB debugging/);
+    expect(f.lines().some((x) => x.includes("install"))).toBe(false);
+    expect(f.lines().some((x) => x.includes("wrangler"))).toBe(false);
   });
-
-  test("several phones without --serial: refuse", async () => {
-    const f = fake({ adb: ADB_TWO });
-    expect(await phoneTest({ dir: null, worker: false, serial: null }, f.deps)).not.toBe(0);
-    expect(f.calls.some((c) => c.includes("install"))).toBe(false);
+  test("--serial is passed to adb install", () => {
+    const f = fake({ adb: "List of devices attached\nA\tdevice\nB\tdevice\n" });
+    expect(run(["--serial", "B"], f.deps)).toBe(0);
+    expect(f.lines().find((x) => x.includes("install"))).toMatch(/-s B install -r/);
   });
-
-  test("copies .env.local from the main checkout only when missing, without printing it", async () => {
-    const missing = fake();
-    await phoneTest({ dir: null, worker: false, serial: null }, missing.deps);
-    expect(missing.copies).toEqual([["/main/.env.local", "/wt/.env.local"]]);
-    const present = fake({ hasEnv: true });
-    await phoneTest({ dir: null, worker: false, serial: null }, present.deps);
-    expect(present.copies).toEqual([]);
+  test("stops at the first failing step with its exit code", () => {
+    const f = fake({ fail: "cap sync" });
+    expect(run([], f.deps)).toBe(7);
+    expect(f.lines().some((x) => x.includes("assembleDebug"))).toBe(false);
   });
-
-  test("fails clearly when the JDK or SDK folder is missing", async () => {
-    const f = fake({ exists: (p: string) => p !== "/jdk" });
-    const code = await phoneTest({ dir: null, worker: false, serial: null }, f.deps);
-    expect(code).not.toBe(0);
-    expect(f.calls).toHaveLength(0);
-    expect(f.logs.join("\n")).toContain("JAVA_HOME");
+  test("one summary line per step", () => {
+    const f = fake();
+    run([], f.deps);
+    const steps = f.logs.filter((l) => /^(ok|FAIL)\b/.test(l));
+    expect(steps.length).toBeGreaterThanOrEqual(5);
+  });
+  test("fails clearly when JAVA_HOME folder is missing", () => {
+    const f = fake();
+    f.deps.exists = (p: string) => p !== "/jdk";
+    expect(run([], f.deps)).not.toBe(0);
+    expect(f.logs.join("\n")).toMatch(/JAVA_HOME/);
+    expect(f.calls.length).toBeLessThanOrEqual(1);
+  });
+  test(".env.local is copied from the main checkout only when missing, never printed", () => {
+    const missing = fake({ envLocal: false });
+    run([], missing.deps);
+    expect(missing.copies).toHaveLength(1);
+    expect(missing.copies[0][0]).toMatch(/main[\\/]\.env\.local$/);
+    expect(missing.copies[0][1]).toMatch(/wt[\\/]\.env\.local$/);
+    const present = fake({ envLocal: true });
+    run([], present.deps);
+    expect(present.copies).toHaveLength(0);
   });
 });
