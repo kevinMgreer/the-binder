@@ -119,9 +119,13 @@ function identity(c: Card): string {
   return normalize([c.player, c.year, c.set, c.cardNumber, c.parallel?.name ?? "", grade].join("|").trim());
 }
 
-/** Owned cards only: a wanted card is neither a duplicate nor something to add quantity to. */
-export function findDuplicate(cards: Card[], card: Card): Card | undefined {
-  if (card.wanted) return undefined;
+/** The owned card with the same identity, whether or not `card` itself is wanted. */
+export function findOwnedMatch(cards: Card[], card: Card): Card | undefined {
   const key = identity(card);
   return cards.find((c) => c.id !== card.id && c.deletedAt === null && !c.wanted && identity(c) === key);
+}
+
+/** Owned cards only: a wanted card is neither a duplicate nor something to add quantity to. */
+export function findDuplicate(cards: Card[], card: Card): Card | undefined {
+  return card.wanted ? undefined : findOwnedMatch(cards, card);
 }

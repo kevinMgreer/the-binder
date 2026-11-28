@@ -90,7 +90,10 @@ export function App() {
         <CardDetail
           card={card}
           onEdit={() => setView({ name: "form", card, from: view.from })}
-          onMarkOwned={() => save({ ...card, wanted: undefined, updatedAt: new Date().toISOString() })}
+          onMarkOwned={() => {
+            const today = new Date().toISOString();
+            return save({ ...card, wanted: undefined, createdAt: today, updatedAt: today });
+          }}
           onDelete={async () => {
             await remove(card);
             setView({ name: view.from });

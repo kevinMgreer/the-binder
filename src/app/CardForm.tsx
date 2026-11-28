@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { CONDITIONS, type Card, type CardSide, type Suggestion } from "../domain/card";
 import { isSerialNumbered } from "../domain/format";
-import { findDuplicate, lastNameKey } from "../domain/query";
+import { findDuplicate, findOwnedMatch, lastNameKey } from "../domain/query";
 import { REQUIRED_FIELDS, validateCard, type FieldErrors, type FieldKey } from "../domain/schema";
 import { AuthExpiredError, DailyLimitError, type CapturedPhoto, type Photos } from "../ports";
 import { Field, fieldId } from "./Field";
@@ -335,6 +335,9 @@ export function CardForm({ card, cards, onSave, onCancel }: Props) {
       <h2>{card ? "Edit card" : "Add card"}</h2>
       <div className="title-rule" aria-hidden="true" />
       {check("wanted", "Wanted (I don't have it yet)")}
+      {draft.wanted && findOwnedMatch(cards, toCard(draft, card, "manual")) && (
+        <p className="hint" role="status">You already own this card. You can still save it as wanted.</p>
+      )}
       <div className="photo-tiles">
         {(["front", "back"] as const).map((side) => (
           <PhotoSlot
