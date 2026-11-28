@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { createRoot } from "react-dom/client";
 import { CapacitorCameraPhotoSource } from "./adapters/capacitor-camera";
 import { CapacitorAppInfo } from "./adapters/capacitor-app-info";
+import { CapacitorGallery } from "./adapters/capacitor-gallery";
 import { capacitorNativeAuth } from "./adapters/capacitor-native-auth";
 import { capacitorScanner } from "./adapters/capacitor-scanner";
 import { ScannerPhotoSource } from "./adapters/document-scanner-photo-source";
@@ -41,6 +42,7 @@ const ports: Ports = {
 };
 if (Capacitor.isNativePlatform()) {
   const { id } = await CapacitorApp.getInfo();
+  ports.gallery = new CapacitorGallery();
   ports.remote = new DriveRemoteStore({
     root: id.endsWith(".debug") ? "dev" : "release",
     getAccessToken: () => ports.auth.getAccessToken(),
