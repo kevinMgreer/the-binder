@@ -66,12 +66,16 @@ export function Dashboard({ cards, update, onAdd, onNavigate, onSettings, onTile
         })}
       </div>
       {wanted > 0 && (
-        <button
-          className="wanted-line"
-          onClick={() => onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })}
-        >
-          {wanted.toLocaleString()} wanted
-        </button>
+        <div className="teams">
+          <button
+            className="team"
+            aria-label={`Wanted, ${wanted.toLocaleString()}`}
+            onClick={() => onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })}
+          >
+            <span className="tile-label">Wanted</span>
+            <span className="team-count">{wanted.toLocaleString()}</span>
+          </button>
+        </div>
       )}
       {ruled("Top teams", "team", teams, (name) => ({ team: name }))}
       {ruled("Top players", "player", players, (name) => ({ player: name }))}
