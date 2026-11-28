@@ -51,6 +51,9 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 - [ ] A long press on a card starts selection with that card selected; a scroll with a finger on a card does not select. [bulk-edit, T-62]
 - [ ] Android back leaves selection mode first, a second back reaches the dashboard. [bulk-edit, T-62]
 - [ ] Select 20 cards, Edit, set the Set, confirm: the list shows the new set, and after a Drive sync they show as synced. [bulk-edit, T-62]
+- [ ] Select 3 cards, tap the trash, tap Keep: nothing is deleted and the 3 stay selected. [bulk-delete, T-77]
+- [ ] Select 3 cards, tap the trash, confirm Delete: the 3 cards leave the list and selection mode ends. [bulk-delete, T-77]
+- [ ] After a Drive sync and a fresh install, the 3 deleted cards do not come back. [bulk-delete, T-77]
 
 ## Identification (card-identification)
 

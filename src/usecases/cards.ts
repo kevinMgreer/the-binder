@@ -75,10 +75,24 @@ export async function saveCards({ collection }: Pick<Deps, "collection">, ids: s
 
 export async function deleteCard({ collection, photos: store }: Deps, card: Card) {
   const stored = (await collection.get(card.id)) ?? card;
+  const now = new Date().toISOString();
+  // The put comes first: a card whose put fails must not lose its photos at the next sync.
+  await collection.put({ ...stored, deletedAt: now, updatedAt: now });
   for (const side of SIDES) {
     const ref = stored.photos[side];
     for (const id of [ref?.fileId, ref?.thumbId]) if (id) await store.queueDelete(id);
   }
-  const now = new Date().toISOString();
-  await collection.put({ ...stored, deletedAt: now, updatedAt: now });
+}
+
+/** Deletes each card on its own so one failure leaves the others deleted; returns the ids that failed. */
+export async function deleteCards(deps: Deps, cards: Card[]): Promise<string[]> {
+  const failed: string[] = [];
+  for (const card of cards) {
+    try {
+      await deleteCard(deps, card);
+    } catch {
+      failed.push(card.id);
+    }
+  }
+  return failed;
 }

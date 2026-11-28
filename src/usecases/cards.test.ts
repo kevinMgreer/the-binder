@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { InMemoryCollectionStore, createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
-import { saveCards } from "./cards";
+import { deleteCards, saveCards } from "./cards";
 
 async function setup(count = 5) {
   const ports = createFakePorts();
@@ -85,4 +85,44 @@ test("all written cards go in one putMany call", async () => {
   expect(spy).toHaveBeenCalledTimes(1);
   expect(spy.mock.calls[0][0]).toHaveLength(3);
   expect((await collection.get("c0"))!.subset).toBe("Base");
+});
+
+async function setupDelete() {
+  const ports = createFakePorts();
+  const collection = ports.collection as InMemoryCollectionStore;
+  const ref = (id: string) => ({ fileId: `f${id}`, thumbId: `t${id}`, name: null });
+  const cards = Array.from({ length: 10 }, (_, i) =>
+    makeCard({ id: `c${i}`, photos: { front: ref(`${i}F`), back: ref(`${i}B`) } }),
+  );
+  await collection.putMany(cards);
+  return { collection, cards, deps: { collection, photos: ports.photos } };
+}
+
+test("deleteCards soft-deletes the given cards, queues their photos and leaves the rest alone", async () => {
+  const { collection, cards, deps } = await setupDelete();
+  const queue = vi.spyOn(deps.photos, "queueDelete");
+  const failed = await deleteCards(deps, cards.slice(0, 3));
+  expect(failed).toEqual([]);
+  expect(queue).toHaveBeenCalledTimes(12);
+  const after = await collection.list();
+  for (const id of ["c0", "c1", "c2"]) {
+    const c = after.find((x) => x.id === id)!;
+    expect(c.deletedAt).not.toBeNull();
+    expect(c.updatedAt).toBe(c.deletedAt);
+  }
+  expect(after.filter((c) => c.deletedAt === null)).toEqual(cards.slice(3));
+});
+
+test("deleteCards keeps going when one card fails and returns its id", async () => {
+  const { collection, cards, deps } = await setupDelete();
+  const put = collection.put.bind(collection);
+  vi.spyOn(collection, "put").mockImplementation((c) => (c.id === "c1" ? Promise.reject(new Error("x")) : put(c)));
+  const queue = vi.spyOn(deps.photos, "queueDelete");
+  const failed = await deleteCards(deps, cards.slice(0, 3));
+  expect(failed).toEqual(["c1"]);
+  expect(queue).toHaveBeenCalledTimes(8);
+  expect(queue.mock.calls.map(([id]) => id).filter((id) => /^[ft]1[FB]$/.test(id))).toEqual([]);
+  const after = await collection.list();
+  expect(after.find((c) => c.id === "c1")?.deletedAt).toBeNull();
+  expect(after.find((c) => c.id === "c2")?.deletedAt).not.toBeNull();
 });
