@@ -135,18 +135,15 @@ $adb = "$env:ANDROID_HOME\platform-tools\adb.exe"
 ```
 
 1. Phone: **Settings > About phone**, tap **Build number** seven times, then **Developer options > USB debugging** on. Plug in and accept the "Allow USB debugging?" prompt. `& $adb devices` should list the phone as `device`, not `unauthorized`.
-2. From the repo root (the build reads `.env.local`, so fill it in first):
+2. From the repo root, or from a worktree (the build reads `.env.local`, so fill it in first; in a worktree the script copies it from the main checkout when it is missing and never prints it):
    ```
-   npm run build
-   npx cap sync android
-   cd android
-   .\gradlew.bat assembleDebug
-   & $adb install -r app\build\outputs\apk\debug\app-debug.apk
+   npm run phone-test
+   npm run phone-test -- C:\path\to\worktree
    ```
-   With more than one device attached add `-s <serial>` after `adb`.
+   It builds, syncs Capacitor, restores the two Gradle files that `cap sync` marks as changed (line endings only), runs `gradlew assembleDebug`, installs the APK and prints one line per step. It stops at the first failing step with that step's exit code. `JAVA_HOME` and `ANDROID_HOME` default to the example paths above when unset.
+   - No phone found: it stops with "plug in the phone and allow USB debugging". With more than one phone attached, add `--serial <id>` (ids come from `adb devices`).
+   - `--worker` also runs `npx wrangler deploy` in `worker/`. Leave it off unless the Worker changed: the deploy replaces the live Worker that the release app uses.
 3. **The Binder (dev)** appears on the phone. It uses its own Drive folder, so testing never touches your real collection.
-
-`npx cap sync android` can mark two Gradle files as changed (`android/app/capacitor.build.gradle`, `android/capacitor.settings.gradle`). Only line endings differ; discard them with `git checkout -- <file>`.
 
 ## 6. First release
 
