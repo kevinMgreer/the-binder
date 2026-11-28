@@ -4,7 +4,7 @@
 
 ## 2. Tests first
 
-- [ ] 2.1 New `src/domain/value-query.test.ts`: one test per search-word scenario of "Check sold prices" (plain base card exact words, empty fields left out with no double or edge spaces, numbered parallel ends "/50", parallel with no numbering or no print run has no "/", "RC Auto Relic" order, graded ends "PSA 10", raw condition left out) and one for `soldPricesUrl` (host and path, `_nkw` decodes to the words, `LH_Sold=1`, `LH_Complete=1`, `_sacat=213`). Use `makeCard` from `src/domain/fixtures.ts`. Commit this red on its own. Verify: `npx vitest run src/domain/value-query.test.ts` fails on today's code.
+- [x] 2.1 New `src/domain/value-query.test.ts`: one test per search-word scenario of "Check sold prices" (plain base card exact words, empty fields left out with no double or edge spaces, numbered parallel ends "/50", parallel with no numbering or no print run has no "/", "RC Auto Relic" order, graded ends "PSA 10", raw condition left out) and one for `soldPricesUrl` (host and path, `_nkw` decodes to the words, `LH_Sold=1`, `LH_Complete=1`, `_sacat=213`). Use `makeCard` from `src/domain/fixtures.ts`. Commit this red on its own. Verify: `npx vitest run src/domain/value-query.test.ts` fails on today's code.
 - [ ] 2.2 `src/app/card-detail.test.tsx`: the detail screen shows a "Check sold prices" link whose `href` equals `soldPricesUrl(card)`, with `target="_blank"` and `rel="noopener noreferrer"`, placed before the Delete and Edit row. Verify: the new test fails on today's code.
 
 ## 3. Implement
