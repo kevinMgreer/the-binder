@@ -44,7 +44,7 @@ Add `show: "owned" | "wanted" | "all"` to `Filters`, `"owned"` in `emptyFilters`
 
 ### D5. Dashboard: skip wanted cards in the one pass
 In `collectionStats`, at the top of the loop: `if (card.wanted) { wanted++; continue; }`. This keeps tiles, Top teams, Top players and Recently added owned-only in one place. `CollectionStats` gains `wanted: number`. Tile tests already go through `matcher({ ...emptyFilters, ...})`, which now means owned, so they agree with the loop.
-`Dashboard.tsx` renders, when `wanted > 0`, one text button under the tiles ("N wanted", quiet text style, 48 dp target, no `aria-label`: the spoken name is the visible "N wanted") that calls `onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })`. No change to `App`.
+`Dashboard.tsx` renders, when `wanted > 0`, one row under the tiles: a `.teams` block holding one `.team` button (a Top teams table of one row), with "Wanted" as the label at the left and the count in `.team-count` (slab) at the right, at least 48 dp tall, `aria-label` "Wanted, N". It calls `onTile({ label: "Wanted", filters: { show: "wanted" }, count: "match" })`. No change to `App`.
 - Alternative: a seventh tile. The owner asked for something quiet; the six-tile grid is specified as exactly six.
 
 ### D6. UI placement (quiet)

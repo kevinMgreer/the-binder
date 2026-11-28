@@ -141,6 +141,28 @@ test.describe("wanted grid tile at 360 by 800", () => {
   });
 });
 
+test.describe("Wanted row at 360 by 800", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test("the row is as wide as the tiles, ruled in ink, at least 48 tall, with a slab count", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(async () => {
+      const { makeCard } = await import("/src/domain/fixtures.ts");
+      await (window as unknown as Win).__ports.collection.putMany([makeCard({ player: "Ty Cobb", wanted: true })]);
+    });
+    await page.reload();
+    const row = page.getByRole("button", { name: "Wanted, 1" });
+    await expect(row).toBeVisible();
+    const block = page.locator(".teams").filter({ has: row });
+    const [tiles, box] = await Promise.all([page.locator(".tiles").boundingBox(), block.boundingBox()]);
+    expect(box!.width).toBeCloseTo(tiles!.width, 0);
+    expect(box!.height).toBeGreaterThanOrEqual(48);
+    expect(await css(block, "border-top-width")).toBe("1px");
+    expect(await css(block, "border-top-color")).toBe("rgb(28, 43, 74)");
+    expect(await css(row.locator(".team-count"), "font-family")).toContain("Roboto Slab");
+  });
+});
+
 for (const size of PHONES) {
   test.describe(`collection list at ${size.width} by ${size.height}`, () => {
     test.use({ viewport: size });

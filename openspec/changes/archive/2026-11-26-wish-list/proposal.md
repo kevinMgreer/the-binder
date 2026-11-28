@@ -10,7 +10,7 @@ The owner keeps a mental list of cards he is hunting for. Ruling T-57: a wanted 
 - The card detail of a wanted card shows a small Wanted tag and a "Mark as owned" action that clears the mark in one tap.
 - The Filter and sort sheet gets a "Show" choice: Owned, Wanted or All, default Owned, so today's list, counts and dashboard links do not change. Wanted and All show as a removable chip; Owned (the default) shows none. Clear all returns to Owned.
 - Wanted rows and grid tiles carry a "Wanted" tag in text, not colour alone.
-- The dashboard counts owned cards only (tiles, Top teams, Top players, Recently added) and adds one quiet line "N wanted" under the tiles, shown when N > 0, that opens the list filtered to wanted cards.
+- The dashboard counts owned cards only (tiles, Top teams, Top players, Recently added) and adds one "Wanted" row under the tiles, shown when N > 0, that opens the list filtered to wanted cards.
 - The duplicate check on Add compares owned cards only: a wanted card never offers "Increase quantity" and is never offered as the card to increase.
 - Bulk edit does not offer Wanted as a field and keeps each card's mark as stored.
 - Nothing new in the header or the bottom navigation.
@@ -32,7 +32,7 @@ Out of scope:
 
 - `card-catalog`: new Wanted mark on the card record (form checkbox, detail tag, Mark as owned, old cards count as owned); the duplicate check compares owned cards only.
 - `collection-list`: Show Owned / Wanted / All in the Filter and sort sheet, the Wanted chip, the Wanted tag on rows and tiles, bulk edit leaves the mark alone.
-- `dashboard`: every figure covers owned cards only; one "N wanted" line that opens the wanted list.
+- `dashboard`: every figure covers owned cards only; one "Wanted" row that opens the wanted list.
 
 ## Impact
 

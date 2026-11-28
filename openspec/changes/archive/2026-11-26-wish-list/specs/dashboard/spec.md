@@ -14,7 +14,7 @@ Every figure on the dashboard SHALL leave wanted cards out: the six stat tiles, 
 - **THEN** the list shows 3 cards with an Autograph chip and no Show chip
 
 ### Requirement: A wanted row opens the wish list
-When the collection holds at least one wanted card, the dashboard SHALL show one ruled row under the stat tiles, drawn like the stat table (panel background, ink border, frame radius), with one full-width button of at least 48 dp showing the label "Wanted" at the left and the count of distinct wanted cards at the right, whose accessible name is "Wanted, N". Tapping it SHALL open the collection list with Show Wanted picked and any earlier search and filters cleared. With no wanted card the line SHALL NOT be shown.
+When the collection holds at least one wanted card, the dashboard SHALL show one ruled row under the stat tiles, drawn like the stat table (panel background, ink border, frame radius), with one full-width button of at least 48 dp showing the label "Wanted" at the left and the count of distinct wanted cards at the right, whose accessible name is "Wanted, N". Tapping it SHALL open the collection list with Show Wanted picked and any earlier search and filters cleared. With no wanted card the row SHALL NOT be shown.
 
 #### Scenario: Wanted row opens the wanted list
 - **GIVEN** 2 wanted cards and 5 owned cards

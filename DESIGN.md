@@ -287,7 +287,7 @@ The order is plain text after the count in the "Showing N" line, "Showing N · L
 ### Tag
 The serial stamp (for example 13/150): Slab 600 at label size, ink text, 1px ink outline, 3px radius, 6px horizontal padding. Sits at the right end of the player line in a list row and beside the title on the detail screen. Outline only, never filled, never coloured. The same tag reads "Wanted" on a card not yet owned (list row, grid tile, detail title row); the word carries it, not a colour.
 
-### Wanted line
+### Wanted row
 When any card is wanted, one row under the six tiles, drawn like a Top teams table of one row: panel background, 1px ink border, frame radius, one button across the full width (56px, `--size-team-min`) with "Wanted" in the uppercase label type (Muted Ink) at the left and the count in Slab 700 at table size at the right. The accessible name is "Wanted, N". It opens the list filtered to Wanted. Wanted cards are left out of the tiles and tables. The Show choice (Owned, Wanted, All on one row) sits in the Filter and sort sheet after Direction; nothing is added to the header.
 
 ### Frames and photos

@@ -217,7 +217,7 @@ test("Select all under the default takes owned cards only, and bulk edit has no 
   expect(stored.find((c) => c.id === "w")?.wanted).toBe(true);
 });
 
-test("the dashboard shows N wanted only when N > 0 and opens the list with a Wanted chip", async () => {
+test("the dashboard shows the Wanted row only when N > 0 and opens the list with a Wanted chip", async () => {
   await renderApp("Dashboard");
   click("Wanted, 1");
   await screen.findByTestId("shown");
@@ -225,7 +225,7 @@ test("the dashboard shows N wanted only when N > 0 and opens the list with a Wan
   expect(screen.getByRole("button", { name: "Filter and sort, 1 applied" })).toBeTruthy();
 });
 
-test("the dashboard has no wanted line without wanted cards", async () => {
+test("the dashboard has no Wanted row without wanted cards", async () => {
   await renderApp("Dashboard", [cards[0]]);
   expect(screen.queryByText(/wanted/i)).toBeNull();
 });

@@ -57,7 +57,7 @@ Use two apps on the phone: **The Binder** (release build) and **The Binder (dev)
 
 ## Collection list (wish-list)
 
-- [ ] Add a wanted card with no photo: it shows under Show Wanted and in "N wanted" on the dashboard, and is not in the tiles. Sync, reinstall or restore from Drive: it is still wanted. Then Mark as owned: it is in the default list and the counts after the next sync. [wish-list, T-64]
+- [ ] Add a wanted card with no photo: it shows under Show Wanted and in the Wanted row under the tiles on the dashboard, and is not in the tiles. Sync, reinstall or restore from Drive: it is still wanted. Then Mark as owned: it is in the default list and the counts after the next sync. [wish-list, T-64]
 
 ## Identification (card-identification)
 
