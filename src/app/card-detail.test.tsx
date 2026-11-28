@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { createFakePorts } from "../adapters/fakes";
 import { makeCard } from "../domain/fixtures";
+import { soldPricesUrl } from "../domain/value-query";
 import { CardDetail } from "./CardDetail";
 import { PortsProvider } from "./ports-context";
 
@@ -166,4 +167,14 @@ test("Control switches side and resets zoom", async () => {
   expect(back.getAttribute("data-scale")).toBe("1");
   expect(screen.getByRole("dialog", { name: "Back photo view" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Back" }).getAttribute("aria-pressed")).toBe("true");
+});
+
+test("Check sold prices links to eBay sold listings above the action row", async () => {
+  await open(false);
+  const link = screen.getByRole("link", { name: "Check sold prices" });
+  expect(link.getAttribute("href")).toBe(soldPricesUrl(card));
+  expect(link.getAttribute("target")).toBe("_blank");
+  expect(link.getAttribute("rel")).toBe("noopener noreferrer");
+  const edit = screen.getByRole("button", { name: "Edit" });
+  expect(link.compareDocumentPosition(edit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
