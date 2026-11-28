@@ -9,7 +9,7 @@
 
 ## 3. Implement
 
-- [ ] 3.1 New `src/domain/value-query.ts`: `valueQuery(card)` and `soldPricesUrl(card)`, using `isSerialNumbered` from `src/domain/format.ts`. Verify: `npx vitest run src/domain/value-query.test.ts` passes.
+- [x] 3.1 New `src/domain/value-query.ts`: `valueQuery(card)` and `soldPricesUrl(card)`, using `isSerialNumbered` from `src/domain/format.ts`. Verify: `npx vitest run src/domain/value-query.test.ts` passes.
 - [ ] 3.2 `src/app/CardDetail.tsx` (`CardDetail`): render `<a href={soldPricesUrl(card)} target="_blank" rel="noopener noreferrer">Check sold prices</a>` in a `<p>` after the last-edited line and before the `detail-actions` row. Verify: `npx vitest run src/app/card-detail.test.tsx` passes, and `npm run build && npx vitest run --exclude "**/startup*"` and the e2e "Two portrait photos fill the row" check stay green.
 
 ## 4. On the phone
