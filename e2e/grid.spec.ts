@@ -52,6 +52,7 @@ test.use({ viewport: { width: 360, height: 800 } });
 test("Toggle shares the Showing line: 5,000 cards, count and order on one line, 8 dp before the toggle, nothing past the content edge", async ({ page }) => {
   await page.goto("/?seed=5000");
   await openCollection(page);
+  await expect(page.locator("p.shown")).toContainText("Showing 5000 · Last name ↑");
   const row = await box(page.locator(".shown-row"));
   // The text's own extent, not the paragraph's box: a word wider than its box spills out of it.
   const text = await page.locator("p.shown").evaluate((p) => {
@@ -64,7 +65,6 @@ test("Toggle shares the Showing line: 5,000 cards, count and order on one line, 
     return { x, width: Math.max(...rects.map((r) => r.right)) - x, lines: new Set([...rects].map((r) => Math.round(r.top))).size + (Math.abs(count.top - rects[0].top) > 2 ? 1 : 0) };
   });
   const toggle = await box(gridView(page));
-  await expect(page.locator("p.shown")).toContainText("Showing 5000 · Last name ↑");
   await expect(page.getByRole("button", { name: /^Sort/ })).toHaveCount(0);
   expect(text.lines).toBe(1);
   expect(toggle.y).toBeGreaterThanOrEqual(row.y - 0.5);
