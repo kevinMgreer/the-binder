@@ -40,14 +40,14 @@ p { margin: 0 0 var(--space-2); }
 /* One thin rule under a screen title; sections are separated by whitespace. */
 .title-rule { height: 0; margin: 0 0 var(--space-3); border-top: var(--rule) solid var(--color-rule); }
 
-button, [role="dialog"], [role="alertdialog"], .banner, .zoom {
+button, [role="dialog"], [role="alertdialog"], .banner, .zoom, .sold-link {
   background: transparent;
   border: var(--rule) solid var(--color-ink);
   border-radius: var(--radius-frame);
   color: var(--color-ink);
   font: inherit;
 }
-button, .banner a {
+button, .banner a, .sold-link {
   box-sizing: border-box;
   min-width: var(--target-min);
   min-height: var(--target-min);
@@ -225,7 +225,8 @@ section > p:has(> time) { font-size: var(--type-label); margin-bottom: var(--spa
 .settings > button { margin: var(--space-3) 0; }
 .actions .primary { flex: 1; }
 .detail-actions button { flex: 1; }
-.sold-link { color: var(--color-ink); text-decoration: underline; display: inline-flex; align-items: center; min-height: var(--target-min); margin-block: var(--space-2); }
+.sold-link { display: flex; gap: var(--space-2); width: 100%; text-decoration: none; font-weight: 600; }
+.sold-link svg { width: 20px; height: 20px; }
 button.danger.outline { border-color: var(--color-danger); }
 [role="dialog"]:not(.sheet), [role="alertdialog"] { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--pad-cell); margin: var(--space-3) 0; background: var(--color-panel); border-color: var(--color-rule); }
 [role="dialog"] p, [role="alertdialog"] p { margin: 0; }

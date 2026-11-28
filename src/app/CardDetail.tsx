@@ -4,6 +4,7 @@ import { gradeLabel, serialLabel } from "../domain/format";
 import { soldPricesUrl } from "../domain/value-query";
 import { Frame } from "./Frame";
 import { useThumbUrl } from "./hooks";
+import { Icon } from "./Icon";
 import { PhotoView } from "./PhotoView";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Sheet } from "./Sheet";
@@ -107,6 +108,7 @@ export function CardDetail({ card, onEdit, onDelete }: Props) {
       <p>
         <a className="sold-link" href={soldPricesUrl(card)} target="_blank" rel="noopener noreferrer">
           Check sold prices
+          <Icon name="openInNew" />
         </a>
       </p>
       <div className="actions detail-actions">
