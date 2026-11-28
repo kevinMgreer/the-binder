@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "build:e2e": "tsc -b && vite build --mode e2e --outDir dist-e2e",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "phone-test": "node scripts/phone-test.mjs",
+    "e2e": "playwright test",
+    "phone-test": "node scripts/phone-test.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",

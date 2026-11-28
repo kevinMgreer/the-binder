@@ -16,7 +16,7 @@ function fake(opts: { adb?: string; fail?: string; envLocal?: boolean; env?: Rec
     env: { JAVA_HOME: "/jdk", ANDROID_HOME: "/sdk", ...opts.env },
     platform: "linux",
     log: (l: string) => logs.push(l),
-    exists: (p: string) => (p.endsWith(".env.local") ? opts.envLocal === true : true),
+    exists: (p: string) => (p.endsWith(".env.local") && !/main/.test(p) ? opts.envLocal !== false : true),
     copyFile: (a: string, b: string) => copies.push([a, b]),
     exec(cmd: string, args: string[], o: { cwd: string }) {
       calls.push({ cmd, args, cwd: o.cwd });
